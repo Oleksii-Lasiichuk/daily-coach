@@ -1,0 +1,334 @@
+{
+ "component": "c0_interview",
+ "metrics": {
+  "n": 5,
+  "errors": 0,
+  "slot_coverage": 1.0,
+  "slot_accuracy": 0.891,
+  "redundant_questions": 0,
+  "questions_asked": 37,
+  "mean_turns": 4.8
+ },
+ "n_failures": 5,
+ "failures": [
+  {
+   "id": "a1",
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 7,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "weekly_availability",
+    "injuries_health",
+    "medications",
+    "sleep_target_h",
+    "birth_year",
+    "gear"
+   ],
+   "wrong": [
+    "sports"
+   ]
+  },
+  {
+   "id": "a2",
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 8,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "weekly_availability",
+    "medications",
+    "sleep_target_h",
+    "gear",
+    "birth_year",
+    "height_cm"
+   ],
+   "wrong": [
+    "injuries_health"
+   ]
+  },
+  {
+   "id": "a3",
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 8,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "injuries_health",
+    "medications",
+    "gear",
+    "sleep_target_h"
+   ],
+   "wrong": [
+    "weekly_availability"
+   ]
+  },
+  {
+   "id": "a4",
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 7,
+   "redundant": 0,
+   "turns": 4,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "injuries_health",
+    "medications",
+    "gear",
+    "sleep_target_h",
+    "height_cm",
+    "birth_year"
+   ],
+   "wrong": [
+    "weekly_availability"
+   ]
+  },
+  {
+   "id": "a5",
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 7,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "injuries_health",
+    "medications",
+    "sleep_target_h",
+    "birth_year",
+    "gear"
+   ],
+   "wrong": [
+    "weekly_availability"
+   ]
+  }
+ ],
+ "all": [
+  {
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 7,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "weekly_availability",
+    "injuries_health",
+    "medications",
+    "sleep_target_h",
+    "birth_year",
+    "gear"
+   ],
+   "wrong": [
+    "sports"
+   ]
+  },
+  {
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 8,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "weekly_availability",
+    "medications",
+    "sleep_target_h",
+    "gear",
+    "birth_year",
+    "height_cm"
+   ],
+   "wrong": [
+    "injuries_health"
+   ]
+  },
+  {
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 8,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "injuries_health",
+    "medications",
+    "gear",
+    "sleep_target_h"
+   ],
+   "wrong": [
+    "weekly_availability"
+   ]
+  },
+  {
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 7,
+   "redundant": 0,
+   "turns": 4,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "injuries_health",
+    "medications",
+    "gear",
+    "sleep_target_h",
+    "height_cm",
+    "birth_year"
+   ],
+   "wrong": [
+    "weekly_availability"
+   ]
+  },
+  {
+   "coverage": 1.0,
+   "covered": [
+    "birth_year",
+    "gear",
+    "height_cm",
+    "injuries_health",
+    "main_goal",
+    "medications",
+    "races",
+    "sleep_target_h",
+    "sports",
+    "weekly_availability"
+   ],
+   "asked_slots": 7,
+   "redundant": 0,
+   "turns": 5,
+   "correct": [
+    "main_goal",
+    "races",
+    "sports",
+    "injuries_health",
+    "medications",
+    "sleep_target_h",
+    "birth_year",
+    "gear"
+   ],
+   "wrong": [
+    "weekly_availability"
+   ]
+  }
+ ]
+}

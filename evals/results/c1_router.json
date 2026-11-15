@@ -1,0 +1,161 @@
+{
+ "component": "c1_router",
+ "metrics": {
+  "n": 60,
+  "macro_f1": 0.834,
+  "exact_match": 0.783,
+  "no_write_on_questions": 1.0,
+  "f1_log": 0.905,
+  "f1_plan": 0.824,
+  "f1_profile": 0.774
+ },
+ "n_failures": 13,
+ "failures": [
+  {
+   "text": "Garmin wants 8x400 today",
+   "gold": [
+    "log"
+   ],
+   "tools": [
+    "assess_day",
+    "set_planned_workouts"
+   ]
+  },
+  {
+   "text": "Коліно болить з понеділка, можна завтра бігти?",
+   "gold": [
+    "log",
+    "plan"
+   ],
+   "tools": [
+    "log_entries",
+    "plan_sessions",
+    "save_item"
+   ]
+  },
+  {
+   "text": "Let's set up my profile",
+   "gold": [
+    "profile"
+   ],
+   "tools": []
+  },
+  {
+   "text": "п'ю антибіотики до п'ятниці, лікар сказав без навантажень",
+   "gold": [
+    "log",
+    "profile"
+   ],
+   "tools": [
+    "log_entries",
+    "plan_sessions",
+    "save_item"
+   ]
+  },
+  {
+   "text": "так",
+   "gold": [
+    "profile"
+   ],
+   "tools": []
+  },
+  {
+   "text": "Сьогодні настрій 2 з 5, все дратує",
+   "gold": [
+    "log"
+   ],
+   "tools": [
+    "assess_day",
+    "log_entries"
+   ]
+  },
+  {
+   "text": "Нежить і болить горло",
+   "gold": [
+    "log"
+   ],
+   "tools": [
+    "log_entries",
+    "save_item"
+   ]
+  },
+  {
+   "text": "Garmin Coach today: easy 40 min. Should I keep it?",
+   "gold": [
+    "log",
+    "plan"
+   ],
+   "tools": [
+    "assess_day",
+    "set_planned_workouts"
+   ]
+  },
+  {
+   "text": "Skip it",
+   "gold": [
+    "profile"
+   ],
+   "tools": [
+    "log_entries"
+   ]
+  },
+  {
+   "text": "Прийняв ібупрофен 400 мг від коліна",
+   "gold": [
+    "log"
+   ],
+   "tools": [
+    "log_entries",
+    "save_item"
+   ]
+  },
+  {
+   "text": "Сьогодні відпочиваю, ноги вбиті після вчорашнього",
+   "gold": [
+    "log"
+   ],
+   "tools": [
+    "assess_day",
+    "log_entries"
+   ]
+  },
+  {
+   "text": "Last night 6 beers at a wedding, slept 4h",
+   "gold": [
+    "log"
+   ],
+   "tools": [
+    "assess_day",
+    "log_entries"
+   ]
+  },
+  {
+   "text": "Should I race this weekend with a mild cold?",
+   "gold": [
+    "plan",
+    "question"
+   ],
+   "tools": [
+    "log_entries",
+    "save_item"
+   ]
+  }
+ ],
+ "per_group": {
+  "log": {
+   "precision": 0.905,
+   "recall": 0.905,
+   "f1": 0.905
+  },
+  "plan": {
+   "precision": 0.737,
+   "recall": 0.933,
+   "f1": 0.824
+  },
+  "profile": {
+   "precision": 0.75,
+   "recall": 0.8,
+   "f1": 0.774
+  }
+ }
+}

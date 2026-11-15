@@ -1,0 +1,49 @@
+{
+ "date": "2026-11-14",
+ "profile": {
+  "main_goal": "Half marathon under 1:45 in April",
+  "height_cm": "182",
+  "sport_settings": {
+   "Run": {
+    "lthr": 185,
+    "max_hr": 204,
+    "hr_zones_bpm": {
+     "Z1": "up to 123",
+     "Z2": "124-143",
+     "Z3": "144-164",
+     "Z4": "165-184",
+     "Z5": "185-204"
+    },
+    "threshold_pace_per_km": "4:07"
+   }
+  },
+  "weekly_availability": "Mon, Wed, Fri 1 h; Sat 2 h"
+ },
+ "facts": [
+  "injury: Left knee pain since Monday",
+  "gear: Nike Pegasus 41, 600 km",
+  "race: Lviv Half Marathon on 12 April 2027"
+ ],
+ "logs_yesterday_today": [
+  {
+   "day": "2026-11-13",
+   "kind": "alcohol",
+   "description": "4 пива",
+   "alcohol_drinks": 6
+  },
+  {
+   "day": "2026-11-14",
+   "kind": "sleep",
+   "description": "5 годин",
+   "sleep_hours": 5
+  },
+  {
+   "day": "2026-11-14",
+   "kind": "meal",
+   "description": "вівсянка з бананом",
+   "nutrition": {
+    "kcal": 320
+   }
+  }
+ ]
+}

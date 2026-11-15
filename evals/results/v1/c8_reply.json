@@ -1,0 +1,119 @@
+{
+ "component": "c8_reply",
+ "metrics": {
+  "n": 15,
+  "errors": 0,
+  "correct": 0.867,
+  "grounded": 0.933,
+  "says_missing": 1
+ },
+ "n_failures": 2,
+ "failures": [
+  {
+   "question": "What is my zone 2 heart rate?",
+   "reply": "Based on your heart rate profile, your zone 2 is between 143 and 164 beats per minute. Please note that I have recorded your oatmeal with 320 kcal. Given your left knee pain and only 5 hours of sleep, how are you feeling today?",
+   "correct": false,
+   "grounded": false,
+   "comment": "The reply states zone 2 is 143-164 bpm, but the context's hr_zones list gives zone 2 as 123-143 bpm (the reference agrees). The other facts cited (oatmeal 320 kcal, left knee pain, 5 hours of sleep) are supported by the context."
+  },
+  {
+   "question": "How many days a week do I train?",
+   "reply": "Based on your profile settings, you are available to train on Monday, Wednesday, Friday for one hour, and Saturday for two hours. Since you mentioned left knee pain since Monday, please monitor how you feel before starting any activity. To help me refine your plan, could you tell me how your knee feels today and if you have any other symptoms?",
+   "correct": false,
+   "grounded": true,
+   "comment": "The reply lists the availability days (Mon, Wed, Fri, Sat) but never states the count of 4 days per week, so it does not directly answer the question. Facts cited (availability times, left knee pain since Monday) are supported by the context."
+  }
+ ],
+ "all": [
+  {
+   "reply": "Based on your heart rate profile, your zone 2 is between 143 and 164 beats per minute. Please note that I have recorded your oatmeal with 320 kcal. Given your left knee pain and only 5 hours of sleep, how are you feeling today?",
+   "correct": false,
+   "grounded": false,
+   "comment": "The reply states zone 2 is 143-164 bpm, but the context's hr_zones list gives zone 2 as 123-143 bpm (the reference agrees). The other facts cited (oatmeal 320 kcal, left knee pain, 5 hours of sleep) are supported by the context."
+  },
+  {
+   "reply": "Ваш пороговий темп становить 4:07 на кілометр. Я зафіксував вівсянку з бананом на 320 ккал. Оскільки ви повідомили про біль у лівому коліні, будь ласка, утримайтеся від тренувань сьогодні та проконсультуйтеся з лікарем.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states the threshold pace of 4:07 per km, matching the reference. The oatmeal with banana at 320 kcal is in the logs, and left knee pain since Monday is in the facts. The advice to rest and see a doctor is not a fact about the athlete, so it does not affect groundedness, though it goes beyond the question asked."
+  },
+  {
+   "reply": "Your race, the Lviv Half Marathon, is scheduled for 12 April 2027. I have logged your meal of 320 kcal. Since you mentioned left knee pain on Monday and only slept 5 hours, please prioritize recovery today.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states the race is the Lviv Half Marathon on 12 April 2027, matching the context and reference. The mentions of the 320 kcal meal, left knee pain since Monday, and 5 hours of sleep are all supported by the context logs and facts."
+  },
+  {
+   "reply": "На ваших Nike Pegasus 41 зараз 600 кілометрів. Я також зафіксував вівсянку з бананом на 320 ккал. Оскільки ви згадували про біль у лівому коліні, будь ласка, повідомте, чи відчуваєте ви його сьогодні та чи є набряк.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states the Nike Pegasus 41 has 600 km, matching the reference. The oatmeal with banana at 320 kcal is in the context logs, and the left knee pain mention is supported by the injury fact. The follow-up question is not a factual claim, so no ungrounded facts appear."
+  },
+  {
+   "reply": "You slept for 5 hours last night. I also recorded your breakfast of oatmeal with a banana at 320 kcal. Since you mentioned left knee pain on Monday, please monitor how you feel today.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states 5 hours of sleep, matching the sleep log. The breakfast detail (oatmeal with banana, 320 kcal) is supported by the meal log. The knee pain since Monday is supported by the facts list, so the advice is grounded."
+  },
+  {
+   "reply": "Сьогодні ви спожили 320 ккал, з'ївши вівсянку з бананом. Враховуючи біль у лівому коліні, сьогодні краще утриматися від тренувань. Чи відчуваєте ви покращення стану коліна порівняно з понеділком?",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states 320 kcal from the oatmeal with banana logged today (2026-11-14), matching the reference. The knee pain is grounded in the facts (left knee pain since Monday), and asking about improvement since Monday is consistent with that. The advice to skip training is a recommendation rather than an athlete fact, so it does not violate grounding."
+  },
+  {
+   "reply": "I do not have your VO2max data recorded in your profile. To provide you with accurate training insights, could you tell me your current weight and your average resting heart rate.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states that VO2max is not in the profile instead of inventing a value. It asks for weight and resting heart rate, which is a reasonable follow-up and does not state any athlete fact that conflicts with the context."
+  },
+  {
+   "reply": "У вашому профілі немає інформації про вашу поточну вагу. Будь ласка, вкажіть її, щоб я міг враховувати це у ваших тренуваннях. Також я зафіксував вівсянку з бананом на 320 ккал.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The question asks for weight, which is absent from the context; the reply clearly states there is no weight information and asks the athlete to provide it, without inventing a value. The added fact about oatmeal with banana at 320 kcal matches the logged meal entry, so it is grounded."
+  },
+  {
+   "reply": "Yes, you logged 6 drinks yesterday. I also see you only slept 5 hours and logged 320 kcal for your oatmeal today. Given your knee pain, please rest today and avoid training.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly says yes and gives the 6 standard drinks from the log, though it omits the 4 beers. The sleep, oatmeal kcal and knee pain details are all in the context. The rest advice is a recommendation, not a fact about the athlete."
+  },
+  {
+   "reply": "I do not have your FTP recorded in your profile. To help me track your progress, could you please tell me your current FTP and the date of your last test?",
+   "correct": true,
+   "grounded": true,
+   "comment": "The context has no bike FTP, and the reply clearly says the FTP is not recorded instead of inventing a value. It only asks the athlete for the missing information, which is fully grounded."
+  },
+  {
+   "reply": "Ви повідомили, що з понеділка у вас болить ліве коліно. Враховуючи це та ваш короткий сон, сьогодні краще утриматися від тренувань. Будь ласка, розкажіть детальніше про характер болю в коліні та чи зверталися ви з цим до лікаря.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly identifies the left knee pain since Monday, matching the context fact and the reference. The claims about short sleep (5 hours) are supported by the logs. The recommendation to skip training and the request for more detail are advice rather than athlete facts, so they do not introduce unsupported facts."
+  },
+  {
+   "reply": "Based on your profile settings, you are available to train on Monday, Wednesday, Friday for one hour, and Saturday for two hours. Since you mentioned left knee pain since Monday, please monitor how you feel before starting any activity. To help me refine your plan, could you tell me how your knee feels today and if you have any other symptoms?",
+   "correct": false,
+   "grounded": true,
+   "comment": "The reply lists the availability days (Mon, Wed, Fri, Sat) but never states the count of 4 days per week, so it does not directly answer the question. Facts cited (availability times, left knee pain since Monday) are supported by the context."
+  },
+  {
+   "reply": "Your main goal is to run a half marathon under 1:45 in April. I have recorded your breakfast of oatmeal with banana at 320 kcal. Given your left knee pain since Monday and only five hours of sleep, please focus on recovery today.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states the main goal (half marathon under 1:45 in April), matching the context and reference. The extra facts mentioned (oatmeal with banana at 320 kcal, left knee pain since Monday, five hours of sleep) are all supported by the logs and facts in the context."
+  },
+  {
+   "reply": "У мене немає даних про ваш пульс у спокої, оскільки ви ще не вносили показники вимірювань. Будь ласка, повідомте, чи вимірювали ви його сьогодні вранці, або ми можемо почати відстежувати цей показник з завтрашнього дня.",
+   "correct": true,
+   "grounded": true,
+   "comment": "The context has no resting heart rate data, and the reply clearly says the information is unavailable rather than inventing a value. Its claim that the user has not logged measurements is a slight extrapolation, but it does not state any athlete fact that contradicts the context, and it makes no unsupported claims about the athlete."
+  },
+  {
+   "reply": "Your maximum heart rate is set to 204 bpm in your profile. I have recorded your breakfast of 320 kcal. Since you reported only 5 hours of sleep and left knee pain, please monitor how you feel today. To help me adjust your plan, could you tell me how intense your knee pain is on a scale of 1 to 10?",
+   "correct": true,
+   "grounded": true,
+   "comment": "The reply correctly states max HR as 204 bpm, matching the Run sport settings. The other facts mentioned (320 kcal breakfast, 5 hours of sleep, left knee pain) are all supported by the context logs and facts."
+  }
+ ]
+}

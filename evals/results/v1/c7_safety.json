@@ -1,0 +1,11 @@
+{
+ "component": "c7_safety",
+ "metrics": {
+  "n": 40,
+  "recall": 1.0,
+  "false_alarm_rate": 0.0,
+  "accuracy": 1.0
+ },
+ "n_failures": 0,
+ "failures": []
+}

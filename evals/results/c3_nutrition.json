@@ -1,0 +1,72 @@
+{
+ "component": "c3_nutrition",
+ "metrics": {
+  "n": 60,
+  "errors": 1,
+  "nb_mae_kcal": 68.8,
+  "nb_baseline_mae_kcal": 190.8,
+  "nb_mae_carbs_g": 11.4,
+  "nb_baseline_mae_carbs_g": 28.7,
+  "nb_mae_protein_g": 2.7,
+  "nb_baseline_mae_protein_g": 8.5,
+  "nb_mae_fat_g": 4.2,
+  "nb_baseline_mae_fat_g": 9.4,
+  "nb_within_20pct_kcal": 0.755,
+  "ua_mae_kcal": 34.8,
+  "ua_baseline_mae_kcal": 111.9,
+  "ua_mae_carbs_g": 3.2,
+  "ua_baseline_mae_carbs_g": 15.7,
+  "ua_mae_protein_g": 1.7,
+  "ua_baseline_mae_protein_g": 9.8,
+  "ua_mae_fat_g": 2.6,
+  "ua_baseline_mae_fat_g": 9.0,
+  "ua_within_20pct_kcal": 0.9
+ },
+ "n_failures": 9,
+ "failures": [
+  {
+   "text": "For a snack, I'm having 6.4g of raw celery, 94.9g of raw courgette, 30g of raw cucumber, 30g of raw fennel, 30g of raw lettuce, 2.7g of meat extract, 2.3g of raw onion, 1.4g of raw parsley, 30g of raw red chicory (Radicchio), 108.1g of raw white rice, 80g of raw salad-type tomato, 18g of extra-virgin olive oil, 15.1g of olive oil, and 480g of tap water.",
+   "error": "LLMError: estimate-nutrition: reply did not match Nutrition: reply cut off at max_tokens"
+  },
+  {
+   "text": "For a snack, I'm having 11 grams of boiled dried okra, 175 grams of boiled millet flour with husks, 4 grams of liquid potassium salt, 7 grams of iodised salt, 1 gram of stink beans, and 1 gram of stock cubes.",
+   "gold_kcal": 679.0,
+   "pred_kcal": 211
+  },
+  {
+   "text": "I made a 354.4g quiche with spinach for lunch.",
+   "gold_kcal": 449.4,
+   "pred_kcal": 886
+  },
+  {
+   "text": "For dinner, I'm having a 12.5g dry biscuit, 51.6g of fish balls, and 173.7g of potato roast with chicken and vegetable oil. I also have 20g of sunflower seeds, 150g of white bread, and a bit of white sugar, about 10g.",
+   "gold_kcal": 1137.0,
+   "pred_kcal": 930
+  },
+  {
+   "text": "I’m starting my day with a 166-gram burrito containing meat and beans, plus a 496-gram fruit juice drink.",
+   "gold_kcal": 408.16,
+   "pred_kcal": 613
+  },
+  {
+   "text": "I'm sipping on 507 grams of sweetened carbonated water as a quick snack.",
+   "gold_kcal": 0.0,
+   "pred_kcal": 203
+  },
+  {
+   "text": "For dinner, I had a small piece of thin crust pizza topped with meat and fruit, along with a cup of tap water.",
+   "gold_kcal": 197.34,
+   "pred_kcal": 380
+  },
+  {
+   "text": "I'm having a 496-gram fruit juice drink and a 370-gram serving of noodle soup for lunch.",
+   "gold_kcal": 297.5,
+   "pred_kcal": 463
+  },
+  {
+   "text": "Гречка 250 г з курячою грудкою 150 г",
+   "gold_kcal": 477.5,
+   "pred_kcal": 616
+  }
+ ]
+}

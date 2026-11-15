@@ -1,0 +1,63 @@
+{
+ "component": "c4_sources",
+ "metrics": {
+  "n_planted": 24,
+  "n_chunks": 41,
+  "ingest_seconds": 10,
+  "facts_extracted": 27,
+  "fact_recall": 1.0,
+  "fact_precision": 1.0,
+  "fact_f1": 1.0,
+  "retrieval_recall_at_5": 0.917,
+  "retrieval_recall_at_1": 0.458,
+  "mrr": 0.6
+ },
+ "n_failures": 2,
+ "failures": [
+  {
+   "id": "f09",
+   "question": "When can I train on weekdays?",
+   "top": [
+    "are running or cycling during the same week.\n\n---\n\n**You:**\nOn the bike, things are okay mostly, but comfort becomes an ",
+    "training sessions can be incredibly rewarding, but they require a structured approach to ensure you don't compromise per"
+   ]
+  },
+  {
+   "id": "f16",
+   "question": "Which triathlon am I planning?",
+   "top": [
+    "Поки що тільки починаю планувати графік тренувань, але хочеться підійти до цього процесу розумно, щоб не нашкодити собі.",
+    "are running or cycling during the same week.\n\n---\n\n**You:**\nOn the bike, things are okay mostly, but comfort becomes an "
+   ]
+  }
+ ],
+ "extracted": [
+  "Uses Nike Pegasus 41 running shoes with approximately 650 km of wear.",
+  "Owns a Canyon Endurace CF 7 bike, purchased in August 2026.",
+  "Goal time for the half marathon is 1:45.",
+  "Aims to lose weight from 78 kg to 74 kg by spring.",
+  "Planning to participate in an Olympic triathlon in Kyiv in July 2027.",
+  "Aims to swim 1500 meters freestyle without stopping by June.",
+  "Diagnosed with iron deficiency anemia with a ferritin level of 12.",
+  "Needs to perform follow-up blood panels (CBC, ferritin, transferrin saturation) every 8 to 12 weeks.",
+  "Has an allergy to ibuprofen which causes skin rashes.",
+  "Experiences sleep disturbances, specifically waking up at 3 am, when consuming coffee after 2 pm.",
+  "Has mild asthma and uses a Ventolin inhaler before hard intervals in cold weather.",
+  "Has a resting blood pressure of 135/85.",
+  "Contracted COVID in March 2026 and took a 7-day course of amoxicillin.",
+  "Maximum heart rate measured during a test is 198 bpm.",
+  "Left knee pain after runs longer than 15 km since October 2026.",
+  "Suffered a stress fracture of the right metatarsal last year, requiring 6 weeks off running.",
+  "Experiences lower back tightness during cycling rides longer than 3 hours.",
+  "Works from 9:00 to 18:00 and is restricted to morning training sessions before 8:00.",
+  "Has a newborn daughter since August 2026, leading to broken sleep.",
+  "Taking 100 mg of ferrous sulfate every morning since September 2026.",
+  "Takes 2000 IU of Vitamin D daily during the winter.",
+  "Dislikes running on treadmills and prefers outdoor training even in rainy weather.",
+  "Follows an ovo-lacto vegetarian diet since 2024.",
+  "Prefers swimming only in 50-meter pools and experiences panic in open water.",
+  "Implements deload weeks every 3 to 4 weeks to ensure stable training progression.",
+  "Registered for Lviv Half Marathon on April 12, 2027.",
+  "Personal best for half marathon is 1:52, set in Kyiv 2026."
+ ]
+}

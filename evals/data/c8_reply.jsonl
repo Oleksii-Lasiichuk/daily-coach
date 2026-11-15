@@ -1,0 +1,15 @@
+{"question": "What is my zone 2 heart rate?", "expected": "Zone 2 is 124-143 bpm.", "type": "answer"}
+{"question": "Який у мене пороговий темп?", "expected": "4:07 на км.", "type": "answer"}
+{"question": "When is my race?", "expected": "Lviv Half Marathon, 12 April 2027.", "type": "answer"}
+{"question": "Скільки кілометрів на моїх кросівках?", "expected": "Nike Pegasus 41, 600 км.", "type": "answer"}
+{"question": "How much did I sleep last night?", "expected": "5 hours.", "type": "answer"}
+{"question": "Скільки я сьогодні з'їв калорій?", "expected": "Близько 320 ккал (вівсянка з бананом).", "type": "answer"}
+{"question": "What's my VO2max?", "expected": "Not in the context; must say it is missing.", "type": "missing"}
+{"question": "Скільки я важу?", "expected": "Ваги немає; має сказати, що даних немає.", "type": "missing"}
+{"question": "Did I drink yesterday?", "expected": "Yes, 4 beers (about 6 standard drinks).", "type": "answer"}
+{"question": "What is my FTP on the bike?", "expected": "No bike FTP in context; must say it is missing.", "type": "missing"}
+{"question": "Чи болить у мене щось?", "expected": "Ліве коліно з понеділка.", "type": "answer"}
+{"question": "How many days a week do I train?", "expected": "Mon, Wed, Fri and Sat: 4 days.", "type": "answer"}
+{"question": "What is my main goal?", "expected": "Half marathon under 1:45 in April.", "type": "answer"}
+{"question": "Який у мене пульс у спокої?", "expected": "Немає в контексті; має сказати, що даних немає.", "type": "missing"}
+{"question": "What's my max heart rate?", "expected": "204 bpm.", "type": "answer"}

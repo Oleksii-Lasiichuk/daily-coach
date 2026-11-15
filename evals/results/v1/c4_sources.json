@@ -1,0 +1,79 @@
+{
+ "component": "c4_sources",
+ "metrics": {
+  "n_planted": 24,
+  "n_chunks": 17,
+  "ingest_seconds": 7,
+  "facts_extracted": 27,
+  "fact_recall": 1.0,
+  "fact_precision": 1.0,
+  "fact_f1": 1.0,
+  "retrieval_recall_at_5": 0.833,
+  "retrieval_recall_at_1": 0.292,
+  "mrr": 0.475
+ },
+ "n_failures": 4,
+ "failures": [
+  {
+   "id": "f06",
+   "question": "Am I allergic to any painkiller?",
+   "top": [
+    "# ChatGPT export — project “Health and sport”\n\n## Marathon Training, Recovery, and Iron Deficiency\n\n**You:**\nПривіт! I h",
+    "7 днів. Як правильно повертатися до активності після респіраторних інфекцій та антибіотикотерапії, щоб мікрофлора і серц"
+   ]
+  },
+  {
+   "id": "f09",
+   "question": "When can I train on weekdays?",
+   "top": [
+    "is the best way to handle morning runs, especially regarding warm-ups and nutrition, when you don't have hours to digest",
+    "7 днів. Як правильно повертатися до активності після респіраторних інфекцій та антибіотикотерапії, щоб мікрофлора і серц"
+   ]
+  },
+  {
+   "id": "f14",
+   "question": "Do I eat meat?",
+   "top": [
+    "# ChatGPT export — project “Health and sport”\n\n## Marathon Training, Recovery, and Iron Deficiency\n\n**You:**\nПривіт! I h",
+    "в холодний період: Приймаю вітамін D 2000 МО щодня взимку. Should I consider anything else regarding general recovery an"
+   ]
+  },
+  {
+   "id": "f17",
+   "question": "What is my usual blood pressure?",
+   "top": [
+    "is the best way to handle morning runs, especially regarding warm-ups and nutrition, when you don't have hours to digest",
+    "в холодний період: Приймаю вітамін D 2000 МО щодня взимку. Should I consider anything else regarding general recovery an"
+   ]
+  }
+ ],
+ "extracted": [
+  "Running in Nike Pegasus 41 shoes with approximately 650 km of usage.",
+  "Owns a Canyon Endurace CF 7 bike, purchased in August 2026.",
+  "Targeting a half marathon time of 1:45:00.",
+  "Aiming to lose weight from 78 kg to 74 kg by spring.",
+  "Planning to participate in an Olympic triathlon in Kyiv in July 2027.",
+  "Aims to swim 1500m freestyle without stopping by June.",
+  "Diagnosed with iron deficiency anemia with a ferritin level of 12.",
+  "Allergic to ibuprofen, which causes skin rashes.",
+  "Experiences sleep disturbances (waking at 3 am) when consuming coffee after 2 pm.",
+  "Sleep is disrupted when drinking coffee after 2 pm, causing 3 am wake-ups.",
+  "Has mild asthma and uses a Ventolin inhaler before hard intervals in cold weather.",
+  "Has pre-hypertensive blood pressure, typically 135/85.",
+  "Recovered from COVID in March 2026, treated with a 7-day course of amoxicillin.",
+  "Maximum heart rate measured at 198 bpm.",
+  "Left knee pain after runs longer than 15 km since October 2026.",
+  "Suffered a stress fracture of the right metatarsal last year, requiring 6 weeks off running.",
+  "Experiences lower back tightness during cycling rides longer than 3 hours.",
+  "Works from 9:00 to 18:00, limiting training to mornings before 8:00.",
+  "Has a newborn daughter since August 2026, leading to fragmented sleep.",
+  "Taking 100 mg of ferrous sulfate every morning since September 2026.",
+  "Takes 2000 IU of Vitamin D daily during winter.",
+  "Takes 2000 IU of Vitamin D daily during the winter season.",
+  "Dislikes treadmills and prefers running outdoors in the rain.",
+  "Follows an ovo-lacto vegetarian diet for three years.",
+  "Prefers swimming in 50m pools and experiences panic in open water.",
+  "Registered for the Lviv Half Marathon on April 12, 2027.",
+  "Achieved a personal best of 1:52 in the half marathon at Kyiv 2026."
+ ]
+}

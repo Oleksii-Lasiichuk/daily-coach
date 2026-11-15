@@ -1,0 +1,40 @@
+{"text": "Вчора ввечері випив 4 пива, спав 5 годин", "now": "2026-11-14T09:30", "events": [{"kind": "alcohol", "day": "2026-11-13"}, {"kind": "sleep", "day": "2026-11-14", "sleep_hours": 5}]}
+{"text": "Зранку з'їв вівсянку з бананом і випив каву", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-14"}, {"kind": "drink", "day": "2026-11-14"}]}
+{"text": "Slept 7.5 hours, feeling great", "now": "2026-11-14T09:30", "events": [{"kind": "sleep", "day": "2026-11-14", "sleep_hours": 7.5}, {"kind": "mood", "day": "2026-11-14"}]}
+{"text": "Ліве коліно болить, десь 4 з 10", "now": "2026-11-14T09:30", "events": [{"kind": "pain", "day": "2026-11-14", "pain_location": "left knee", "pain_score": 4}]}
+{"text": "Позавчора пробіг 12 км за 1:05", "now": "2026-11-14T09:30", "events": [{"kind": "activity", "day": "2026-11-12", "distance_km": 12}]}
+{"text": "Yesterday I swam 2 km and had pasta for dinner", "now": "2026-11-14T09:30", "events": [{"kind": "activity", "day": "2026-11-13", "distance_km": 2}, {"kind": "meal", "day": "2026-11-13"}]}
+{"text": "Garmin Coach хоче сьогодні 6x800 в темпі 4:00", "now": "2026-11-14T09:30", "events": [{"kind": "planned_workout", "day": "2026-11-14"}]}
+{"text": "Нежить і болить горло з учора", "now": "2026-11-14T09:30", "events": [{"kind": "symptom", "day": "2026-11-14"}]}
+{"text": "Прийняв ібупрофен 400 мг", "now": "2026-11-14T09:30", "events": [{"kind": "medication", "day": "2026-11-14"}]}
+{"text": "Last night two glasses of wine with dinner: steak and fries", "now": "2026-11-14T09:30", "events": [{"kind": "alcohol", "day": "2026-11-13"}, {"kind": "meal", "day": "2026-11-13"}]}
+{"text": "Настрій 2/5, стрес на роботі", "now": "2026-11-14T09:30", "events": [{"kind": "mood", "day": "2026-11-14"}]}
+{"text": "В середу грав у бадмінтон 1.5 години", "now": "2026-11-14T09:30", "events": [{"kind": "activity", "day": "2026-11-11", "duration_min": 90}]}
+{"text": "Сніданок: 3 яйця, 2 тости з маслом. Обід: борщ і котлета з пюре", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-14"}, {"kind": "meal", "day": "2026-11-14"}]}
+{"text": "Спав погано, 6 годин з пробудженнями", "now": "2026-11-14T09:30", "events": [{"kind": "sleep", "day": "2026-11-14", "sleep_hours": 6}]}
+{"text": "Had an energy drink before the gym and did 45 min of weights", "now": "2026-11-14T09:30", "events": [{"kind": "drink", "day": "2026-11-14"}, {"kind": "activity", "day": "2026-11-14", "duration_min": 45}]}
+{"text": "вчора на весіллі 5 шотів горілки і майже не спав, 3 години", "now": "2026-11-14T09:30", "events": [{"kind": "alcohol", "day": "2026-11-13"}, {"kind": "sleep", "day": "2026-11-14", "sleep_hours": 3}]}
+{"text": "Що мені сьогодні робити?", "now": "2026-11-14T09:30", "events": []}
+{"text": "Скільки білка треба на день?", "now": "2026-11-14T09:30", "events": []}
+{"text": "Права ахілка ниє після вчорашніх інтервалів", "now": "2026-11-14T09:30", "events": [{"kind": "pain", "day": "2026-11-14", "pain_location": "right achilles"}]}
+{"text": "This morning ran easy 8 km, then had a protein shake", "now": "2026-11-14T09:30", "events": [{"kind": "activity", "day": "2026-11-14", "distance_km": 8}, {"kind": "meal", "day": "2026-11-14"}]}
+{"text": "Температура 37.2 і слабкість", "now": "2026-11-14T09:30", "events": [{"kind": "symptom", "day": "2026-11-14"}]}
+{"text": "Випив 0.33 пива ввечері і з'їв піцу маргариту", "now": "2026-11-14T09:30", "events": [{"kind": "alcohol", "day": "2026-11-14"}, {"kind": "meal", "day": "2026-11-14"}]}
+{"text": "Вчора на вечерю гречка з куркою, 250 г гречки і 150 г курки", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-13"}]}
+{"text": "Garmin wants an easy 40 min run today, I feel tired", "now": "2026-11-14T09:30", "events": [{"kind": "planned_workout", "day": "2026-11-14"}, {"kind": "mood", "day": "2026-11-14"}]}
+{"text": "Ввечері прийняв магній 400 мг", "now": "2026-11-14T09:30", "events": [{"kind": "medication", "day": "2026-11-13"}]}
+{"text": "Slept 8h, HRV looks good", "now": "2026-11-14T09:30", "events": [{"kind": "sleep", "day": "2026-11-14", "sleep_hours": 8}]}
+{"text": "Позавчора плавав 1500 м, вчора відпочивав", "now": "2026-11-14T09:30", "events": [{"kind": "activity", "day": "2026-11-12", "distance_km": 1.5}]}
+{"text": "Сьогодні вже 2 кави і енергетик", "now": "2026-11-14T09:30", "events": [{"kind": "drink", "day": "2026-11-14"}]}
+{"text": "Головний біль з самого ранку", "now": "2026-11-14T09:30", "events": [{"kind": "symptom", "day": "2026-11-14"}]}
+{"text": "I'm anxious about the race next week, slept 6h", "now": "2026-11-14T09:30", "events": [{"kind": "mood", "day": "2026-11-14"}, {"kind": "sleep", "day": "2026-11-14", "sleep_hours": 6}]}
+{"text": "вчора ввечері з'їв піцу і випив колу", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-13"}, {"kind": "drink", "day": "2026-11-13"}]}
+{"text": "Плечі болять після басейну, 3/10", "now": "2026-11-14T09:30", "events": [{"kind": "pain", "day": "2026-11-14", "pain_score": 3}]}
+{"text": "Дякую!", "now": "2026-11-14T09:30", "events": []}
+{"text": "Today: lunch was a chicken caesar salad, dinner sushi 16 pieces", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-14"}, {"kind": "meal", "day": "2026-11-14"}]}
+{"text": "Вчора 2 години на велосипеді, середній пульс 135", "now": "2026-11-14T09:30", "events": [{"kind": "activity", "day": "2026-11-13", "duration_min": 120}]}
+{"text": "Спав 4 години бо дитина не спала, дуже втомлений", "now": "2026-11-14T09:30", "events": [{"kind": "sleep", "day": "2026-11-14", "sleep_hours": 4}, {"kind": "mood", "day": "2026-11-14"}]}
+{"text": "Garmin Coach: сьогодні відпочинок", "now": "2026-11-14T09:30", "events": [{"kind": "planned_workout", "day": "2026-11-14"}]}
+{"text": "Ate 2 bananas and a gel during the long run yesterday, 25 km", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-13"}, {"kind": "activity", "day": "2026-11-13", "distance_km": 25}]}
+{"text": "Нудить після вчорашньої шаурми", "now": "2026-11-14T09:30", "events": [{"kind": "symptom", "day": "2026-11-14"}]}
+{"text": "Випив 3 келихи вина позавчора, вчора все ок", "now": "2026-11-14T09:30", "events": [{"kind": "alcohol", "day": "2026-11-12"}]}

@@ -1,0 +1,114 @@
+{
+ "component": "c1_router",
+ "metrics": {
+  "n": 60,
+  "macro_f1": 0.927,
+  "exact_match": 0.883,
+  "f1_log": 0.955,
+  "f1_question": 0.929,
+  "f1_plan": 0.897,
+  "f1_profile": 0.929,
+  "f1_chitchat": 0.923
+ },
+ "n_failures": 7,
+ "failures": [
+  {
+   "text": "Коліно болить з понеділка, можна завтра бігти?",
+   "gold": [
+    "log",
+    "plan"
+   ],
+   "pred": [
+    "log",
+    "plan",
+    "question"
+   ]
+  },
+  {
+   "text": "Мої кросівки Nike Pegasus 41, пробіг 600 км",
+   "gold": [
+    "profile"
+   ],
+   "pred": [
+    "log",
+    "profile"
+   ]
+  },
+  {
+   "text": "так",
+   "gold": [
+    "profile"
+   ],
+   "pred": [
+    "chitchat"
+   ]
+  },
+  {
+   "text": "У мене астма, користуюсь інгалятором перед бігом",
+   "gold": [
+    "profile"
+   ],
+   "pred": [
+    "log",
+    "profile"
+   ]
+  },
+  {
+   "text": "Випив 2 пива, з'їв піцу. Чи варто завтра робити темпову?",
+   "gold": [
+    "log",
+    "plan"
+   ],
+   "pred": [
+    "log",
+    "question"
+   ]
+  },
+  {
+   "text": "Skip it",
+   "gold": [
+    "profile"
+   ],
+   "pred": [
+    "plan"
+   ]
+  },
+  {
+   "text": "Should I race this weekend with a mild cold?",
+   "gold": [
+    "plan",
+    "question"
+   ],
+   "pred": [
+    "question"
+   ]
+  }
+ ],
+ "per_intent": {
+  "log": {
+   "precision": 0.913,
+   "recall": 1.0,
+   "f1": 0.955
+  },
+  "question": {
+   "precision": 0.867,
+   "recall": 1.0,
+   "f1": 0.929
+  },
+  "plan": {
+   "precision": 0.929,
+   "recall": 0.867,
+   "f1": 0.897
+  },
+  "profile": {
+   "precision": 1.0,
+   "recall": 0.867,
+   "f1": 0.929
+  },
+  "chitchat": {
+   "precision": 0.857,
+   "recall": 1.0,
+   "f1": 0.923
+  }
+ }
+}

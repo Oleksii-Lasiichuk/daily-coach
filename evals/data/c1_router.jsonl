@@ -1,0 +1,60 @@
+{"text": "Вчора випив 3 келихи вина", "intents": ["log"]}
+{"text": "Що мені сьогодні робити?", "intents": ["plan"]}
+{"text": "Скільки вуглеводів їсти перед довгою пробіжкою?", "intents": ["question"]}
+{"text": "Привіт!", "intents": ["chitchat"]}
+{"text": "Дякую, зрозумів", "intents": ["chitchat"]}
+{"text": "Спав 5 годин, що краще сьогодні: біг чи басейн?", "intents": ["log", "plan"]}
+{"text": "My goal is a sub-1:45 half marathon in April", "intents": ["profile"]}
+{"text": "Garmin wants 8x400 today", "intents": ["log"]}
+{"text": "Garmin хоче сьогодні 6x800, але я вчора пив, зроби легше", "intents": ["log", "plan"]}
+{"text": "Ate oatmeal with banana and two eggs", "intents": ["log"]}
+{"text": "What is my zone 2 heart rate?", "intents": ["question"]}
+{"text": "Я бігаю 3 рази на тиждень і плаваю раз", "intents": ["profile"]}
+{"text": "Коліно болить з понеділка, можна завтра бігти?", "intents": ["log", "plan"]}
+{"text": "Let's set up my profile", "intents": ["profile"]}
+{"text": "Мої кросівки Nike Pegasus 41, пробіг 600 км", "intents": ["profile"]}
+{"text": "How did I sleep this week?", "intents": ["question"]}
+{"text": "Replace today's run with a swim please", "intents": ["plan"]}
+{"text": "Зранку випив дві кави і з'їв круасан", "intents": ["log"]}
+{"text": "Чому HRV падає після алкоголю?", "intents": ["question"]}
+{"text": "Сьогодні пробіг 10 км за 55 хв, ноги ок", "intents": ["log"]}
+{"text": "Can I do intervals tomorrow?", "intents": ["plan"]}
+{"text": "п'ю антибіотики до п'ятниці, лікар сказав без навантажень", "intents": ["log", "profile"]}
+{"text": "Ріст 182, вага 75", "intents": ["profile"]}
+{"text": "так", "intents": ["profile"]}
+{"text": "ок, давай", "intents": ["chitchat"]}
+{"text": "Feeling stressed, slept badly, and I don't know if I should train", "intents": ["log", "plan"]}
+{"text": "Який у мене пороговий темп?", "intents": ["question"]}
+{"text": "Перенеси тренування на завтра", "intents": ["plan"]}
+{"text": "I have Lviv Half Marathon on 12 April, A race", "intents": ["profile"]}
+{"text": "Вечеря: борщ, дві скибки хліба, сало", "intents": ["log"]}
+{"text": "Is creatine useful for runners?", "intents": ["question"]}
+{"text": "У мене астма, користуюсь інгалятором перед бігом", "intents": ["profile"]}
+{"text": "Сьогодні настрій 2 з 5, все дратує", "intents": ["log"]}
+{"text": "Make tomorrow's workout harder, I feel great", "intents": ["plan"]}
+{"text": "Thanks, that's helpful!", "intents": ["chitchat"]}
+{"text": "Я можу тренуватись пн, ср, пт зранку і в суботу довго", "intents": ["profile"]}
+{"text": "Випив 2 пива, з'їв піцу. Чи варто завтра робити темпову?", "intents": ["log", "plan"]}
+{"text": "Скільки я з'їв калорій сьогодні?", "intents": ["question"]}
+{"text": "Нежить і болить горло", "intents": ["log"]}
+{"text": "Що таке TSB?", "intents": ["question"]}
+{"text": "Morning: 7.5h sleep, HRV feels fine, legs fresh. What's the plan?", "intents": ["log", "plan"]}
+{"text": "Хочу почати кататися на велосипеді через 5 місяців", "intents": ["profile"]}
+{"text": "Добрий вечір, як справи?", "intents": ["chitchat"]}
+{"text": "Garmin Coach today: easy 40 min. Should I keep it?", "intents": ["log", "plan"]}
+{"text": "Вчора зіграв 1.5 години в бадмінтон", "intents": ["log"]}
+{"text": "Чому ти запропонував плавання замість бігу?", "intents": ["question"]}
+{"text": "Skip it", "intents": ["profile"]}
+{"text": "Сплю зазвичай 7 годин, хочу 8", "intents": ["profile"]}
+{"text": "Прийняв ібупрофен 400 мг від коліна", "intents": ["log"]}
+{"text": "Can you make a plan for this week?", "intents": ["plan"]}
+{"text": "Ate a salad. Also, how much protein do I need per day?", "intents": ["log", "question"]}
+{"text": "Я вегетаріанець", "intents": ["profile"]}
+{"text": "Що з'їсти після тренування?", "intents": ["question"]}
+{"text": "Сьогодні відпочиваю, ноги вбиті після вчорашнього", "intents": ["log"]}
+{"text": "Okay", "intents": ["chitchat"]}
+{"text": "Поміняй інтервали на легкий біг", "intents": ["plan"]}
+{"text": "Last night 6 beers at a wedding, slept 4h", "intents": ["log"]}
+{"text": "Should I race this weekend with a mild cold?", "intents": ["question", "plan"]}
+{"text": "Мій максимальний пульс 204", "intents": ["profile"]}
+{"text": "Чи можна пити каву перед басейном?", "intents": ["question"]}
