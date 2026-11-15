@@ -1,0 +1,138 @@
+# Daily Coach
+
+A personal coach you talk to in Ukrainian or English. You tell it how your day went (sleep,
+food, drinks, pain, mood, what your plan says), and it:
+
+- logs that as dated, structured events, with energy, macros and 16 nutrients for meals;
+- reads your sleep, HRV, resting HR and training load from intervals.icu (synced hourly);
+- decides today's **day type** (Recovery / Easy / Normal / Push) and shows every reason;
+- proposes an adapted workout that, after you press **Send to watch**, goes to your
+  intervals.icu calendar and from there to your Garmin watch. It works with or without a plan:
+  Garmin Coach (screenshot), a plan on your intervals.icu calendar, or none;
+- reads your own `.txt` / `.md` / `.json` exports (e.g. ChatGPT history), proposes facts with the
+  quote they came from, and looks things up in them when it answers or plans;
+- finds patterns in your own log (computed in code), tracks pain per body part, habits, shoe
+  km and the countdown to your race.
+
+**Flow:** sign in with Google → a 5-step setup (connect intervals.icu · about you · goals ·
+your files · a few questions) → **Today** (chat with quick log, the day card with "Why?", the
+session with "Send to watch", habits, fuel). The interface is in English or Ukrainian.
+
+UCU NLP course, Assignment 1. The report is in [`docs/report/`](docs/report/), the plans in
+[`docs/plans/`](docs/plans/), and the agent setup in [`AGENTS.md`](AGENTS.md) and
+[`.claude/skills/`](.claude/skills/).
+
+## How it works
+
+The coach is an **agent**: each message (text, voice or photo) goes to one tool-using model
+loop (Gemini 3.8 Flash; "Think harder" = Claude Sonnet 5.5). It acts for you, and every action
+appears under the reply with **Undo**. Only sending a workout to the watch needs your OK.
+
+```
+message / voice / photo ─┬─ C7 safety gate (parallel)
+                         └─ Coach agent (≤ 6 tool steps)
+                              log_entries → C2 extractor → C3 nutrition (meals and drinks)
+                              save_item / end_item → knowledge items (goals, races, gear, health…)
+                              set_reminder → push notifications · update_profile
+                              set_planned_workouts ← plan screenshot (vision) or chat
+                              assess_day → C5 · plan_sessions → C6 + validator → card → Apply
+                              nutrition_summary · health_summary · search_memory → C4 files
+```
+
+| | Component | Model |
+|---|---|---|
+| C0 | Setup interviewer (step 5 of the first-run window) | Gemini 3.8 Flash |
+| C1 | Tool routing (the coach's choice of tools) | Gemini 3.8 Flash |
+| C2 | Log extractor (events, dates) | Gemini 3.1 Flash-Lite |
+| C3 | Nutrition: energy, macros, sugar, fibre, salt, caffeine, alcohol, iron, calcium, potassium, magnesium, vitamins C and D | Gemini 3.1 Flash-Lite |
+| C4 | Sources: facts from your files + search (pgvector) | Flash-Lite + gemini-embedding-2 |
+| C5 | Day type | Gemini 3.8 Flash |
+| C6 | Workout planner + code validator | Gemini 3.8 Flash |
+| C7 | Safety gate | Gemini 3.1 Flash-Lite |
+| C8 | The coach's answers | Gemini 3.8 Flash |
+
+**Pages** (each kind of item has one home where you edit it):
+
+| Page | What it shows |
+|---|---|
+| Today | Chat with quick log (water, coffee, tea, beer) and a focus menu (Auto, Training, Nutrition, Health, Think harder); side panel: day type with reasons, labelled watch numbers, race countdown, session with fuel advice, habits, fuel, insight |
+| Training | The week: your plan, coach suggestions, done; goals, races and gear (editable, shoe km) |
+| Nutrition | Energy and macros against targets, what stands out, nutrients (vitamins folded), foods you eat most; fix any meal (×½, ×2, kcal, text) |
+| Health | A year of HRV, resting HR, sleep, weight (with goal), fitness and fatigue, each explained; pain trend; patterns from your log; conditions, medication and lab results (editable) |
+| Journal | The week in numbers vs last week; calendar; each day can be assessed, corrected and added to |
+| Memory | Instructions to the coach, food and training preferences, life notes, your files and the review inbox |
+| Settings | You, time zone, city (weather), language, your plan, all reminders, intervals.icu; Advanced: models, own key, cost |
+
+Light and dark themes.
+
+**Reminders:** morning, meal, evening and medication reminders arrive as web push notifications
+(morning and evening ones have one-tap answers). A Cloud Scheduler job runs every 15 minutes: it
+syncs intervals.icu hourly, sends reminders, a Sunday week summary and a nightly insight.
+
+## Run locally
+
+Requirements: [uv](https://docs.astral.sh/uv/), a Neon (or any Postgres) database, an OpenRouter
+key, a Langfuse project and a Firebase project with Google sign-in. Step-by-step account setup:
+[`docs/setup.md`](docs/setup.md).
+
+```bash
+cp .env.example .env
+```
+
+Fill in `.env`, then:
+
+```bash
+uv sync
+```
+
+```bash
+uv run python -m app.migrate
+```
+
+```bash
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+Open http://localhost:8000 and sign in with an email listed in `ALLOWED_EMAILS`. The first-run
+window asks you to connect intervals.icu (API key + athlete ID).
+
+## Tests and evals
+
+```bash
+uv run pytest
+```
+
+The tests check that every route needs sign-in, that one user can never read or change
+another's data, the allowlist, the Origin (CSRF) check, encryption, the budget cap, the
+intervals.icu client, the workout validator, patterns, meal edits, the language switch and the
+agent's limits against prompt injection.
+
+```bash
+uv run python -m evals.run_all
+```
+
+This runs every component eval and prints a summary. Results go to `evals/results/`; the
+discussion is in [`docs/report/05-evaluation.md`](docs/report/05-evaluation.md).
+
+## Deploy
+
+```bash
+./scripts/migrate-prod
+```
+
+```bash
+./scripts/deploy
+```
+
+`scripts/gc` keeps this project's gcloud config apart from any other (work) account. Production
+secrets live in Google Secret Manager (`scripts/set-secret NAME`).
+
+## Data and licences
+
+- No personal data is in this repository. The eval sets in `evals/data/` are hand-written
+  synthetic cases.
+- `evals/data/c4_export.md` is a synthetic ChatGPT-style export with 24 planted facts
+  (`evals/make_c4_export.py`).
+- `evals/data/c3_nutrition.jsonl` contains 50 meals from **NutriBench v2**
+  (dongx1997/NutriBench, CC BY-NC-SA 4.0), used for non-commercial evaluation, plus 10 Ukrainian
+  meals with reference values from standard food tables.
