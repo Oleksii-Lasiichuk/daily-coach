@@ -37,7 +37,9 @@ def main():
     worst = sorted(rows, key=lambda r: -abs(r["pred"]["kcal"] - r["gold"]["kcal"]))[:8]
     failures += [{"text": r["text"], "gold_kcal": r["gold"]["kcal"], "pred_kcal": r["pred"]["kcal"]}
                  for r in worst]
-    return save("c3_nutrition", metrics, failures)
+    cases_out = [{"source": r["source"], "gold_kcal": r["gold"]["kcal"],
+                  "pred_kcal": r["pred"]["kcal"]} for r in rows]  # for the report's scatter plot
+    return save("c3_nutrition", metrics, failures, {"cases": cases_out})
 
 
 if __name__ == "__main__":

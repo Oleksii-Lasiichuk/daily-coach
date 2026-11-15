@@ -3,15 +3,15 @@
  "metrics": {
   "n": 60,
   "errors": 1,
-  "nb_mae_kcal": 68.8,
+  "nb_mae_kcal": 71.5,
   "nb_baseline_mae_kcal": 190.8,
-  "nb_mae_carbs_g": 11.4,
+  "nb_mae_carbs_g": 11.9,
   "nb_baseline_mae_carbs_g": 28.7,
   "nb_mae_protein_g": 2.7,
   "nb_baseline_mae_protein_g": 8.5,
   "nb_mae_fat_g": 4.2,
   "nb_baseline_mae_fat_g": 9.4,
-  "nb_within_20pct_kcal": 0.755,
+  "nb_within_20pct_kcal": 0.735,
   "ua_mae_kcal": 34.8,
   "ua_baseline_mae_kcal": 111.9,
   "ua_mae_carbs_g": 3.2,
@@ -41,7 +41,7 @@
   {
    "text": "For dinner, I'm having a 12.5g dry biscuit, 51.6g of fish balls, and 173.7g of potato roast with chicken and vegetable oil. I also have 20g of sunflower seeds, 150g of white bread, and a bit of white sugar, about 10g.",
    "gold_kcal": 1137.0,
-   "pred_kcal": 930
+   "pred_kcal": 928
   },
   {
    "text": "I’m starting my day with a 166-gram burrito containing meat and beans, plus a 496-gram fruit juice drink.",
@@ -56,7 +56,7 @@
   {
    "text": "For dinner, I had a small piece of thin crust pizza topped with meat and fruit, along with a cup of tap water.",
    "gold_kcal": 197.34,
-   "pred_kcal": 380
+   "pred_kcal": 385
   },
   {
    "text": "I'm having a 496-gram fruit juice drink and a 370-gram serving of noodle soup for lunch.",
@@ -67,6 +67,303 @@
    "text": "Гречка 250 г з курячою грудкою 150 г",
    "gold_kcal": 477.5,
    "pred_kcal": 616
+  }
+ ],
+ "cases": [
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 299.0,
+   "pred_kcal": 289
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 140.97,
+   "pred_kcal": 235
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 457.3,
+   "pred_kcal": 420
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 12.0,
+   "pred_kcal": 8
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 962.24,
+   "pred_kcal": 1088
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 308.1,
+   "pred_kcal": 273
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 491.52,
+   "pred_kcal": 438
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 402.08,
+   "pred_kcal": 390
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 150.0,
+   "pred_kcal": 210
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 379.32,
+   "pred_kcal": 390
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 121.36,
+   "pred_kcal": 150
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 679.92,
+   "pred_kcal": 720
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 286.2,
+   "pred_kcal": 225
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 197.34,
+   "pred_kcal": 385
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 404.7000000000001,
+   "pred_kcal": 330
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 296.88,
+   "pred_kcal": 325
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 188.45,
+   "pred_kcal": 225
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 604.34,
+   "pred_kcal": 630
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 266.2,
+   "pred_kcal": 225
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 526.14,
+   "pred_kcal": 460
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 441.04,
+   "pred_kcal": 415
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 297.5,
+   "pred_kcal": 463
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 714.42,
+   "pred_kcal": 735
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 432.1,
+   "pred_kcal": 435
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 59.7,
+   "pred_kcal": 66
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 833.0,
+   "pred_kcal": 930
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 232.38,
+   "pred_kcal": 237
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 408.16,
+   "pred_kcal": 613
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 341.51,
+   "pred_kcal": 325
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 0.0,
+   "pred_kcal": 203
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 659.0,
+   "pred_kcal": 596
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 635.0,
+   "pred_kcal": 518
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 449.4,
+   "pred_kcal": 886
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 310.0,
+   "pred_kcal": 289
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 1137.0,
+   "pred_kcal": 928
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 497.0,
+   "pred_kcal": 435
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 185.0,
+   "pred_kcal": 184
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 522.0,
+   "pred_kcal": 495
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 486.0,
+   "pred_kcal": 602
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 435.0,
+   "pred_kcal": 435
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 408.0,
+   "pred_kcal": 363
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 290.5,
+   "pred_kcal": 300
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 101.3,
+   "pred_kcal": 104
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 58.0,
+   "pred_kcal": 83
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 289.0,
+   "pred_kcal": 317
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 679.0,
+   "pred_kcal": 211
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 630.0,
+   "pred_kcal": 640
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 704.0,
+   "pred_kcal": 786
+  },
+  {
+   "source": "nutribench-v2",
+   "gold_kcal": 43.0,
+   "pred_kcal": 42
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 326.9,
+   "pred_kcal": 335
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 477.5,
+   "pred_kcal": 616
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 682.4,
+   "pred_kcal": 604
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 536.6,
+   "pred_kcal": 516
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 319.8,
+   "pred_kcal": 311
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 538.0,
+   "pred_kcal": 530
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 248.2,
+   "pred_kcal": 246
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 343.0,
+   "pred_kcal": 328
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 333.2,
+   "pred_kcal": 302
+  },
+  {
+   "source": "ua-reference-table",
+   "gold_kcal": 455.7,
+   "pred_kcal": 493
   }
  ]
 }
