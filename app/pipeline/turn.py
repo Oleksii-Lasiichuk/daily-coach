@@ -78,6 +78,7 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
         "logs": ctx["logs_yesterday_today"],
         "facts": ctx["facts"],
         "past_days": ctx["past_days"],
+        "write_in": "Ukrainian" if store.user_lang(user.id) == "uk" else "English",
     }
     files = sources.excerpts(user.id, "injuries, illness, medication, health problems. " + request)
     if files:
@@ -116,7 +117,7 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
         "profile": {k: v for k, v in profile.items() if k not in ("name", "location")},
         "facts": ctx["facts"],
         "past_days": ctx["past_days"],
-        "red_flag_today": red_flag, "request": request,
+        "red_flag_today": red_flag, "request": request, "write_in": inputs["write_in"],
     }
     if files:
         plan_inputs["from_user_files"] = files

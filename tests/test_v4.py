@@ -9,15 +9,30 @@ from tests.conftest import login
 
 def test_patterns_find_alcohol_effect_only_with_enough_nights():
     days = {date(2026, 1, 1) + timedelta(days=i): ({"alcohol"} if i % 4 == 0 else set())
-            for i in range(28)}
-    wellness = {d + timedelta(days=1): {"hrv": 50 if "alcohol" in t else 60, "resting_hr": 50,
-                                        "sleep_h": 7} for d, t in days.items()}
+            for i in range(40)}
+    noise = [((i * 7) % 5) - 2 for i in range(40)]  # deterministic day-to-day spread, -2..2
+    wellness = {d + timedelta(days=1): {"hrv": (50 if "alcohol" in t else 60) + noise[i],
+                                        "resting_hr": 50 + noise[i], "sleep_h": 7}
+                for i, (d, t) in enumerate(days.items())}
     found = patterns.compare(days, wellness)
     hrv = [p for p in found if p["tag"] == "alcohol" and p["metric"] == "hrv"]
-    assert hrv and hrv[0]["worse"] and hrv[0]["pct"] == 17
+    assert hrv and hrv[0]["worse"] and hrv[0]["n"] == 10
     assert not [p for p in found if p["metric"] == "resting_hr"]  # no difference, no pattern
-    few = dict(list(days.items())[:6])  # 2 alcohol nights: below the minimum
+    few = dict(list(days.items())[:12])  # 3 alcohol nights: below the minimum
     assert not patterns.compare(few, wellness)
+
+
+def test_patterns_stay_quiet_on_random_data():
+    import random
+    rng = random.Random(7)
+    hits = 0
+    for _ in range(50):
+        days = {date(2026, 1, 1) + timedelta(days=i): ({"late_meal"} if rng.random() < 0.15
+                                                      else set()) for i in range(90)}
+        wellness = {d + timedelta(days=1): {"hrv": rng.gauss(60, 8), "resting_hr": rng.gauss(50, 3),
+                                            "sleep_h": rng.gauss(7, 0.8)} for d in days}
+        hits += bool(patterns.compare(days, wellness))
+    assert hits <= 6  # about 6% expected; the old rule (3 nights, 5%) fired on 20 of these 50
 
 
 def test_scale_and_quick_data():

@@ -17,9 +17,11 @@ illness and pain). Missing data is not a negative signal; lower your confidence 
 
 Give 2–5 reasons. Each reason has `text` (one short sentence) and `evidence` (a short chip label with
 the number, e.g. "Sleep 3.6 h (avg 5.9)", "HRV 77 vs 72", "4 beers", "Left knee pain").
-`summary`: one or two short plain sentences to the athlete in English, with the key numbers and
+`summary`: one or two short plain sentences to the athlete in the `write_in` language (English if missing), with the key numbers and
 what it means for training today, e.g. "You slept 6 h, under your usual 7.2, and HRV is normal.
 Keep it easy, zone 1–2." No greeting, no exclamation marks.
+Reason `text` is in the `write_in` language too; `evidence` stays short (numbers, units).
+
 Return JSON: {"day_type", "confidence" 0–1, "summary", "reasons": [...]}.
 
 `from_user_files` (if present) are excerpts from the athlete's own uploaded notes and old chats.

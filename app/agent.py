@@ -105,7 +105,8 @@ def context_block(user: store.User, now: datetime) -> dict:
         "now": f"{now:%Y-%m-%d %A %H:%M} ({user.time_zone})",
         "profile": profile, "zones": zones, "sports": sports,
         "items": [{"id": f["id"], "category": f["category"], "text": f["text"],
-                   "term": f["term"], "until": str(f["until"]) if f["until"] else None}
+                   "term": f["term"], "until": str(f["until"]) if f["until"] else None,
+                   **({"details": f["details"]} if f.get("details") else {})}
                   for f in items],
         "today_logs": [{"kind": lg["kind"], **{k: v for k, v in lg["data"].items()
                                               if k in ("description", "sleep_hours",
@@ -250,7 +251,8 @@ class Turn:
                 self.proposals.append(res.proposal_id)
             out.append({"day": str(d), **done.get("workout", {})})
         if self.proposals:
-            self.act("plan_sessions", f"Proposed {len(self.proposals)} session(s) — review on the "
+            n = len(self.proposals)
+            self.act("plan_sessions", f"Proposed {n} session{'s' if n > 1 else ''}. Review the "
                      "card", {"op": "dismiss_proposals", "ids": self.proposals})
         return out
 

@@ -78,7 +78,7 @@
 {% if data.meta %}
 <link rel="stylesheet" href="/static/css/uplot.min.css">
 <script src="/static/js/uplot.min.js"></script>
-<script src="/static/js/charts.js?v=1"></script>
+<script src="/static/js/charts.js?v=2"></script>
 <script>initCharts({ data: {{ data | tojson }}, goalW: {{ goal_w | tojson }}, lang: {{ lang | tojson }}, labels: {{ {"open": _("Open this day")} | tojson }}, range: 90 });</script>
 {% endif %}
 {% endblock %}

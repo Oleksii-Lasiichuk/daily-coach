@@ -36,7 +36,9 @@
           <div><label for="d">{{ _("How you eat") }}</label><select id="d" name="diet">{% for d in ["Omnivore", "Vegetarian", "Vegan", "Pescatarian", "Other"] %}<option value="{{ d }}" {{ "selected" if prof.diet == d }}>{{ _(d) }}</option>{% endfor %}</select></div>
           <div><label for="st">{{ _("Sleep target, h") }}</label><input id="st" name="sleep_target_h" value="{{ prof.sleep_target_h or '' }}" placeholder="8"></div>
         </div>
-        <input type="hidden" name="sex" value="{{ prof.sex or '' }}">
+        <div><label for="sx">{{ _("Sex (for calorie targets)") }}</label><select id="sx" name="sex">
+          {% for v, lab in [("", "Prefer not to say"), ("M", "Male"), ("F", "Female")] %}<option value="{{ v }}" {{ "selected" if (prof.sex or "")[:1].upper() == v }}>{{ _(lab) }}</option>{% endfor %}</select>
+          <p class="hint">{{ _("Resting energy differs by about 160 kcal a day. If you skip it, targets use the midpoint.") }}</p></div>
         <div class="row between" style="margin-top:8px"><button class="link small" formaction="/welcome/back">{{ _("Back") }}</button><button class="btn ink">{{ _("Continue") }}</button></div>
       </form>
     {% elif step == 3 %}
@@ -46,17 +48,17 @@
         <div><label for="mg">{{ _("Main goal") }}</label><input id="mg" name="main_goal" placeholder="{{ _('First Ironman in 2028; half marathon under 1:45 this spring') }}"></div>
         <div class="card" style="background:var(--sunk);border:0">
           <h2>{{ _("Next race") }}</h2>
-          <div class="grid3" style="grid-template-columns:2fr 1fr;gap:10px;margin-top:8px">
+          <div class="grid3 fgrid" style="grid-template-columns:2fr 1fr;gap:10px;margin-top:8px">
             <div><label for="rn">{{ _("Name") }}</label><input id="rn" name="race_name" placeholder="{{ _('Lviv Half Marathon') }}"></div>
             <div><label for="rd">{{ _("Date") }}</label><input id="rd" name="race_date" type="date"></div>
           </div>
-          <div class="grid3" style="grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+          <div class="grid3 fgrid" style="grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
             <div><label for="dist">{{ _("Distance") }}</label><select id="dist" name="race_distance">{% for d in distances %}<option value="{{ d }}">{{ _(d) }}</option>{% endfor %}</select></div>
-            <div><label for="rg">{{ _("Goal") }}</label><select id="rg" name="race_goal"><option value="finish">{{ _("Just finish") }}</option><option value="time">{{ _("Finish time") }}</option><option value="pace">{{ _("Pace") }}</option></select></div>
-            <div><label for="rt">{{ _("Target") }}</label><input id="rt" name="race_target" placeholder="1:45:00 / 4:58/km"></div>
+            <div><label for="rg">{{ _("Goal") }}</label><select id="rg" name="race_goal" onchange="const t=document.getElementById('rt');t.parentNode.hidden=this.value==='finish';t.placeholder=this.value==='pace'?'4:58/km':'1:45:00'"><option value="finish">{{ _("Just finish") }}</option><option value="time">{{ _("Finish time") }}</option><option value="pace">{{ _("Pace") }}</option></select></div>
+            <div hidden><label for="rt">{{ _("Target") }}</label><input id="rt" name="race_target" placeholder="1:45:00"></div>
           </div>
         </div>
-        <div class="grid3" style="grid-template-columns:2fr 1fr;gap:10px">
+        <div class="grid3 fgrid" style="grid-template-columns:2fr 1fr;gap:10px">
           <div><label for="bg">{{ _("Body goal") }}</label><select id="bg" name="body_goal"><option value="">{{ _("None") }}</option><option value="lose">{{ _("Lose weight") }}</option><option value="gain">{{ _("Gain weight / muscle") }}</option><option value="maintain">{{ _("Keep my weight") }}</option></select></div>
           <div><label for="bt">{{ _("Target, kg") }}</label><input id="bt" name="body_target" inputmode="decimal"></div>
         </div>

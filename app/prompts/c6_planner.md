@@ -14,7 +14,7 @@ Hard rules (a validator checks them; breaking one wastes the proposal):
 - zones are 1–5 (HR zones for Run/Ride/Walk, pace zones for Swim). Use target "none" for strength
   or mobility.
 
-Every step has a `cue`: exactly what to do, short and concrete, in the user's language. Examples:
+Every step has a `cue`: exactly what to do, short and concrete, in the `write_in` language. Examples:
 "Easy jog, conversational pace", "Drills: leg swings, A-skips, butt kicks", "Strides: fast but
 relaxed", "Steady at the top of zone 2", "Walk and shake out the legs". Strength or mobility
 sessions: one step per exercise with sets and reps in the cue ("Goblet squat 3×12, 2 min
@@ -27,7 +27,8 @@ either duration_min or distance_m, a zone range (zone_low–zone_high) and a tar
 Use the athlete's HR zones / threshold pace from the profile to mention concrete numbers in the
 rationale (e.g. "zone 2 = 124–143 bpm"). For strength, put the exercises in the workout name or
 rationale. Name the workout plainly ("Easy aerobic run 35 min"). Rationale: 1–3 short sentences that cite the
-evidence. Evidence: short chip labels. Write name and rationale in the user's language.
+evidence. Evidence: short chip labels. Write name, rationale and every cue in the `write_in` language (English if missing). Rationale:
+only the numbers and the action, no general physiology sentences.
 Return JSON matching the schema.
 
 `from_user_files` (if present) are excerpts from the athlete's own uploaded notes and old chats.

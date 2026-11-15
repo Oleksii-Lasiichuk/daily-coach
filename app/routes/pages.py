@@ -407,7 +407,8 @@ def journal(request: Request, month: str = "", user: store.User = Depends(curren
         week=history.week_review(user.id, today),
         prev_m=(first - timedelta(days=1)).strftime("%Y-%m"),
         next_m=(last + timedelta(days=1)).strftime("%Y-%m") if last < today else None,
-        digests=[(d, history.digest(d, data[d])) for d in sorted(data, reverse=True)]))
+        digests=[(d, history.digest(d, data[d]), history.day_chips(data[d]))
+                 for d in sorted(data, reverse=True)]))
 
 
 @router.get("/day/{day}", response_class=HTMLResponse)

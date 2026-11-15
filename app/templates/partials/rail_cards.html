@@ -1,7 +1,9 @@
 {% from "_icons.html" import icon with context %}
+{% macro delta(v, usual, higher_better) %}{% if v is not none and usual %}{% set pct = ((v - usual) / usual * 100) | round | int %}{% if pct | abs >= 5 %}{% set bad = (pct < 0) == higher_better %}<b class="delta {{ 'bad' if bad and pct | abs >= 10 else ('good' if not bad else '') }}">{{ "▲" if pct > 0 else "▼" }}{{ pct | abs }}%</b>{% endif %}{% endif %}{% endmacro %}
 <div class="card">
   <div class="row between"><span class="daylink"><a href="/day/{{ (day | prevday) }}" aria-label="{{ _('Previous day') }}">{{ icon("chevron-left") }}</a><a href="/day/{{ day.isoformat() }}" class="label" style="width:auto;padding:0 4px;color:var(--muted)" title="{{ _('Open the full day') }}">{{ day | fdate("day") }}</a></span>
-    <button class="btn sm ghost" hx-post="/today/assess" hx-swap="none" title="{{ _('Reads last night\'s sleep, HRV and resting HR, and what you logged today; decides the day type and suggests a session.') }}">{{ icon("refresh") }}{{ _("Check again") if assessment else _("Check my day") }}</button></div>
+    <button class="btn sm ghost" hx-post="/today/assess" hx-swap="none" hx-indicator="closest .card" hx-on::before-request="startTimer(this)" title="{{ _('Reads last night\'s sleep, HRV and resting HR, and what you logged today; decides the day type and suggests a session.') }}">{{ icon("refresh") }}{{ _("Check again") if assessment else _("Check my day") }}</button></div>
+  <p class="checking small muted"><span class="dots"><i></i><i></i><i></i></span><span>{{ _("Reading your watch data and logs") }} · <span class="secs">0</span> {{ _("s") }}</span><span class="tiny faint">{{ _("usually 10–20 s") }}</span></p>
   {% if assessment %}
     <p class="daytype {{ assessment.day_type }}" style="margin-top:2px">{{ _(DAY_NAMES[assessment.day_type] ~ " day") }}</p>
     <p class="small" style="color:var(--ink-2);margin-top:2px">{{ assessment.inputs.summary or (assessment.reasons[0].text if assessment.reasons else "") }}</p>
@@ -17,9 +19,9 @@
   {% endif %}
   {% if snapshot %}{% set t, b = snapshot.today, snapshot.baseline_7d %}
   <div class="tiles">
-    <div class="metric" title="{{ _('Time asleep last night. “usual” is your average of the 7 nights before.') }}"><span class="k">{{ _("Sleep") }}</span><span class="v">{{ t.sleep_h if t.sleep_h is not none else "–" }}<small> {{ _("h") }}</small></span><span class="u">{{ _("usual") }} {{ b.sleep_h or "–" }}</span></div>
-    <div class="metric" title="{{ _('Heart rate variability overnight, ms. Higher than usual = recovered.') }}"><span class="k">HRV</span><span class="v">{{ t.hrv | int if t.hrv else "–" }}<small> {{ _("ms") }}</small></span><span class="u">{{ _("usual") }} {{ b.hrv | int if b.hrv else "–" }}</span></div>
-    <div class="metric" title="{{ _('Resting heart rate, bpm. Lower than usual = recovered.') }}"><span class="k">{{ _("Resting HR") }}</span><span class="v">{{ t.resting_hr or "–" }}<small> {{ _("bpm") }}</small></span><span class="u">{{ _("usual") }} {{ b.resting_hr | int if b.resting_hr else "–" }}</span></div>
+    <div class="metric" title="{{ _('Time asleep last night. “usual” is your average of the 7 nights before.') }}"><span class="k">{{ _("Sleep") }}</span><span class="v">{{ t.sleep_h if t.sleep_h is not none else "–" }}<small> {{ _("h") }}</small></span><span class="u">{{ _("usual") }} {{ b.sleep_h or "–" }}{{ delta(t.sleep_h, b.sleep_h, True) }}</span></div>
+    <div class="metric" title="{{ _('Heart rate variability overnight, ms. Higher than usual = recovered.') }}"><span class="k">HRV</span><span class="v">{{ t.hrv | int if t.hrv else "–" }}<small> {{ _("ms") }}</small></span><span class="u">{{ _("usual") }} {{ b.hrv | int if b.hrv else "–" }}{{ delta(t.hrv, b.hrv, True) }}</span></div>
+    <div class="metric" title="{{ _('Resting heart rate, bpm. Lower than usual = recovered.') }}"><span class="k">{{ _("Resting HR") }}</span><span class="v">{{ t.resting_hr or "–" }}<small> {{ _("bpm") }}</small></span><span class="u">{{ _("usual") }} {{ b.resting_hr | int if b.resting_hr else "–" }}{{ delta(t.resting_hr, b.resting_hr, False) }}</span></div>
     <div class="metric" title="{{ _('Form = fitness − fatigue (intervals.icu). Below 0: tired from training.') }}"><span class="k">{{ _("Form") }}</span><span class="v">{{ t.form if t.form is not none else "–" }}</span>
       <span class="u">{% if t.form is none %}–{% elif t.form < -30 %}{{ _("overreaching") }}{% elif t.form < -10 %}{{ _("building") }}{% elif t.form <= 5 %}{{ _("balanced") }}{% else %}{{ _("fresh") }}{% endif %}</span></div>
   </div>
@@ -36,12 +38,6 @@
   {% if rail_error %}<p class="notice error small" style="margin-top:8px">{{ rail_error }}</p>{% endif %}
 </div>
 
-{% if not has_push %}
-<div class="card push-off small"><b>{{ _("Notifications are off") }}</b>
-  <p class="muted" style="margin-top:2px">{{ _("Your morning report and reminders can't reach you. The report also appears here in the chat each morning.") }}</p>
-  <a class="btn sm" style="margin-top:8px" href="/settings#reminders">{{ icon("bell") }}{{ _("Turn on") }}</a></div>
-{% endif %}
-
 {% if race %}
 <div class="card row" style="gap:12px;padding:12px 14px">
   <span class="countdown"><b>{{ race.days }}</b><span class="tiny">{{ _("days") }}</span></span>
@@ -56,6 +52,11 @@
   {% for g in planned %}<p style="margin-top:4px"><span class="tiny muted">{{ _("Your plan") }}{% if g.data.source == "intervals" %} · intervals.icu{% endif %}:</span> {{ g.data.description }}</p>{% endfor %}
   {% if not planned %}<p class="small muted" style="margin-top:4px">{{ _("Nothing planned. Ask “What should I do today?”, or send a screenshot of your training plan.") }}</p>{% endif %}
 </div>
+{% endif %}
+
+{% if not has_push %}
+<p class="push-off small" data-dismiss="push-off" hidden>{{ icon("bell") }}<span class="grow">{{ _("Notifications are off, so the morning report waits here in the chat.") }}</span>
+  <a href="/settings#reminders">{{ _("Turn on") }}</a><button type="button" class="link" aria-label="{{ _('Hide for a week') }}" onclick="dismissFor(this.parentNode, 7)">×</button></p>
 {% endif %}
 
 <div class="card habits-card">

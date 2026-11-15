@@ -1,5 +1,6 @@
 """Nutrition, Health and Training pages (data views; the coach does the writing)."""
 
+import re
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -216,8 +217,17 @@ def training(request: Request, week: str = "", user: store.User = Depends(curren
         t["n"] += 1
         t["km"] = round(t["km"] + (a.get("km") or 0), 1)
         t["min"] += a.get("minutes") or 0
+    weeks = []  # weekly km and hours for the last 8 weeks (bars)
+    monday = today - timedelta(days=today.weekday())
+    eight = health.activities(user.id, monday - timedelta(days=49), today)
+    for i in range(7, -1, -1):
+        w0 = monday - timedelta(days=7 * i)
+        w1 = (w0 + timedelta(days=6)).isoformat()
+        acts_w = [a for a in eight if w0.isoformat() <= str(a["day"]) <= w1]
+        weeks.append({"start": w0, "km": round(sum(a.get("km") or 0 for a in acts_w)),
+                      "hours": round(sum(a.get("minutes") or 0 for a in acts_w) / 60, 1)})
     return templates.TemplateResponse(request, "training.html", shell(
-        user, "/training", days=days, start=start, today=today, gear=gear,
+        user, "/training", days=days, weeks=weeks, start=start, today=today, gear=gear,
         this_week=today - timedelta(days=today.weekday()),
         gear_types={f["id"]: gear_type(f) for f in gear}, **goals_ctx,
         load=load, km=health.gear_km(user.id, gear), plan_source=(store.get_profile(user.id).get(
@@ -255,15 +265,18 @@ def goal_cards(user_id: str, items: list[dict], today: date) -> dict:
             card = f | {"when": when, "days_left": (when - today).days if when else None,
                         "target": d.get("target_time") or d.get("target_pace"),
                         "distance": d.get("distance")}
-            if when:
+            if when and (today - f["created_at"].date()).days >= 7:  # not on the day it's set
                 total = max(1, (when - f["created_at"].date()).days)
                 card["done_pct"] = max(0, min(100, round(100 * (today - f["created_at"].date())
                                                          .days / total)))
             races.append(card)
         else:
             card = dict(f)
-            if target_w and weight_now and any(w in f["text"].lower() for w in (
+            stated = re.search(r"(\d{2,3}(?:[.,]\d)?)\s*(?:kg|кг)", f["text"].lower())
+            goal_w = _num(stated.group(1)) if stated else target_w
+            if goal_w and weight_now and any(w in f["text"].lower() for w in (
                     "weight", "kg", "ваг", "схуд", "кг")):
+                target_w = goal_w
                 start_rows = [r for r in rows if r["day"] >= f["created_at"].date().isoformat()]
                 start_w, _ = next(((r["weight_kg"], r["day"]) for r in start_rows
                                    if r.get("weight_kg")), (weight_now, None))

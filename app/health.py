@@ -114,7 +114,7 @@ def pain_trend(user_id: str, today: date, days: int = 90) -> list[dict]:
             (user_id, today - timedelta(days=days), today)).fetchall()
     parts: dict[str, list] = {}
     for r in rows:
-        where = (r["data"].get("pain_location") or "unspecified").strip().lower()
+        where = (r["data"].get("pain_location") or "place not given").strip().lower()
         try:
             parts.setdefault(where, []).append((r["day"], float(r["data"]["pain_score"])))
         except (TypeError, ValueError):

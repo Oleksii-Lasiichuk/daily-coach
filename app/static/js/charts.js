@@ -26,7 +26,8 @@ window.initCharts = function (opts) {
                     fill: bars ? colors[i] + "55" : undefined, paths: bars ? uPlot.paths.bars({ size: [0.7, 8] }) : undefined,
                     points: { show: !bars && !smooth && (mark || (range && range <= 90)), size: 4 } });
       axes.push({ scale: k, side: i ? 1 : 3, stroke: colors[i], grid: { show: i === 0, stroke: css("--line-2") }, ticks: { stroke: css("--line") },
-                  size: 46, values: (u, v) => v.map(x => (+x).toFixed(META[k].dec)) });
+                  size: 46, label: META[k].unit || "", labelSize: META[k].unit ? 16 : 0, labelGap: 0,
+                  values: (u, v) => v.map(x => (+x).toFixed(META[k].dec)) });
     });
     const plot = box.querySelector(".plot"); plot.innerHTML = "";
     const line = (u, x, color, dash) => { const c = u.ctx, px = u.valToPos(x, "x", true); c.save(); c.setLineDash(dash); c.strokeStyle = color; c.beginPath(); c.moveTo(px, u.bbox.top); c.lineTo(px, u.bbox.top + u.bbox.height); c.stroke(); c.restore(); };

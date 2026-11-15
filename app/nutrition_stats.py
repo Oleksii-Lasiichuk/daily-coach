@@ -55,8 +55,9 @@ def targets(user_id: str, day_type: str | None, session_min: float = 0) -> dict[
     w = _num(p, "weight_kg", 75)
     h = _num(p, "height_cm", 178)
     age = date.today().year - int(_num(p, "birth_year", 1995))
-    male = str((p.get("sex") or {}).get("value", "M")).upper().startswith("M")
-    bmr = 10 * w + 6.25 * h - 5 * age + (5 if male else -161)
+    sex = str((p.get("sex") or {}).get("value") or "").strip().upper()[:1]
+    # Mifflin-St Jeor: +5 for men, -161 for women; unknown sex uses the midpoint
+    bmr = 10 * w + 6.25 * h - 5 * age + {"M": 5, "F": -161}.get(sex, -78)
     dt = day_type or "normal"
     kcal = bmr * ACTIVITY[dt]
     protein, carbs = 1.8 * w, CARBS_PER_KG[dt] * w

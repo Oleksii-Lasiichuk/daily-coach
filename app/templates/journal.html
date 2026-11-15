@@ -19,7 +19,7 @@
     <div class="row between" style="margin-top:10px"><span class="tiny muted">{% if w.kcal %}{{ _("Food") }}: {{ w.kcal | int }} kcal/{{ _("day") }}{% endif %}{% if w.pain_max %} · {{ _("worst pain") }} {{ w.pain_max | int }}/10{% endif %}</span>
       <button class="btn sm" onclick="location.href='/?ask=' + encodeURIComponent({{ _('Review my week: training, sleep, food and how I feel. What went well, and one thing to change next week.') | tojson }})">{{ _("Review my week with the coach") }}</button></div>
   </div>
-  <div class="grid2" style="grid-template-columns:minmax(0,3fr) minmax(0,2fr)">
+  <div class="grid2 cal-grid">
     <div class="card">
       <table class="cal" aria-label="{{ first | fdate('month') }}">
         <tr>{% for d in weeks[0] %}<th scope="col">{{ d | fdate("wd") }}</th>{% endfor %}</tr>
@@ -37,10 +37,21 @@
       </div>
       <p class="tiny faint" style="margin-top:8px">{{ _("Tap a day to see it, fix entries, add something you forgot or assess it.") }}</p>
     </div>
-    <div class="card"><h2>{{ _("What the coach remembers") }}</h2>
-      {% if digests %}<ul class="list small">{% for d, text in digests %}<li><a href="/day/{{ d.isoformat() }}" style="text-decoration:none">{{ text }}</a></li>{% endfor %}</ul>
+    <div class="card"><h2>{{ _("This month, day by day") }}</h2>
+      {% if digests %}<ul class="list small daylist">{% for d, text, c in digests if d <= today %}
+        <li><a href="/day/{{ d.isoformat() }}" class="grow row" style="gap:6px;flex-wrap:wrap;text-decoration:none">
+          <b style="min-width:64px">{{ d | fdate("dm") }}</b>
+          {% if c.type %}<span class="badge {{ 'good' if c.type in ('normal', 'push') else 'warn' if c.type == 'easy' else '' }}">{{ _(DAY_NAMES[c.type]) }}</span>{% endif %}
+          {% if c.sleep %}<span class="badge">{{ _("sleep") }} {{ c.sleep }} {{ _("h") }}</span>{% endif %}
+          {% if c.kcal %}<span class="badge">{{ c.kcal }} kcal</span>{% endif %}
+          {% if c.drinks %}<span class="badge warn">{{ c.drinks | round(1) | string | replace(".0", "") }} {{ _("drinks") }}</span>{% endif %}
+          {% if c.pain is not none %}<span class="badge {{ 'bad' if c.pain >= 5 else 'warn' }}">{{ _("pain") }} {{ c.pain | int }}/10</span>{% endif %}
+          {% if c.session %}<span class="tiny muted">{{ c.session }}</span>{% endif %}
+        </a></li>{% endfor %}</ul>
+      <details style="margin-top:8px"><summary class="tiny muted" style="cursor:pointer">{{ _("What the coach sees") }}</summary>
+        <p class="tiny faint" style="margin:6px 0">{{ _("The coach reads the last 14 days as these lines in every answer. They are written by code from your log, not by the AI.") }}</p>
+        <ul class="list tiny">{% for d, text, c in digests %}<li>{{ text }}</li>{% endfor %}</ul></details>
       {% else %}<p class="small muted">{{ _("Nothing logged this month.") }}</p>{% endif %}
-      <p class="tiny faint" style="margin-top:8px">{{ _("The coach sees the last 14 days like this in every answer.") }}</p>
     </div>
   </div>
 </div>

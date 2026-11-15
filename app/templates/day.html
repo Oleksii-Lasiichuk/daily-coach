@@ -65,7 +65,7 @@
 {% if data.meta and not is_future %}
 <link rel="stylesheet" href="/static/css/uplot.min.css">
 <script src="/static/js/uplot.min.js"></script>
-<script src="/static/js/charts.js?v=1"></script>
+<script src="/static/js/charts.js?v=2"></script>
 <script>initCharts({ data: {{ data | tojson }}, lang: {{ lang | tojson }}, labels: {{ {"open": _("Open this day")} | tojson }}, markDay: {{ day.isoformat() | tojson }}, storeKey: "day", height: 220 });</script>
 {% endif %}
 {% endblock %}

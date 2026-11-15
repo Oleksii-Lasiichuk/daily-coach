@@ -96,6 +96,28 @@ def set_lang(lang: str = Form("en"), next: str = Form("/settings"),
     return RedirectResponse(next if ok else "/settings", status_code=303)
 
 
+@router.post("/settings/you")
+async def save_you(request: Request, user: store.User = Depends(current_user)):
+    """One Save for the whole "You" card: body numbers, sex, place, plan and language."""
+    form = await request.form()
+    for key in ("weight_kg", "height_cm", "birth_year", "sleep_target_h"):
+        val = str(form.get(key, "")).strip()[:60]
+        if val:
+            store.set_profile_field(user.id, key, val, "user", actor="user")
+    sex = str(form.get("sex", ""))
+    if sex in ("M", "F"):
+        store.set_profile_field(user.id, "sex", sex, "user", actor="user")
+    elif sex == "" and store.get_profile(user.id).get("sex"):
+        store.delete_profile_field(user.id, "sex")
+    lang = str(form.get("lang", ""))
+    if lang in i18n.LANGS:
+        prefs(user.id)
+        with connection() as c:
+            c.execute("update user_prefs set lang = %s where user_id = %s", (lang, user.id))
+    return set_place(str(form.get("time_zone", "")), str(form.get("city", "")),
+                     str(form.get("plan_source", "")), user)
+
+
 @router.post("/settings/place")
 def set_place(time_zone: str = Form(""), city: str = Form(""), plan_source: str = Form(""),
               user: store.User = Depends(current_user)):

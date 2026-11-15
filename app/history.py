@@ -38,8 +38,10 @@ def digest(day: date, d: dict) -> str:
     for lg in d.get("logs", []):
         data = lg["data"]
         text = f"{KIND_WORDS.get(lg['kind'], lg['kind'])} {data.get('description', '')}".strip()
-        if data.get("nutrition"):
-            text += f" {round(data['nutrition']['kcal'])} kcal"
+        n = data.get("nutrition") or {}
+        kcal = n.get("kcal") or (n.get("totals") or {}).get("kcal")
+        if kcal:
+            text += f" {round(kcal)} kcal"
         if data.get("alcohol_drinks"):
             text += f" ({data['alcohol_drinks']:g} drinks)"
         if data.get("pain_score") is not None:
@@ -49,6 +51,22 @@ def digest(day: date, d: dict) -> str:
     body = "; ".join(parts)
     tail = f" Session: {d['session']}." if d.get("session") else ""
     return f"{head}. {body}.{tail}".replace(". .", ".")
+
+
+def day_chips(d: dict) -> dict:
+    """Short numbers for one day in the Journal: kcal, sleep, drinks, worst pain, session."""
+    kcal = sleep = drinks = 0.0
+    pain = None
+    for lg in d.get("logs", []):
+        data = lg["data"]
+        n = data.get("nutrition") or {}
+        kcal += n.get("kcal") or (n.get("totals") or {}).get("kcal") or 0
+        sleep = data.get("sleep_hours") or sleep
+        drinks += data.get("alcohol_drinks") or 0
+        if data.get("pain_score") is not None:
+            pain = max(pain or 0, float(data["pain_score"]))
+    return {"type": d.get("type"), "kcal": round(kcal), "sleep": sleep, "drinks": drinks,
+            "pain": pain, "session": d.get("session"), "n": len(d.get("logs", []))}
 
 
 def recent_digests(user_id: str, today: date, days: int = 14) -> list[str]:

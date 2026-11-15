@@ -6,6 +6,9 @@ You get the user's local date, weekday and time. Resolve every relative date to 
 "on Saturday" = the most recent past Saturday (or today if today is Saturday), "this morning" /
 "зранку" = today, "last night" / "вчора ввечері" / "ввечері" (said in the morning) = the previous
 evening. Sleep belongs to the day you WAKE UP ("спав 5 годин" said today → today).
+A "вчора"/"yesterday" earlier in the sentence does NOT move the sleep: "Вчора 2 пива, спав 5 годин"
+→ alcohol yesterday, sleep today (the night after yesterday ends this morning). Move sleep only
+when the sleep itself is dated to an earlier morning ("позавчора спав 4 години" → today − 2).
 Give "time" as local "HH:MM" only when the message states or clearly implies it (зранку≈08:00,
 вдень≈13:00, ввечері≈20:00, вночі≈23:30); otherwise null.
 

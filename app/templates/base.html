@@ -15,7 +15,7 @@
   </script>
   <meta name="theme-color" content="#FAF8F5">
   <link rel="preload" href="/static/fonts/FixelText-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/static/css/app.css?v=7">
+  <link rel="stylesheet" href="/static/css/app.css?v=8">
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/static/icon.svg">
@@ -64,6 +64,20 @@
     const v = speechSynthesis.getVoices().find(x => x.lang.startsWith(u.lang.slice(0, 2))); if (v) u.voice = v;
     speechSynthesis.speak(u);
   }
+  function startTimer(btn) {  // "Working · N s" for slow buttons (the card shows .checking while busy)
+    const card = btn.closest(".card"), t0 = Date.now();
+    const id = setInterval(() => { const s = card.querySelector(".secs"); if (s) s.textContent = Math.round((Date.now() - t0) / 1000);
+      if (!card.classList.contains("htmx-request")) clearInterval(id); }, 1000);
+  }
+  function dismissFor(el, days) { try { localStorage.setItem("hide:" + el.dataset.dismiss, Date.now() + days * 864e5); } catch (e) {} el.hidden = true; }
+  function showDismissable() {
+    document.querySelectorAll("[data-dismiss]").forEach((el) => {
+      let until = 0; try { until = +localStorage.getItem("hide:" + el.dataset.dismiss) || 0; } catch (e) {}
+      el.hidden = Date.now() < until;
+    });
+  }
+  document.addEventListener("DOMContentLoaded", showDismissable);
+  document.addEventListener("htmx:afterSettle", showDismissable);
   function toast(t) { const el = document.getElementById("toast"); el.textContent = t; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 5000); }
   function toggleTheme() {
     const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";

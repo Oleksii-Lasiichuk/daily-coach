@@ -59,8 +59,16 @@
     <a href="/settings#you">{{ _("Change") }}</a></p>
 
   <div class="grid2" style="margin-top:18px">
-    <div class="card"><h2>{{ _("Last 4 weeks") }}</h2>
-      {% if load %}<table class="tbl small"><tr><th></th><th class="num">{{ _("sessions") }}</th><th class="num">km</th><th class="num">{{ _("hours") }}</th></tr>{% for t, v in load.items() %}<tr><td>{{ t }}</td><td class="num">{{ v.n }}</td><td class="num">{{ v.km }}</td><td class="num">{{ (v.min / 60) | round(1) }}</td></tr>{% endfor %}</table>
+    <div class="card"><h2>{{ _("Last 8 weeks") }}</h2>
+      {% set mx = (weeks | map(attribute="hours") | max) or 1 %}
+      {% if mx > 0 and weeks | selectattr("hours") | list %}
+      <div class="weekbars" role="img" aria-label="{{ _('Hours per week, last 8 weeks') }}">
+        {% for w in weeks %}<a href="/training?week={{ w.start.isoformat() }}" title="{{ w.start | fdate('dm') }}: {{ w.hours }} h · {{ w.km }} km">
+          <span class="tiny">{{ w.hours if w.hours else "" }}</span><i style="height:{{ (100 * w.hours / mx) | int }}%"></i><span class="tiny muted">{{ w.start.strftime("%d.%m") }}</span></a>{% endfor %}
+      </div>
+      <p class="tiny muted" style="margin:4px 0 10px">{{ _("Hours per week. Tap a week to open it.") }}</p>{% endif %}
+      <p class="label">{{ _("Last 4 weeks by sport") }}</p>
+      {% if load %}<table class="tbl small"><tr><th></th><th class="num">{{ _("sessions") }}</th><th class="num">km</th><th class="num">{{ _("hours") }}</th></tr>{% for t, v in load.items() %}<tr><td>{{ t }}</td><td class="num">{{ v.n }}</td><td class="num">{{ v.km if v.km else "–" }}</td><td class="num">{{ (v.min / 60) | round(1) }}</td></tr>{% endfor %}</table>
       {% else %}<p class="small muted">{{ _("No activities synced yet.") }}</p>{% endif %}</div>
     <div class="card"><div class="row between"><h2 style="margin:0">{{ _("Gear") }}</h2>
         <form hx-post="/items/tidy" hx-target="#sheet-body"><input type="hidden" name="next" value="/training"><button class="link tiny">{{ _("Find duplicates") }}</button></form></div>

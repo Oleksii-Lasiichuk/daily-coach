@@ -5,7 +5,8 @@
   <div class="row between">
     <span class="label">{{ _("Session") if p.day == day else p.day | fdate("dm") }}</span>
     {% if p.status == "applied" %}<span class="badge good">{{ icon("watch") }} {{ _("On your watch") }}</span>
-    {% elif p.status == "proposed" %}<span class="badge accent">{{ icon("watch") }} {{ _("Watch workout · ready to send") }}</span>
+    {% elif p.status == "proposed" and w.action == "rest" %}<span class="badge">{{ _("Rest day") }}</span>
+    {% elif p.status == "proposed" %}<span class="badge accent">{{ icon("watch") }} {{ _("Ready to send") }}</span>
     {% else %}<span class="badge">{{ _({"undone": "Removed", "dismissed": "Dismissed"}[p.status]) }}</span>{% endif %}
   </div>
   {% if w.instead_of %}<p class="tiny muted" style="margin-top:6px">{{ _("Instead of your plan") }}: <s>{{ w.instead_of }}</s></p>{% endif %}

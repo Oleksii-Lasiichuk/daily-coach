@@ -79,7 +79,7 @@
   const form = document.getElementById("composer"), box = form.querySelector("textarea");
   let images = [];
   const scrollDown = () => { (innerWidth < 900 ? window : main).scrollTo({ top: 1e9, behavior: "smooth" }); };
-  scrollDown();
+  scrollDown(); addEventListener("load", scrollDown);
   const ask = new URLSearchParams(location.search).get("ask");
   if (ask) { history.replaceState(null, "", "/"); setTimeout(() => sendText(ask), 300); }
   function toggleMenu(force) {
