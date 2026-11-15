@@ -141,6 +141,31 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
                        "name": w.name, "minutes": workout["minutes"], "sport": w.sport}
 
 
+# Physical limits for one log entry. Above them the entry is not saved and the coach asks.
+LIMITS = {"kcal": 4000, "grams": 3000, "alcohol_g": 150, "caffeine_mg": 1000}
+
+
+def implausible(kind: str, data: dict) -> str | None:
+    """Why an entry can't be real (e.g. '5 kg of sushi', '5 L of vodka'), or None."""
+    t = (data.get("nutrition") or {}).get("totals") or {}
+    grams = sum(i.get("grams") or 0 for i in (data.get("nutrition") or {}).get("items", []))
+    if t.get("kcal", 0) > LIMITS["kcal"]:
+        return f"{round(t['kcal'])} kcal in one {kind} is not physically realistic"
+    if grams > LIMITS["grams"]:
+        return f"{round(grams)} g of food or drink at once is not realistic"
+    if t.get("alcohol_g", 0) > LIMITS["alcohol_g"] or (data.get("alcohol_drinks") or 0) > 15:
+        return "that much alcohol at once would be life-threatening, not a log entry"
+    if t.get("caffeine_mg", 0) > LIMITS["caffeine_mg"]:
+        return f"{round(t['caffeine_mg'])} mg of caffeine at once is dangerous"
+    if not 0 <= (data.get("sleep_hours") or 0) <= 16:
+        return "sleep must be between 0 and 16 hours"
+    if not 0 <= (data.get("pain_score") or 0) <= 10:
+        return "pain is scored 0 to 10"
+    if (data.get("duration_min") or 0) > 900 or (data.get("distance_km") or 0) > 400:
+        return "that session length is not realistic"
+    return None
+
+
 def save_logs(user: store.User, ex: extract.Extraction, message_id: int,
               result: TurnResult, done: dict, save_facts: bool = True) -> set[str]:
     kinds = set()
@@ -152,6 +177,10 @@ def save_logs(user: store.User, ex: extract.Extraction, message_id: int,
                 data["nutrition"] = n.model_dump()
             except llm.LLMError as e:
                 log.warning("nutrition failed: %s", e)
+        why = implausible(ev.kind, data)
+        if why:  # never store joke or typo amounts: they would poison totals and patterns
+            done.setdefault("rejected", []).append({"what": ev.description, "why": why})
+            continue
         occurred = None
         if ev.time:
             try:

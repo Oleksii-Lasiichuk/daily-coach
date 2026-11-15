@@ -50,7 +50,12 @@ def estimate(meal: str, user_id: str | None = None) -> Nutrition:
 
 
 def with_totals(n: Nutrition) -> Nutrition:
-    """Totals are always the sum of the items (computed here, not trusted from the model)."""
+    """Totals are always the sum of the items (computed here, not trusted from the model).
+    Negative numbers from the model are set to 0."""
+    for i in n.items:
+        for k in NUTRIENTS + ["grams"]:
+            if getattr(i, k) < 0:
+                setattr(i, k, 0.0)
     n.totals = {k: round(sum(getattr(i, k) for i in n.items), 1) for k in NUTRIENTS}
     n.kcal, n.protein_g = round(n.totals["kcal"]), round(n.totals["protein_g"])
     n.carbs_g, n.fat_g = round(n.totals["carbs_g"]), round(n.totals["fat_g"])
