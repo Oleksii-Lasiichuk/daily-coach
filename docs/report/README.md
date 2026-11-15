@@ -158,13 +158,20 @@ sequenceDiagram
 ```
 <sub><b>Figure 3.</b> The main demo case. About 25–30 s and 1–2 US cents per turn, measured in Langfuse.</sub>
 
-<!-- MANUAL SCREENSHOT 1: save the Langfuse trace as img/langfuse-trace.png, then replace this comment with:
-<p align="center"><img src="img/langfuse-trace.png" width="820" alt="Langfuse trace of one chat turn"></p>
-<p align="center"><sub><b>Figure 3b.</b> The same turn in Langfuse: the safety call, each agent step and tool with input, output, tokens and cost.</sub></p>
--->
+<p align="center"><img src="img/langfuse-extract-logs.png" width="560" alt="Langfuse trace: log_entries with extract-logs and three estimate-nutrition calls"></p>
+<p align="center"><sub><b>Figure 3b.</b> A real chat turn in Langfuse (production). Left: the trace tree:
+safety check, agent step, the <code>log_entries</code> tool with C2 (<code>extract-logs</code>) and one C3 call per
+meal, then the answer; each with time and cost. Right: C2's input (local time + the message) and its
+structured output: a 2-hour ride, two meals, all dated today.</sub></p>
+
+<p align="center"><img src="img/langfuse-assess-day.png" width="820" alt="Langfuse trace: plan_sessions with embedding, assess-day-type and plan-workout"></p>
+<p align="center"><sub><b>Figure 3c.</b> Another turn: <code>plan_sessions</code> runs a retrieval step (the embedding
+call fetches <code>from_user_files</code> excerpts from an uploaded knowledge export), then C5 and C6.
+C5's input is JSON (watch data, recent activities, logs, items, the 14-day digest, file excerpts);
+its output is the class, a confidence and reasons with evidence. The whole turn: 16 s, $0.02.</sub></p>
 <!-- MANUAL SCREENSHOT 2 (optional): a photo of the workout on the watch as img/watch.jpg, then:
 <p align="center"><img src="img/watch.jpg" width="320" alt="The workout on the Garmin watch"></p>
-<p align="center"><sub><b>Figure 3c.</b> After Send to watch: the workout with its steps on the Garmin.</sub></p>
+<p align="center"><sub><b>Figure 3d.</b> After Send to watch: the workout with its steps on the Garmin.</sub></p>
 -->
 
 ### 4.4 Memory: how the coach knows "your year"
@@ -216,6 +223,17 @@ recovery days, after injuries and on red-flag days; plausibility limits in code 
 sushi" meal is not saved); per-user rate limit and spending cap; guests must use their own key;
 keys encrypted at rest and never sent to a model; every query scoped by user.
 
+<table><tr>
+<td><img src="img/photo-meal-message.png" width="300" alt="A message with three meal photos"></td>
+<td><img src="img/photo-meal-confirm.png" width="420" alt="The coach lists items with grams and asks to confirm"><br><br>
+<img src="img/langfuse-safety.png" width="420" alt="C7 output for the same message"></td>
+</tr><tr>
+<td colspan="2"><sub><b>Figure 5b.</b> Photos are not logged blindly. A casual Ukrainian message with three photos
+(left); the coach lists what it sees with grams, splits the shared salad in half as the user said, and
+asks "Усе правильно?" before calling <code>log_entries</code> (right, top). The safety gate ran on the same
+message in parallel: no red flag (right, bottom).</sub></td>
+</tr></table>
+
 ## 5. Data
 
 | Data | Source, licence | Size | Why this one |
@@ -251,7 +269,7 @@ explicit ranges (`Z2: 124-143`) fixed it; a data-representation fix, not a promp
 | Component | n | Metric | Result | 95% CI | Baseline |
 |---|---|---|---|---|---|
 | C7 Safety | 40 (20 flags) | recall · false alarms | **1.00** · 0.00 | 0.84–1.00 · 0–0.16 | target 1.0 |
-| C1 Routing | 60 | macro-F1 · no write on a question | 0.83 · **1.00** | exact 0.66–0.87 | v2 router 0.93 |
+| C1 Routing | 60 | macro-F1 · no write on a question | 0.87 · **1.00** | exact 0.68–0.88 | v2 router 0.93 |
 | C2 Extractor | 43 (59 events) | (kind, day) F1 · day accuracy | **0.92** · 0.95 | – | target 0.80 |
 | C3 Nutrition | 49 + 10 | kcal MAE (NutriBench · UA) | **72** · **35** | – | mean: 191 · 112 |
 | C4 Facts | 24 planted | recall · precision | **1.00** · 1.00 | – | – |
@@ -283,7 +301,7 @@ unusual foods (millet flour with husks: 211 vs 679 kcal) and vague portions ("a 
 
 ### 6.3 Error analysis
 
-- **C1 0.83 vs 0.93 for the old router.** The labels were written for a router; the agent often
+- **C1 0.87 vs 0.93 for the old router.** The labels were written for a router; the agent often
   does *more* than the label (assesses the day after "slept 4 h, 6 beers"). The harmful error,
   a write tool on a pure question, never happened (1.00).
 - **C2.** Errors are "ввечері" said in the morning (yesterday or today? ambiguous for people
@@ -375,7 +393,7 @@ answers in the language you write in.
 4. **Temporal normalisation is the hardest NLP part of a diary.** "Вчора ввечері" said at 09:30,
    "спав 5 годин" after "вчора 2 пива": the errors are about time, not about entities.
 5. **An agent trades measurability for flexibility.** Moving from a router to an agent lowered
-   the routing score (0.93 → 0.83) but handled open requests (gear, screenshots, week plans).
+   the routing score (0.93 → 0.83–0.87 across runs) but handled open requests (gear, screenshots, week plans).
    Re-scoring it as tool routing, plus an end-to-end eval in the database, recovered most of
    what was lost.
 6. **Small eval sets need intervals, and statistical claims in a product need tests.** 20/20 is

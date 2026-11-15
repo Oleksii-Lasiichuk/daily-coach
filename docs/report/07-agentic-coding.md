@@ -56,6 +56,7 @@ silently.
 | "11% higher sleep after a late meal" on random data | Review of the app | Welch t ≥ 2.5; a test on 50 random logs |
 | A rest day was badged "ready to send" | Review of the app | Badge by action |
 | The coach couldn't see race dates (item details missing from its context) | New end-to-end eval | Details added to the context; e2e case `next_race` |
+| The coach told a user to press "Apply" and promised Garmin exercise animations the app doesn't send | Reading production traces in Langfuse | Prompt rule: name the button exactly, promise only what the card shows; C1 and C8 re-run |
 | Numbers disagreed between report files; the diagram showed v1 | Review | One report README; numbers come from result files (the `/eval` skill) |
 
 ## What the assistant did badly

@@ -40,7 +40,7 @@ intervals are wide, so read the numbers as levels, not as small differences.
 | Component | Cases | Metric | Result | 95% CI | Baseline | Why this metric |
 |---|---|---|---|---|---|---|
 | C7 Safety gate | 40 (20 red flags) | recall · false-alarm rate | **1.00** · 0.00 | 0.84–1.00 · 0.00–0.16 | target recall 1.0 | Missing a red flag is the costly error, so recall first; false alarms only cost a warning |
-| C1 Tool routing (agent) | 60 | macro-F1 · exact match · no write on a pure question | 0.83 · 0.78 · **1.00** | exact 0.66–0.87 | v2 fixed router 0.93 · 0.90 | Tools are a multi-label choice, so F1; a write on a question is the harmful error, so it is reported alone |
+| C1 Tool routing (agent) | 60 | macro-F1 · exact match · no write on a pure question | 0.87 · 0.80 · **1.00** (earlier runs 0.83–0.84) | exact 0.68–0.88 | v2 fixed router 0.93 · 0.90 | Tools are a multi-label choice, so F1; a write on a question is the harmful error, so it is reported alone |
 | C2 Log extractor | 43 (59 gold events) | (kind, day) F1 · day accuracy · field accuracy | **0.92** · 0.95 · 1.00 (23 checks) | – | target F1 ≥ 0.80 | A log is useful only with the right kind **and** the right day; dates are the hard part in UA/EN |
 | C3 Nutrition | 50 NutriBench + 10 Ukrainian | kcal MAE · share within ±20% | **72 kcal** · 73% (NB); **35 kcal** · 90% (UA); earlier runs 69 kcal | – | predict-the-mean 191 / 112 kcal | MAE is in the unit the user feels (kcal); ±20% is the usual tolerance of food labels |
 | C4 Facts from files | 1 export, 24 planted facts | recall · precision | **1.00** · 1.00 (27 proposed) | – | – | Facts are confirmed by the user, so recall matters most; precision shows the review load |
