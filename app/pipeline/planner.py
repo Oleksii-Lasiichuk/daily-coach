@@ -11,6 +11,9 @@ from app.pipeline.common import prompt, to_json
 
 class Step(BaseModel):
     kind: Literal["warmup", "work", "recovery", "cooldown", "steady"]
+    cue: str = Field(default="", description="What exactly to do in this step, e.g. 'Easy jog, "
+                     "conversational pace' or 'Goblet squat 3×12'. Shown in the app and, "
+                     "shortened, on the watch.")
     duration_min: float | None = None
     distance_m: int | None = None
     target: Literal["HR", "Pace", "none"] = "HR"

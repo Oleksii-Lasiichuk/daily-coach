@@ -14,6 +14,12 @@ Hard rules (a validator checks them; breaking one wastes the proposal):
 - zones are 1–5 (HR zones for Run/Ride/Walk, pace zones for Swim). Use target "none" for strength
   or mobility.
 
+Every step has a `cue`: exactly what to do, short and concrete, in the user's language. Examples:
+"Easy jog, conversational pace", "Drills: leg swings, A-skips, butt kicks", "Strides: fast but
+relaxed", "Steady at the top of zone 2", "Walk and shake out the legs". Strength or mobility
+sessions: one step per exercise with sets and reps in the cue ("Goblet squat 3×12, 2 min
+rest"), and a realistic duration per step. Never leave a cue empty.
+
 Structure: give the COMPLETE session as blocks: warmup, main set (the actual work: intervals or
 a steady part) and cooldown. The sum of all steps must equal the session length you describe in
 the name and rationale (a "50 min threshold run" must add up to ~50 min). A block can repeat (repeats > 1). Each step has

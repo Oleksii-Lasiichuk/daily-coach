@@ -1,5 +1,7 @@
 """Code checks for a proposed workout (no LLM) and rendering to intervals.icu workout text."""
 
+import re
+
 from app.pipeline.planner import Step, Workout
 
 LIMITS = {"recover": (40, 2), "easy": (75, 2), "normal": (180, 5), "push": (180, 5)}
@@ -77,11 +79,23 @@ def _target(s: Step) -> str:
     return f" {zone} {s.target}"
 
 
+def watch_cue(cue: str) -> str:
+    """The step text the watch shows. Numbers are removed so intervals.icu can't read them as a
+    duration or target ('strides 4×20 s' would otherwise become a 20 s step)."""
+    text = re.sub(r"\d+\s*[x×]\s*\d+", " ", cue or "")
+    text = re.sub(r"[0-9×%:/.,()\-]+", " ", text)
+    text = re.sub(r"\b(min|sec|s|m|km|bpm|reps?|sets?|Z)\b", " ", text, flags=re.I)
+    text = " ".join(text.split())
+    return text if len(text) <= 40 else text[:41].rsplit(" ", 1)[0]
+
+
 def to_intervals_text(w: Workout) -> str:
-    """intervals.icu workout text, e.g. '- 10m Z1-Z2 HR', '5x', '- 400mtr Z4 Pace'."""
+    """intervals.icu workout text, e.g. '- Easy jog 10m Z1-Z2 HR', '5x', '- 400mtr Z4 Pace'.
+    Text before the duration is the step's cue on the watch."""
     parts = []
     for b in w.blocks:
         header = f"{b.name} {b.repeats}x" if b.repeats > 1 else b.name
-        lines = [header] + [f"- {_amount(s)}{_target(s)}" for s in b.steps]
+        lines = [header] + [f"- {(watch_cue(s.cue) + ' ') if watch_cue(s.cue) else ''}"
+                            f"{_amount(s)}{_target(s)}" for s in b.steps]
         parts.append("\n".join(lines))
     return "\n\n".join(parts)
