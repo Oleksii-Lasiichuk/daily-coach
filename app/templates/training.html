@@ -1,38 +1,85 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Training") }} · Daily Coach{% endblock %}
 {% block main %}
-<div class="page">
+<div class="page wide">
   <div class="pagehead">
     <h1>{{ _("Training") }}</h1>
-    <div class="row">
-      <a class="btn sm ghost" href="?week={{ prev }}">{{ _("Earlier") }}</a><span class="small muted">{{ start | fdate("dm") }} – {{ days[-1].date | fdate("dm") }}</span><a class="btn sm ghost" href="?week={{ next }}">{{ _("Later") }}</a>
-      <button class="btn sm primary" title="{{ _('The coach plans the days left this week from your plan, recovery and goals.') }}" onclick="location.href='/?ask=' + encodeURIComponent({{ _('Plan the rest of my week. Keep the key sessions of my plan if I have one, and make the days before them easier if I need it.') | tojson }})">{{ icon("zap") }}{{ _("Plan my week") }}</button>
+    <button class="btn sm primary" title="{{ _('The coach plans the days left this week from your plan, recovery and goals.') }}" onclick="location.href='/?ask=' + encodeURIComponent({{ _('Plan the rest of my week. Keep the key sessions of my plan if I have one, and make the days before them easier if I need it.') | tojson }})">{{ _("Plan my week") }}</button>
+  </div>
+
+  {# --- goals and races first: what all of this is for --- #}
+  <div class="goals">
+    {% for r in races %}
+    <div class="goal-card race click-card" hx-get="/items/{{ r.id }}/sheet" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0">
+      <div class="row between"><span class="label">{{ icon("flag") }} {{ _("Race") }}</span>{% if r.when %}<span class="tiny muted">{{ r.when | fdate("full") }}</span>{% endif %}</div>
+      <p class="goal-title">{{ r.text }}</p>
+      <div class="race-stats">
+        {% if r.days_left is not none %}<div><span class="big">{{ r.days_left }}</span><span class="k">{{ _("days to go") }}</span></div>{% endif %}
+        {% if r.target %}<div><span class="big">{{ r.target }}</span><span class="k">{{ _("target") }}</span></div>{% endif %}
+        {% if r.distance %}<div><span class="big sm">{{ r.distance }}</span><span class="k">{{ _("distance") }}</span></div>{% endif %}
+        {% if fitness.now %}<div><span class="big">{{ fitness.now | round | int }}</span><span class="k">{{ _("fitness") }}{% if fitness.then %} · <span class="{{ 'good-t' if fitness.now >= fitness.then else 'bad-t' }}">{{ "+" if fitness.now >= fitness.then }}{{ (fitness.now - fitness.then) | round | int }} {{ _("in 4 weeks") }}</span>{% endif %}</span></div>{% endif %}
+      </div>
+      {% if r.done_pct is defined %}<div class="bar thick" style="margin-top:12px"><i style="width:{{ r.done_pct }}%"></i></div>
+      <p class="tiny muted" style="margin-top:4px">{{ r.done_pct }}% {{ _("of the build-up since you set this race") }}</p>{% endif %}
     </div>
+    {% endfor %}
+    {% for g in goals %}
+    <div class="goal-card click-card" hx-get="/items/{{ g.id }}/sheet" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0">
+      <span class="label">{{ icon("activity") }} {{ _("Goal") }}</span>
+      <p class="goal-title">{{ g.text }}</p>
+      {% if g.weight %}<div class="race-stats"><div><span class="big">{{ g.weight.now }}</span><span class="k">{{ _("kg now") }}</span></div><div><span class="big">{{ g.weight.target }}</span><span class="k">{{ _("goal") }}</span></div></div>
+        <div class="bar thick" style="margin-top:12px"><i style="width:{{ g.weight.pct }}%"></i></div><p class="tiny muted" style="margin-top:4px">{{ _("from") }} {{ g.weight.start }} kg · {{ g.weight.pct }}%</p>
+      {% else %}<p class="tiny muted" style="margin-top:6px">{{ _("set on") }} {{ g.created_at.date() | fdate("dm") }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="button" class="goal-card add-card" hx-get="/items/new/sheet?home=/training&category=race" hx-target="#sheet-body">{{ icon("plus") }}<span>{{ _("Add a race or goal") }}</span></button>
+  </div>
+  {% if past_races %}<p class="tiny muted" style="margin-top:8px">{{ _("Done") }}: {% for r in past_races %}<a href="#" hx-get="/items/{{ r.id }}/sheet" hx-target="#sheet-body">{{ r.text }}</a> ({{ r.when | fdate("dm") }}){{ ", " if not loop.last }}{% endfor %}</p>{% endif %}
+
+  {# --- the week --- #}
+  <div class="row between" style="margin:22px 0 10px">
+    <h2 style="margin:0">{{ _("Week") }} · {{ start | fdate("dm") }} – {{ days[-1].date | fdate("dm") }}</h2>
+    <div class="row" style="gap:4px"><a class="btn sm ghost" href="?week={{ prev }}" aria-label="{{ _('Earlier') }}">{{ icon("chevron-left") }}</a>{% if start != this_week %}<a class="btn sm ghost" href="/training">{{ _("This week") }}</a>{% endif %}<a class="btn sm ghost" href="?week={{ next }}" aria-label="{{ _('Later') }}">{{ icon("chevron-right") }}</a></div>
   </div>
   <div class="week">
     {% for d in days %}
-    <div class="day {{ 'today' if d.date == today }}">
+    <a class="day {{ 'today' if d.date == today }}" href="/day/{{ d.date.isoformat() }}">
       <div class="d"><span>{{ d.date | fdate("short") }}</span>{% if d.type %}<span class="badge {{ {'recover': '', 'easy': 'good', 'normal': '', 'push': 'accent'}[d.type] }}">{{ _(DAY_NAMES[d.type]) }}</span>{% endif %}</div>
       {% for g in d.planned %}<div><span class="tiny muted">{{ _("Your plan") }}{% if g.data.source == "intervals" %} · intervals.icu{% endif %}</span><br>{{ g.data.description }}</div>{% endfor %}
       {% for p in d.proposals %}<div><span class="tiny" style="color:var(--accent)">{{ _("On watch") if p.status == "applied" else _("Coach suggests") }}</span><br>{{ p.workout.name }}</div>{% endfor %}
       {% for a in d.acts %}<div><span class="tiny" style="color:var(--good)">{{ _("Done") }} · {{ a.type }}</span><br>{{ a.name or a.type }}<div class="tiny muted">{% if a.km %}{{ a.km }} km · {% endif %}{{ a.minutes }} {{ _("min") }}{% if a.load %} · <abbr title="{{ _('Training load from intervals.icu: how hard the session was, from heart rate and time. An hour at threshold ≈ 100; an easy hour ≈ 40–60.') }}">{{ _("load") }} {{ a.load }}</abbr>{% endif %}</div></div>{% endfor %}
       {% if not d.planned and not d.proposals and not d.acts %}<span class="tiny faint">{{ _("Rest") }}</span>{% endif %}
-    </div>
+    </a>
     {% endfor %}
   </div>
   <p class="small muted" style="margin-top:10px">
-    {% if plan_source == "garmin_coach" %}{{ _("Garmin Coach's plan doesn't reach intervals.icu, so send a screenshot of its week on Today — the coach reads it and keeps it here.") }}
+    {% if plan_source == "garmin_coach" %}{{ _("Garmin Coach's plan doesn't reach intervals.icu, so send a screenshot of its week on Today. The coach reads it and keeps it here.") }}
     {% elif plan_source == "none" %}{{ _("You don't follow a plan: ask “Plan my week” and the coach plans from your goals and recent load.") }}
     {% else %}{{ _("Workouts on your intervals.icu calendar appear here automatically (synced hourly). Following an app like Garmin Coach? Send a screenshot of its week on Today.") }}{% endif %}
     <a href="/settings#you">{{ _("Change") }}</a></p>
-  <div class="grid3" style="margin-top:14px">
+
+  <div class="grid2" style="margin-top:18px">
     <div class="card"><h2>{{ _("Last 4 weeks") }}</h2>
       {% if load %}<table class="tbl small"><tr><th></th><th class="num">{{ _("sessions") }}</th><th class="num">km</th><th class="num">{{ _("hours") }}</th></tr>{% for t, v in load.items() %}<tr><td>{{ t }}</td><td class="num">{{ v.n }}</td><td class="num">{{ v.km }}</td><td class="num">{{ (v.min / 60) | round(1) }}</td></tr>{% endfor %}</table>
       {% else %}<p class="small muted">{{ _("No activities synced yet.") }}</p>{% endif %}</div>
-    <div class="card"><h2>{{ _("Goals and races") }}</h2>
-      {% with items=races, cats=["race", "goal"], next="/training", placeholder="Lviv Half Marathon, 12 April 2027, under 1:45", empty="Tell the coach your races and goals, or add them here." %}{% include "partials/items.html" %}{% endwith %}</div>
-    <div class="card"><h2>{{ _("Gear") }}</h2>
-      {% with items=gear, cats=["gear"], next="/training", placeholder="Salomon Speedcross 6, trail shoes", empty="Shoes get a km counter: runs since you add them are counted.", km=km %}{% include "partials/items.html" %}{% endwith %}</div>
+    <div class="card"><div class="row between"><h2 style="margin:0">{{ _("Gear") }}</h2>
+        <form hx-post="/items/tidy" hx-target="#sheet-body"><input type="hidden" name="next" value="/training"><button class="link tiny">{{ _("Find duplicates") }}</button></form></div>
+      {% set active_gear = gear | selectattr("status", "equalto", "active") | list %}
+      {% if not active_gear %}<p class="small muted" style="margin-top:8px">{{ _("Shoes get a km counter: runs since you add them are counted.") }}</p>{% endif %}
+      <div class="gear-grid">
+        {% for g in active_gear %}{% set k = km.get(g.id) %}{% set gt = gear_types[g.id] %}
+        <div class="gear click-card" hx-get="/items/{{ g.id }}/sheet" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0">
+          <span class="gear-ic">{{ icon({"shoes": "run", "watch": "watch", "hrm": "heart", "bike": "activity"}.get(gt, "activity")) }}</span>
+          <div class="grow"><b class="small">{{ g.text }}</b>
+            {% if k %}<div class="row between tiny" style="margin-top:4px"><span>{{ k.km }} / {{ k.retire | int }} km</span>{% if k.pct >= 100 %}<span class="badge bad">{{ _("Time to replace") }}</span>{% elif k.pct >= 85 %}<span class="badge warn">{{ _("Replace soon") }}</span>{% endif %}</div>
+              <div class="bar" style="margin-top:4px;height:4px"><i class="{{ 'over' if k.pct >= 100 else 'low' if k.pct >= 85 else 'ink' }}" style="width:{{ k.pct }}%"></i></div>
+            {% else %}<div class="tiny muted">{{ _({"watch": "Watch", "hrm": "Heart rate strap", "bike": "Bike", "shoes": "Shoes", "other": "Gear"}[gt]) }}</div>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        <button type="button" class="gear add-card" hx-get="/items/new/sheet?home=/training&category=gear" hx-target="#sheet-body">{{ icon("plus") }}<span class="small">{{ _("Add gear") }}</span></button>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

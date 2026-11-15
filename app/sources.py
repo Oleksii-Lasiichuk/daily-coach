@@ -237,12 +237,13 @@ def step(user_id: str, source_id: int) -> dict:
         with c.cursor() as cur:
             cur.executemany("update chunks set embedding = %s::vector where id = %s",
                             [(_vec(v), r["id"]) for r, v in zip(rows, vectors, strict=True)])
-        seen = {k.lower() for k in known}
+        from app import tidy
+        seen = [{"text": k} for k in known]
         for facts in found:
             for f in facts:
-                if f.text.lower() in seen:
+                if tidy.near_duplicate(f.text, seen):
                     continue
-                seen.add(f.text.lower())
+                seen.append({"text": f.text})
                 c.execute("insert into facts (user_id, category, text, source, status, source_id, "
                           "quote) values (%s, %s, %s, 'file', 'proposed', %s, %s)",
                           (user_id, f.category, f.text[:300], source_id, f.quote[:300]))

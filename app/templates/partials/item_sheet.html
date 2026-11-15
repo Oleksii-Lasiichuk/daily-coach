@@ -1,0 +1,51 @@
+{% from "_icons.html" import icon with context %}
+{% set cat_names = {"goal": "Goal", "race": "Race", "gear": "Gear", "injury": "Injury", "health": "Condition",
+                    "medication": "Medication", "lab": "Lab result", "preference": "Preference", "life": "Life", "note": "Note"} %}
+{% set d = f.details or {} %}
+<h2 id="sheet-title" class="sheet-title">{{ f.text or _("New item") }}</h2>
+{% if f.id %}<p class="tiny muted">{{ _(cat_names[f.category]) }}{% if f.status == "resolved" %} · {{ _("ended") }}{% endif %}</p>{% endif %}
+<form method="post" action="{{ '/items/' ~ f.id if f.id else '/items' }}" class="stack" style="margin-top:14px">
+  <input type="hidden" name="next" value="{{ next }}">
+  <div><label for="it-text">{{ _("Text") }}</label><textarea id="it-text" name="text" rows="2" required>{{ f.text }}</textarea></div>
+  {% if not f.id %}<div><label for="it-cat">{{ _("Kind") }}</label><select id="it-cat" name="category" onchange="this.form.dataset.cat=this.value">{% for c in cats %}<option value="{{ c }}" {{ "selected" if c == f.category }}>{{ _(cat_names[c]) }}</option>{% endfor %}</select></div>{% endif %}
+  <div class="cat-fields" data-for="race"{% if f.category != "race" and f.id %} hidden{% endif %}>
+    <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      <div><label>{{ _("Race date") }}</label><input name="date" type="date" value="{{ d.date or '' }}"></div>
+      <div><label>{{ _("Distance") }}</label><input name="distance" value="{{ d.distance or '' }}" placeholder="21.1 km"></div>
+      <div><label>{{ _("Target time") }}</label><input name="target_time" value="{{ d.target_time or '' }}" placeholder="1:45:00"></div>
+    </div></div>
+  <div class="cat-fields" data-for="gear"{% if f.category != "gear" and f.id %} hidden{% endif %}>
+    <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      <div><label>{{ _("Type") }}</label><select name="type">{% for t in ["", "shoes", "watch", "heart rate strap", "bike", "power meter", "other"] %}<option value="{{ t }}" {{ "selected" if d.type == t }}>{{ _(t or "—") }}</option>{% endfor %}</select></div>
+      <div><label>{{ _("km when added") }}</label><input name="km_start" inputmode="decimal" value="{{ d.km_start or d.km or '' }}"></div>
+      <div><label>{{ _("Replace at, km") }}</label><input name="retire_km" inputmode="decimal" value="{{ d.retire_km or '' }}" placeholder="600"></div>
+    </div></div>
+  <div class="cat-fields" data-for="lab"{% if f.category != "lab" and f.id %} hidden{% endif %}>
+    <div class="grid3" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+      <div><label>{{ _("Value") }}</label><input name="value" value="{{ d.value or '' }}"></div>
+      <div><label>{{ _("Unit") }}</label><input name="unit" value="{{ d.unit or '' }}"></div>
+    </div></div>
+  <div class="row" style="gap:8px;flex-wrap:nowrap;align-items:flex-end">
+    <div class="grow"><label>{{ _("How long") }}</label><select name="term"><option value="long" {{ "selected" if f.term == "long" }}>{{ _("Long-term") }}</option><option value="current" {{ "selected" if f.term == "current" }}>{{ _("For now") }}</option></select></div>
+    <div class="grow"><label>{{ _("Until") }}</label><input name="until" type="date" value="{{ f.until or '' }}"></div>
+  </div>
+  <div><button class="btn primary">{{ _("Save") if f.id else _("Add") }}</button></div>
+</form>
+{% if f.id %}
+<div class="sheet-meta">
+  <p class="label">{{ _("Where it came from") }}</p>
+  {% if f.source == "file" %}<p class="small">{{ icon("book") }} {{ f.filename or _("a file") }}</p>{% if f.quote %}<blockquote class="quote">“{{ f.quote }}”</blockquote>{% endif %}
+  {% elif f.source == "ai" %}<p class="small">{{ _("From chat") }}{% if f.said_at %}, <a href="/day/{{ f.said_at | local_time(user.time_zone, '%Y-%m-%d') }}">{{ f.said_at | local_time(user.time_zone, "%d.%m.%Y %H:%M") }}</a>{% endif %}</p>
+  {% else %}<p class="small">{{ _("Added by you") }}, {{ f.created_at | local_time(user.time_zone, "%d.%m.%Y") }}</p>{% endif %}
+</div>
+<div class="row" style="margin-top:16px;gap:8px">
+  {% if f.status == "active" %}
+  <form method="post" action="/items/{{ f.id }}/end"><input type="hidden" name="next" value="{{ next }}"><button class="btn sm" title="{{ _('No longer true (keeps it in history)') }}">{{ icon("check") }}{{ _("No longer true") }}</button></form>
+  {% else %}
+  <form method="post" action="/items/{{ f.id }}/restore"><input type="hidden" name="next" value="{{ next }}"><button class="btn sm">{{ _("Restore") }}</button></form>
+  {% endif %}
+  <form method="post" action="/items/{{ f.id }}/delete" onsubmit="return confirm({{ _('Delete this item?') | tojson }})"><input type="hidden" name="next" value="{{ next }}"><button class="btn sm ghost danger-t">{{ icon("trash") }}{{ _("Delete") }}</button></form>
+</div>
+{% else %}
+<script>(() => { const s = document.getElementById("it-cat"); const show = () => document.querySelectorAll("#sheet .cat-fields").forEach(x => x.hidden = x.dataset.for !== s.value); s.addEventListener("change", show); show(); })();</script>
+{% endif %}

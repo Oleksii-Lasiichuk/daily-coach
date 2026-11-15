@@ -1,0 +1,25 @@
+{% from "_icons.html" import icon with context %}
+{% set n = lg.data.nutrition %}{% set t = (n.totals if n and n.totals else {}) %}
+<h2 id="sheet-title" class="sheet-title">{{ lg.data.description }}</h2>
+<p class="tiny muted">{{ lg.day | fdate("day") }}{% if lg.occurred_at %} · {{ lg.occurred_at | local_time(user.time_zone) }}{% endif %}{% if lg.data.edited %} · {{ _("edited") }}{% endif %}</p>
+{% if n %}
+<p style="margin-top:12px"><span class="bignum">{{ (t.kcal or n.kcal or 0) | int }}</span> <span class="muted">kcal</span>
+  <span class="small muted" style="margin-left:8px">{{ _("P") }} {{ (t.protein_g or 0) | int }} · {{ _("C") }} {{ (t.carbs_g or 0) | int }} · {{ _("F") }} {{ (t.fat_g or 0) | int }} g</span></p>
+{% if n["items"] %}
+<table class="tbl small" style="margin-top:8px"><tr><th>{{ _("Food") }}</th><th class="num">g</th><th class="num">kcal</th><th class="num">{{ _("P") }}</th><th class="num">{{ _("C") }}</th><th class="num">{{ _("F") }}</th></tr>
+  {% for it in n["items"] %}<tr><td>{{ it.name }}</td><td class="num">{{ (it.grams or 0) | round | int }}</td><td class="num">{{ (it.kcal or 0) | round | int }}</td><td class="num">{{ (it.protein_g or 0) | round | int }}</td><td class="num">{{ (it.carbs_g or 0) | round | int }}</td><td class="num">{{ (it.fat_g or 0) | round | int }}</td></tr>{% endfor %}
+</table>{% endif %}
+{% if t %}<details style="margin-top:8px"><summary class="small" style="cursor:pointer">{{ _("All nutrients") }}</summary>
+  <table class="tbl small" style="margin-top:6px">{% for k, v in t.items() if k not in ("kcal", "protein_g", "carbs_g", "fat_g") and v %}<tr><td>{{ _(labels.get(k, k)) }}</td><td class="num">{{ v | round(1) | string | replace(".0", "") }} {{ units.get(k, "") }}</td></tr>{% endfor %}</table></details>{% endif %}
+<p class="label" style="margin-top:16px">{{ _("Fix the estimate") }}</p>
+<div class="row" style="gap:6px;margin-top:6px">
+  {% for f, lab in [("0.5", "×½"), ("1.5", "×1.5"), ("2", "×2")] %}
+  <form method="post" action="/logs/{{ lg.id }}/edit"><input type="hidden" name="next" value="{{ next }}"><input type="hidden" name="factor" value="{{ f }}"><button class="btn sm">{{ lab }}</button></form>{% endfor %}
+  <form method="post" action="/logs/{{ lg.id }}/edit" class="row" style="gap:6px;flex-wrap:nowrap"><input type="hidden" name="next" value="{{ next }}">
+    <input name="kcal" inputmode="numeric" placeholder="{{ (t.kcal or 0) | int }}" aria-label="{{ _('Calories') }}" style="height:32px;width:84px"><button class="btn sm">{{ _("Set kcal") }}</button></form>
+</div>
+{% endif %}
+<form method="post" action="/logs/{{ lg.id }}/edit" class="stack" style="margin-top:14px"><input type="hidden" name="next" value="{{ next }}">
+  <div><label for="lg-text">{{ _("Text") }}</label><textarea id="lg-text" name="text" rows="2">{{ lg.data.description }}</textarea></div>
+  <div class="row between"><button class="btn sm primary">{{ _("Save") }}</button>{% if n %}<span class="tiny muted">{{ _("Food is estimated again from the new text.") }}</span>{% endif %}</div></form>
+<form method="post" action="/logs/{{ lg.id }}/delete" style="margin-top:14px" onsubmit="return confirm({{ _('Delete this entry?') | tojson }})"><input type="hidden" name="next" value="{{ next }}"><button class="btn sm ghost danger-t">{{ icon("trash") }}{{ _("Delete") }}</button></form>

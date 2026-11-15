@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from psycopg.types.json import Jsonb
 
-from app import sources, store
+from app import llm, sources, store, tidy
 from app.auth import current_user
 from app.db import connection
 from app.web import shell, templates
@@ -22,7 +22,67 @@ HOMES = {"goal": "/training", "race": "/training", "gear": "/training", "injury"
          "preference": "/memory", "life": "/memory", "note": "/memory"}
 CATEGORIES = list(HOMES)
 DIETS = ["Omnivore", "Vegetarian", "Vegan", "Pescatarian", "Other"]
-DETAIL_KEYS = ("date", "distance", "target_time", "target_pace", "km_start", "retire_km")
+DETAIL_KEYS = ("date", "distance", "target_time", "target_pace", "km_start", "retire_km",
+               "type", "value", "unit")
+GROUPS = {"/training": ["race", "goal", "gear"], "/health": ["injury", "health", "medication",
+                                                               "lab"],
+          "/memory": ["preference", "life", "note"]}
+
+
+def _item(user_id: str, fid: int) -> dict | None:
+    with connection() as c:
+        return c.execute(
+            """select f.*, s.filename, m.created_at as said_at from facts f
+               left join sources s on s.id = f.source_id
+               left join chat_messages m on m.id = f.message_id
+               where f.user_id = %s and f.id = %s""", (user_id, fid)).fetchone()
+
+
+@router.get("/items/new/sheet", response_class=HTMLResponse)
+def new_item_sheet(request: Request, home: str = "/memory", category: str = "",
+                   user: store.User = Depends(current_user)):
+    cats = GROUPS.get(home, GROUPS["/memory"])
+    f = {"id": None, "category": category if category in cats else cats[0], "text": "",
+         "term": "long", "until": None, "details": {}, "status": "active", "source": "user"}
+    return templates.TemplateResponse(request, "partials/item_sheet.html", shell(
+        user, home, f=f, cats=cats, next=home))
+
+
+@router.get("/items/{fid}/sheet", response_class=HTMLResponse)
+def item_sheet(request: Request, fid: int, user: store.User = Depends(current_user)):
+    f = _item(user.id, fid)
+    if not f:
+        return HTMLResponse("", status_code=404)
+    home = HOMES[f["category"]]
+    return templates.TemplateResponse(request, "partials/item_sheet.html", shell(
+        user, home, f=f, cats=GROUPS[home], next=home))
+
+
+@router.post("/items/tidy", response_class=HTMLResponse)
+def tidy_sheet(request: Request, next: str = Form("/memory"),
+               user: store.User = Depends(current_user)):
+    error = None
+    try:
+        groups = tidy.find_groups(user.id)
+    except llm.LLMError:
+        groups, error = [], "Couldn't check right now. Try again."
+    return templates.TemplateResponse(request, "partials/tidy_sheet.html", shell(
+        user, next, groups=groups, error=error, next=next))
+
+
+@router.post("/items/tidy/apply")
+async def tidy_apply(request: Request, user: store.User = Depends(current_user)):
+    form = await request.form()
+    for raw in form.getlist("group"):
+        keep, _, dups = str(raw).partition(":")
+        try:
+            ids = [int(x) for x in dups.split(",") if x]
+            text = str(form.get(f"text_{keep}", "")).strip()
+            if text:
+                tidy.merge(user.id, int(keep), ids, text)
+        except ValueError:
+            continue
+    return _back(user.id, None, str(form.get("next", "")))
 
 
 @router.get("/knowledge")
@@ -36,8 +96,7 @@ def memory(request: Request, user: store.User = Depends(current_user)):
     prof = store.get_profile(user.id)
     return templates.TemplateResponse(request, "memory.html", shell(
         user, "/memory",
-        prefs_items=[f for f in facts if f["category"] == "preference"],
-        life_items=[f for f in facts if f["category"] in ("life", "note")],
+        known=[f for f in facts if f["category"] in ("preference", "life", "note")],
         instructions=(prof.get("instructions") or {}).get("value", ""),
         diet=(prof.get("diet") or {}).get("value", ""), diets=DIETS,
         files=sources.list_sources(user.id), proposed=sources.proposed_facts(user.id),

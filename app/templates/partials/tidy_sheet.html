@@ -1,0 +1,17 @@
+<h2 id="sheet-title" class="sheet-title">{{ _("Duplicates") }}</h2>
+{% if error %}<p class="notice error small" style="margin-top:10px">{{ _(error) }}</p>
+{% elif not groups %}<p class="small muted" style="margin-top:10px">{{ _("No duplicates found.") }}</p>
+{% else %}
+<p class="small muted" style="margin-top:4px">{{ _("Items that look like the same thing. Untick a group to keep it as is; edit the merged text if you like.") }}</p>
+<form method="post" action="/items/tidy/apply" class="stack" style="margin-top:12px">
+  <input type="hidden" name="next" value="{{ next }}">
+  {% for g in groups %}
+  <div class="tidy-group">
+    <label class="row" style="gap:8px;margin:0;color:var(--ink)"><input type="checkbox" name="group" value="{{ g.keep.id }}:{{ g.dups | map(attribute='id') | join(',') }}" checked><b class="small">{{ _("Merge") }} {{ g.dups | length + 1 }}</b><span class="tiny muted">{{ g.why }}</span></label>
+    <ul class="tiny muted" style="margin:6px 0 6px 26px;padding:0">{% for x in [g.keep] + g.dups %}<li>{{ x.text }}</li>{% endfor %}</ul>
+    <input name="text_{{ g.keep.id }}" value="{{ g.text }}" aria-label="{{ _('Merged text') }}">
+  </div>
+  {% endfor %}
+  <div><button class="btn primary">{{ _("Merge selected") }}</button></div>
+</form>
+{% endif %}

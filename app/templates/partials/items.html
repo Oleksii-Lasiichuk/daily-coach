@@ -1,66 +1,23 @@
-{# One editable list of items. Needs: items, cats, next, placeholder; optional km (shoe km). #}
+{# A list of items: tap one to see and edit it. Needs: items, cats, next, empty; optional km. #}
 {% from "_icons.html" import icon with context %}
 {% set cat_names = {"goal": "Goal", "race": "Race", "gear": "Gear", "injury": "Injury", "health": "Condition",
                     "medication": "Medication", "lab": "Lab result", "preference": "Preference", "life": "Life", "note": "Note"} %}
 {% set active_items = items | selectattr("status", "equalto", "active") | list %}
-{% if not active_items %}<p class="small muted">{{ _("Nothing yet.") }} {{ _(empty) if empty }}</p>{% endif %}
-<ul class="list">
-  {% for f in active_items %}{% set d = f.details or {} %}
-  <li>
+{% if not active_items %}<p class="small muted">{{ _(empty) if empty else _("Nothing yet.") }}</p>{% endif %}
+<ul class="list items">
+  {% for f in active_items %}
+  <li class="click-row" hx-get="/items/{{ f.id }}/sheet" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0">
     <div class="grow">
-      <details class="edit">
-        <summary><span>{{ f.text }}</span>{{ icon("pencil") }}</summary>
-        <form method="post" action="/items/{{ f.id }}" class="stack" style="margin-top:8px">
-          <input type="hidden" name="next" value="{{ next }}">
-          <input name="text" value="{{ f.text }}" aria-label="{{ _('Text') }}">
-          {% if f.category == "race" %}
-          <div class="row" style="gap:8px;flex-wrap:nowrap">
-            <div class="grow"><label>{{ _("Date") }}</label><input name="date" type="date" value="{{ d.date or '' }}"></div>
-            <div class="grow"><label>{{ _("Target time") }}</label><input name="target_time" value="{{ d.target_time or '' }}" placeholder="1:45:00"></div>
-          </div>
-          {% elif f.category == "gear" %}
-          <div class="row" style="gap:8px;flex-wrap:nowrap">
-            <div class="grow"><label>{{ _("km when added") }}</label><input name="km_start" inputmode="decimal" value="{{ d.km_start or d.km or '' }}"></div>
-            <div class="grow"><label>{{ _("Replace at, km") }}</label><input name="retire_km" inputmode="decimal" value="{{ d.retire_km or '' }}" placeholder="600"></div>
-          </div>
-          {% endif %}
-          <div class="row" style="gap:8px;flex-wrap:nowrap;align-items:flex-end">
-            <div><label>{{ _("How long") }}</label><select name="term" style="width:auto"><option value="long" {{ "selected" if f.term == "long" }}>{{ _("Long-term") }}</option><option value="current" {{ "selected" if f.term == "current" }}>{{ _("For now") }}</option></select></div>
-            <div><label>{{ _("Until") }}</label><input name="until" type="date" value="{{ f.until or '' }}" style="width:auto"></div>
-            <button class="btn sm">{{ _("Save") }}</button>
-          </div>
-        </form>
-      </details>
-      <div class="tiny muted" style="margin-top:2px">
-        <span class="badge {{ 'warn' if f.term == 'current' }}">{{ _(cat_names[f.category]) }}</span>
-        {% if f.until %}{{ _("until") }} {{ f.until | fdate("dm") }} · {% endif %}
-        {% if f.category == "race" and f.days_left is not none and f.days_left >= 0 %}<b class="accent">{{ _("in") }} {{ f.days_left }} {{ _("days") }}</b> · {% endif %}
-        {% if f.source == "file" %}{{ f.filename }}{% elif f.source == "ai" %}{{ _("from chat") }}{% else %}{{ _("added by you") }}{% endif %}
-      </div>
-      {% if km and km.get(f.id) %}{% set k = km[f.id] %}
-      <div class="row between tiny" style="margin-top:6px"><span>{{ k.km }} / {{ k.retire | int }} km</span>
-        {% if k.pct >= 100 %}<span class="badge bad">{{ _("Time to replace") }}</span>{% elif k.pct >= 85 %}<span class="badge warn">{{ _("Replace soon") }}</span>{% endif %}</div>
-      <div class="bar" style="margin-top:4px;height:4px"><i class="{{ 'over' if k.pct >= 100 else 'low' if k.pct >= 85 else 'ink' }}" style="width:{{ k.pct }}%"></i></div>
-      <p class="tiny faint" style="margin-top:2px">{{ _("Counts your runs since") }} {{ k.since | fdate("dm") }}.</p>
-      {% endif %}
+      <span>{{ f.text }}</span>
+      <div class="tiny muted" style="margin-top:2px">{% if cats | length > 1 %}{{ _(cat_names[f.category]) }} · {% endif %}{% if f.until %}{{ _("until") }} {{ f.until | fdate("dm") }} · {% endif %}{% if f.source == "file" %}{{ f.filename or _("file") }}{% elif f.source == "ai" %}{{ _("from chat") }}{% else %}{{ _("added by you") }}{% endif %}</div>
     </div>
-    <form method="post" action="/items/{{ f.id }}/end"><input type="hidden" name="next" value="{{ next }}"><button class="icon sm-icon" title="{{ _('No longer true (keeps it in history)') }}">{{ icon("check") }}</button></form>
-    <form method="post" action="/items/{{ f.id }}/delete" onsubmit="return confirm({{ _('Delete this item?') | tojson }})"><input type="hidden" name="next" value="{{ next }}"><button class="icon sm-icon" title="{{ _('Delete') }}">{{ icon("x") }}</button></form>
+    {% if f.term == "current" %}<span class="badge warn">{{ _("for now") }}</span>{% endif %}
   </li>
   {% endfor %}
 </ul>
 {% set past = items | selectattr("status", "equalto", "resolved") | list %}
-{% if past %}<details style="margin-top:6px"><summary class="tiny muted" style="cursor:pointer">{{ past | length }} {{ _("ended") }}</summary>
-  <ul class="list small">{% for f in past %}<li><span class="grow faint">{{ f.text }}</span><form method="post" action="/items/{{ f.id }}/restore"><input type="hidden" name="next" value="{{ next }}"><button class="link tiny">{{ _("Restore") }}</button></form></li>{% endfor %}</ul></details>{% endif %}
-<details class="add" style="margin-top:8px"><summary class="small">{{ icon("plus") }} {{ _("Add") }}</summary>
-  <form method="post" action="/items" class="stack" style="margin-top:8px">
-    <input type="hidden" name="next" value="{{ next }}">
-    <input name="text" placeholder="{{ _(placeholder) }}" required aria-label="{{ _('Item') }}">
-    <div class="row" style="gap:8px;flex-wrap:nowrap">
-      <select name="category" style="width:auto" aria-label="{{ _('Kind') }}">{% for c in cats %}<option value="{{ c }}">{{ _(cat_names[c]) }}</option>{% endfor %}</select>
-      <select name="term" style="width:auto" aria-label="{{ _('How long') }}"><option value="long">{{ _("Long-term") }}</option><option value="current">{{ _("For now") }}</option></select>
-      <input name="until" type="date" style="width:auto" aria-label="{{ _('Until') }}">
-      <button class="btn sm">{{ _("Add") }}</button>
-    </div>
-  </form>
-</details>
+<div class="row between" style="margin-top:8px">
+  <button type="button" class="link small" hx-get="/items/new/sheet?home={{ next.split('#')[0] }}&category={{ cats[0] }}" hx-target="#sheet-body">{{ icon("plus") }} {{ _("Add") }}</button>
+  {% if past %}<details class="past"><summary class="tiny muted">{{ past | length }} {{ _("ended") }}</summary>
+    <ul class="list small">{% for f in past %}<li class="click-row" hx-get="/items/{{ f.id }}/sheet" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0"><span class="grow faint">{{ f.text }}</span></li>{% endfor %}</ul></details>{% endif %}
+</div>
