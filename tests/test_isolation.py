@@ -45,6 +45,9 @@ def test_user_b_cannot_read_or_change_user_a(client, users):
                  "/journal", f"/day/{date.today().isoformat()}"]:
         r = client.get(path)
         assert r.status_code == 200 and "SECRET-A" not in r.text, path
+    for path in [f"/items/{fact}/sheet", f"/logs/{log}/sheet"]:
+        r = client.get(path)
+        assert r.status_code == 404 and "SECRET-A" not in r.text, path
 
     for path in [f"/items/{fact}/delete", f"/items/{fact}/end", f"/items/{fact}",
                  f"/actions/{act}/undo", "/reminders/1/delete", f"/logs/{log}/edit",

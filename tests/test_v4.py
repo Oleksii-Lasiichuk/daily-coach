@@ -78,3 +78,39 @@ def test_language_switch_translates_pages(client, users):
     assert "Тренування" in client.get("/training").text
     client.post("/settings/lang", data={"lang": "en", "next": "/"})
     assert "Plan my week" in client.get("/training").text
+
+
+def test_near_duplicates_are_not_saved_twice(users):
+    u = users()
+    turn = agent.Turn(u, None, False)
+    assert "saved_id" in turn.save_item("gear", "Garmin Forerunner 965", "long")
+    assert turn.save_item("gear", "Garmin Forerunner 965 watch", "long")["status"] == \
+        "already saved"
+    assert "saved_id" in turn.save_item("gear", "Garmin HRM-Pro heart rate strap", "long")
+
+
+def test_watch_cue_keeps_words_drops_numbers():
+    from app.pipeline.validator import watch_cue
+    assert watch_cue("Strides 4×20 s, fast but relaxed") == "Strides fast but relaxed"
+
+
+def test_detail_sheets_open_for_owner(client, users):
+    u = users()
+    store.set_setup_step(u.id, 6)
+    login(client, u)
+    fid = store.add_fact(u.id, "gear", "Salomon Speedcross 6", "user")
+    lid = store.add_log(u.id, "meal", date.today(), nutrition_stats.quick_data("beer")[1])
+    assert "Speedcross" in client.get(f"/items/{fid}/sheet").text
+    assert "Beer" in client.get(f"/logs/{lid}/sheet").text
+    assert client.get("/items/new/sheet?home=/training&category=race").status_code == 200
+
+
+def test_impossible_amounts_are_not_logged():
+    from app.pipeline.turn import implausible
+    sushi = {"nutrition": {"items": [{"grams": 5000}], "totals": {"kcal": 7500}}}
+    vodka = {"nutrition": {"items": [{"grams": 5000}], "totals": {"kcal": 11000,
+                                                                  "alcohol_g": 1600}}}
+    normal = {"nutrition": {"items": [{"grams": 350}], "totals": {"kcal": 520}}}
+    assert implausible("meal", sushi) and implausible("alcohol", vodka)
+    assert implausible("sleep", {"sleep_hours": 30}) and implausible("pain", {"pain_score": 15})
+    assert implausible("meal", normal) is None
