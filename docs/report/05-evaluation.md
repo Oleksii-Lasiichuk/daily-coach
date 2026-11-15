@@ -4,7 +4,8 @@ CRISP-DM phase 5.
 - **Run:** `uv run python -m evals.run_all` (one component: `uv run python -m evals.run_c5`).
 - **Raw results:** `evals/results/*.json`, which include every failure. The first run, before the
   fixes described below, is kept in `evals/results/v1/`.
-- **Date:** 2026-11-14 (v3), C1/C6/C8 and prompt injection re-run on 2026-11-15 (v4).
+- **Date:** 2026-11-14 (v3); C1, C6, C8 and prompt injection re-run on 2026-11-15 (v4, v5);
+  C2 and the end-to-end agent run on 2026-11-15 (v6). The table below is the current one.
 - **Models:** Gemini 3.1 Flash-Lite and Gemini 3.8 Flash via OpenRouter.
 
 ## How the evaluation is set up
@@ -18,7 +19,9 @@ CRISP-DM phase 5.
     Ukrainian meals whose reference values come from standard food tables.
 - **Who wrote the cases:** the cases and labels were written while building the system with an
   AI coding assistant (Claude), a different model family from the Gemini models being tested.
-  The athlete reviews the labels; label changes are tracked in git.
+  There was one annotator and no second labelling pass; label changes are tracked in git.
+  The evals still found real errors (empty C8 answers, HR zones read as lower limits, sleep put
+  on the wrong night), so the sets are not just confirming the prompts.
 - **LLM judge:** used only where there is no single right answer (C6 workouts, C8 replies, C0
   slot matching).
   - The judge is Claude Haiku 5.5, again not Gemini, so a model doesn't grade its own family.
@@ -28,7 +31,55 @@ CRISP-DM phase 5.
 - **Tracing:** each eval case is traced in Langfuse (environment `eval`, tag `eval`), so any
   failure can be opened and inspected.
 
-## Results
+## Current results (v6, 2026-11-15)
+
+One row per component, final run. `k/n` and the 95% Wilson interval come from
+`uv run python -m evals.stats` (`evals/results/intervals.json`). With 10 to 60 cases the
+intervals are wide, so read the numbers as levels, not as small differences.
+
+| Component | Cases | Metric | Result | 95% CI | Baseline | Why this metric |
+|---|---|---|---|---|---|---|
+| C7 Safety gate | 40 (20 red flags) | recall · false-alarm rate | **1.00** · 0.00 | 0.84–1.00 · 0.00–0.16 | target recall 1.0 | Missing a red flag is the costly error, so recall first; false alarms only cost a warning |
+| C1 Tool routing (agent) | 60 | macro-F1 · exact match · no write on a pure question | 0.83 · 0.78 · **1.00** | exact 0.66–0.87 | v2 fixed router 0.93 · 0.90 | Tools are a multi-label choice, so F1; a write on a question is the harmful error, so it is reported alone |
+| C2 Log extractor | 43 (59 gold events) | (kind, day) F1 · day accuracy · field accuracy | **0.92** · 0.95 · 1.00 (23 checks) | – | target F1 ≥ 0.80 | A log is useful only with the right kind **and** the right day; dates are the hard part in UA/EN |
+| C3 Nutrition | 50 NutriBench + 10 Ukrainian | kcal MAE · share within ±20% | **69 kcal** · 76% (NB); **35 kcal** (UA) | – | predict-the-mean 191 / 112 kcal | MAE is in the unit the user feels (kcal); ±20% is the usual tolerance of food labels |
+| C4 Facts from files | 1 export, 24 planted facts | recall · precision | **1.00** · 1.00 (27 proposed) | – | – | Facts are confirmed by the user, so recall matters most; precision shows the review load |
+| C4 Search | 24 questions | recall@5 · recall@1 · MRR | **0.92** · 0.46 · 0.60 | r@5 0.74–0.98 | v1 chunks 0.83 · 0.29 · 0.48 | The coach reads the top 5 excerpts, so recall@5 is what reaches the model |
+| C5 Day type | 30 | accuracy · Cohen's κ · within one level | **0.93** · **0.91** · 1.00 | acc 0.79–0.98 | majority class 0.33 · κ 0; device-only rule 0.60 · κ 0.49 | Classes are ordered and imbalanced: κ corrects for chance, "within one level" shows how bad the misses are |
+| C6 Planner + validator | 20 | valid first try · after 1 retry · judge 1–5 | **1.00** · 1.00 · 4.15 | first try 0.84–1.00 | v1: 0.80 · 1.00 · 3.73 | The retry hides cost and latency, so first-try validity counts; a judge scores what code can't (fit, specificity) |
+| C0 Interviewer | 5 simulated athletes | slot coverage · slot accuracy · redundant questions | **1.00** · 0.89 · **0** | – | target ≥ 0.9, 0 redundant | Setup must fill what is missing without asking what is known |
+| C8 Coach answers | 15 | correct · grounded · says "missing" | **1.00** · 1.00 · 1.00 | correct 0.80–1.00 | v2 reply writer: same | Health answers must be right **and** come from the user's data, or say the data is missing |
+| Prompt injection | 10 attacks | attack success rate · uses the real fact | **0.00** · 1.00 | 0.00–0.28 | without the wrapper: 0.00 · 1.00 | Any successful attack is a failure, so the rate of success; utility shows the defence didn't break answers |
+| **End-to-end agent (new)** | 12 turns, 34 checks | case pass rate · check accuracy · nothing sent to the watch without a tap | **1.00** · 1.00 · **yes** (12/12); first run 0.92 | cases 0.76–1.00 | – | Checks what lands in the database (kinds, dates, items, reminders, proposals) after a real turn, not just the reply |
+
+C3 macro detail (MAE, NutriBench / Ukrainian): carbs 11.4 / 3.2 g (baseline 28.7 / 15.7),
+protein 2.7 / 1.8 g (8.5 / 9.8), fat 4.2 / 2.8 g (9.4 / 9.0). C6 judge criteria (1–5): safety
+fit 4.8, respects the athlete's plan 4.2, specificity 3.6, rationale 4.0.
+
+### What is covered how
+
+| Part of the system | How it is checked |
+|---|---|
+| LLM components C0–C8, prompt injection, the agent end to end | Eval scripts above (`evals/run_*.py`), every case traced in Langfuse |
+| Workout validator, rendering to intervals.icu text and watch cues | Unit tests: `test_recover_day_limits`, `test_injury_and_red_flag_and_sport`, `test_warmup_only_is_rejected`, `test_text_and_minutes`, `test_watch_cue_keeps_words_drops_numbers` |
+| Patterns (code, no LLM) | `test_patterns_find_alcohol_effect_only_with_enough_nights`, `test_patterns_stay_quiet_on_random_data` (50 random 90-day logs; the old rule fired on 20 of them) |
+| Session fuel, quick log, meal edits, impossible amounts | `test_fuel_rules`, `test_scale_and_quick_data`, `test_quick_log_edit_and_undo`, `test_impossible_amounts_are_not_logged` |
+| Calorie targets, day digest, Journal chips | `test_targets_use_sex_and_midpoint_when_unknown`, `test_digest_reads_kcal_from_totals_when_top_level_is_missing`, `test_day_chips_sum_the_day` |
+| Duplicates, profile key allow-list, untrusted file wrapper | `test_near_duplicates_are_not_saved_twice`, `test_coach_cannot_set_arbitrary_profile_keys`, `test_untrusted_file_results_are_wrapped` |
+| Security (sign-in, isolation, CSRF, budget, demo mode) | `test_auth.py`, `test_isolation.py` (two users, every endpoint), `test_budget.py`, `test_demo.py` |
+
+### Not evaluated, and why
+
+| Part | Why not | Risk, and what we do about it |
+|---|---|---|
+| Voice transcription | A third-party model; no labelled UA/EN audio set | Wrong words are visible: the text lands in the box and is checked before sending |
+| Photo meals and plan screenshots (vision) | No labelled image set; real photos would be personal data | The coach lists what it sees with grams and asks to confirm before logging (prompt rule); screenshot plans are shown on the card before anything is sent |
+| C3 with a food database (grounded vs LLM-only) | Planned in the proposal, not built in time | LLM-only is already ~3× better than the baseline; grounding is the first next step |
+| Pain trend, weather adaptation, week review, morning report | Thin code over stored data, or a re-use of C5/C6 | Covered by the page tests and by C6 (weather goes into its inputs) |
+| Real-use accuracy | No labelled real chats yet | Next: label two weeks of real use and re-run C1, C2, C5 on it |
+
+### Earlier runs
+
 
 | Component | Data | Metric | Result | Baseline / target |
 |---|---|---|---|---|
@@ -99,7 +150,7 @@ specificity 3.7, rationale 3.9.
 - **Design choice:** for safety we accept more false alarms, and the prompt says "when in
   doubt, flag".
 
-**C1 Router (0.93), 7 of 60 messages wrong.**
+**C1 in v2, the fixed router (0.93), 7 of 60 messages wrong. Kept for history.**
 - **Error pattern:** every error is on a boundary that is ambiguous for people too:
   - "can I run tomorrow?" is both question and plan;
   - gear and asthma statements are labelled `log` + `profile`;
@@ -130,7 +181,7 @@ specificity 3.7, rationale 3.9.
   - portion words like "footlong sub" and "a quiche", with the model over-estimating by 40–75%.
 - **Label quality:** one NutriBench label looks wrong ("507 g sweetened carbonated water" =
   0 kcal).
-- **Ukrainian meals:** the model does better here (MAE 42 kcal). These meals state their gram
+- **Ukrainian meals:** the model does better here (MAE 35 kcal in the final run, 42 in an earlier one). These meals state their gram
   amounts, and the dishes are common.
 - **Improve:** look up foods in a database (USDA FoodData Central / Open Food Facts) for the
   per-100 g values, and keep the LLM for splitting the meal and estimating portions. This
@@ -182,7 +233,7 @@ specificity 3.7, rationale 3.9.
     place for them);
   - targets are zones rather than exact paces.
 - **Safety:** the hard rules are checked by code, not trusted to the LLM, so safety fit is
-  the highest criterion (4.55).
+  the highest criterion (4.55 in v3, 4.8 in the final run).
 
 **C0 Interviewer.**
 - **Results:** all 10 slots filled for all 5 simulated athletes in 4.4–4.8 turns on average,
@@ -224,6 +275,35 @@ specificity 3.7, rationale 3.9.
 - **Improve:** add indirect attacks through images (text in a screenshot) and multi-turn
   attacks, and test with the cheaper Flash-Lite model.
 
+**End-to-end agent (new in v6).**
+- **Setup:** `evals/run_e2e.py` re-seeds the synthetic Demo Athlete (a year of watch data, three
+  weeks of logs) and sends 12 messages through the real agent: breakfast, a hangover with
+  relative dates, a plan to replace, a pure question, new gear, pain, impossible amounts, a
+  reminder, a user asking to skip confirmation, a question about the race, a red flag, and an
+  English dinner with wine. After each turn it reads the database.
+- **First run:** 11 of 12 cases, 33 of 34 checks. Two findings:
+  - "Вчора 2 пива, спав 5 годин" was logged correctly (beer yesterday, sleep today), and the
+    coach also proposed a session nobody asked for. In the second run it didn't: this case
+    varies between runs.
+  - "When is my next race?" passed by luck: the coach said it didn't know the race date. The
+    race's date and target were in the item's details, which were **not in the coach's
+    context**. A real bug for real users; fixed in `agent.context_block`.
+- **After the fix:** 12 of 12 cases, 34 of 34 checks; the coach now answers with the date and
+  days left. In both runs nothing reached the (fake) watch calendar without a tap, including
+  the message that asked for exactly that.
+- **Improve:** more multi-turn cases (answers like "так" to a question), and a check of the
+  reply language.
+
+**C2 sleep dating (found in the review, fixed in v6).** "Вчора 2 пива, спав 5 годин" put the
+sleep on yesterday. The prompt now says a leading "вчора" doesn't move the sleep, and three
+cases were added to the C2 set. All three pass; F1 0.91 → 0.92 on 43 cases.
+
+**Patterns (code, fixed in v6).** The first rule (3 tagged nights, a 5% difference) printed
+"11% higher sleep after a late meal" on random data. It now needs 5 tagged and 10 other nights
+and a Welch t of at least 2.5. Simulated on 200 random 90-day logs: a false pattern in 6.5% of
+them (t ≥ 2: 16.5%; old rule: about 40%). The price is sensitivity: a real 10% HRV drop after
+drinking is found in 43% of 90-day logs. For a health claim we prefer fewer false ones.
+
 ## Limitations of this evaluation
 
 - **Sets are small:** 15–60 cases each. A 1-case change moves accuracy by 2–7 points, so the
@@ -232,5 +312,5 @@ specificity 3.7, rationale 3.9.
   was not measured.
 - **Some metrics depend on an LLM judge:** C6 and C8. We used a different model family and
   kept the judge's comments in the result files so they can be checked.
-- **No end-to-end evaluation with real use yet:** the next step is to label two weeks of
-  real chats and measure the whole pipeline.
+- **End to end only on synthetic turns:** `evals/run_e2e.py` runs 12 real turns on the demo
+  athlete. The next step is to label two weeks of real chats and measure the whole system.

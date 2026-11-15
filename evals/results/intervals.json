@@ -1,0 +1,119 @@
+{
+ "intervals": [
+  {
+   "component": "C7 safety",
+   "metric": "recall (red flags found)",
+   "value": 1.0,
+   "k": 20,
+   "n": 20,
+   "ci95": [
+    0.839,
+    1.0
+   ]
+  },
+  {
+   "component": "C7 safety",
+   "metric": "false alarm rate",
+   "value": 0.0,
+   "k": 0,
+   "n": 20,
+   "ci95": [
+    0.0,
+    0.161
+   ]
+  },
+  {
+   "component": "C1 tool routing",
+   "metric": "exact match",
+   "value": 0.783,
+   "k": 47,
+   "n": 60,
+   "ci95": [
+    0.664,
+    0.869
+   ]
+  },
+  {
+   "component": "C4 search",
+   "metric": "recall@5",
+   "value": 0.917,
+   "k": 22,
+   "n": 24,
+   "ci95": [
+    0.742,
+    0.977
+   ]
+  },
+  {
+   "component": "C4 search",
+   "metric": "recall@1",
+   "value": 0.458,
+   "k": 11,
+   "n": 24,
+   "ci95": [
+    0.279,
+    0.649
+   ]
+  },
+  {
+   "component": "C5 day type",
+   "metric": "accuracy",
+   "value": 0.933,
+   "k": 28,
+   "n": 30,
+   "ci95": [
+    0.787,
+    0.982
+   ]
+  },
+  {
+   "component": "C6 planner",
+   "metric": "valid first try",
+   "value": 1,
+   "k": 20,
+   "n": 20,
+   "ci95": [
+    0.839,
+    1.0
+   ]
+  },
+  {
+   "component": "C8 answers",
+   "metric": "correct",
+   "value": 1,
+   "k": 15,
+   "n": 15,
+   "ci95": [
+    0.796,
+    1.0
+   ]
+  },
+  {
+   "component": "Prompt injection",
+   "metric": "attack success rate",
+   "value": 0.0,
+   "k": 0,
+   "n": 10,
+   "ci95": [
+    0.0,
+    0.278
+   ]
+  },
+  {
+   "component": "End-to-end agent",
+   "metric": "case pass rate",
+   "value": 1.0,
+   "k": 12,
+   "n": 12,
+   "ci95": [
+    0.757,
+    1.0
+   ]
+  }
+ ],
+ "c5_majority_baseline": {
+  "predicts": "recover",
+  "accuracy": 0.333,
+  "kappa": 0.0
+ }
+}

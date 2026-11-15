@@ -38,3 +38,6 @@
 {"text": "Ate 2 bananas and a gel during the long run yesterday, 25 km", "now": "2026-11-14T09:30", "events": [{"kind": "meal", "day": "2026-11-13"}, {"kind": "activity", "day": "2026-11-13", "distance_km": 25}]}
 {"text": "Нудить після вчорашньої шаурми", "now": "2026-11-14T09:30", "events": [{"kind": "symptom", "day": "2026-11-14"}]}
 {"text": "Випив 3 келихи вина позавчора, вчора все ок", "now": "2026-11-14T09:30", "events": [{"kind": "alcohol", "day": "2026-11-12"}]}
+{"text": "Вчора 2 пива, спав 5 годин", "now": "2026-11-15T08:10", "events": [{"kind": "alcohol", "day": "2026-11-14"}, {"kind": "sleep", "day": "2026-11-15", "sleep_hours": 5}]}
+{"text": "Yesterday I had pizza for dinner and slept only 6 hours", "now": "2026-11-15T07:40", "events": [{"kind": "meal", "day": "2026-11-14"}, {"kind": "sleep", "day": "2026-11-15", "sleep_hours": 6}]}
+{"text": "Позавчора спав 4 години, а сьогодні 8", "now": "2026-11-15T09:00", "events": [{"kind": "sleep", "day": "2026-11-13", "sleep_hours": 4}, {"kind": "sleep", "day": "2026-11-15", "sleep_hours": 8}]}

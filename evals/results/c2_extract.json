@@ -1,16 +1,16 @@
 {
  "component": "c2_extract",
  "metrics": {
-  "n": 40,
-  "kind_day_f1": 0.914,
-  "kind_day_precision": 0.889,
-  "kind_day_recall": 0.941,
-  "kind_f1": 0.971,
-  "day_accuracy": 0.941,
+  "n": 43,
+  "kind_day_f1": 0.915,
+  "kind_day_precision": 0.885,
+  "kind_day_recall": 0.947,
+  "kind_f1": 0.966,
+  "day_accuracy": 0.946,
   "field_accuracy": 1.0,
-  "field_checks": 19
+  "field_checks": 23
  },
- "n_failures": 5,
+ "n_failures": 6,
  "failures": [
   {
    "text": "Випив 0.33 пива ввечері і з'їв піцу маргариту",
@@ -104,6 +104,25 @@
     [
      "symptom",
      "2026-11-14"
+    ]
+   ]
+  },
+  {
+   "text": "Випив 3 келихи вина позавчора, вчора все ок",
+   "gold": [
+    [
+     "alcohol",
+     "2026-11-12"
+    ]
+   ],
+   "pred": [
+    [
+     "alcohol",
+     "2026-11-12"
+    ],
+    [
+     "note",
+     "2026-11-13"
     ]
    ]
   }
