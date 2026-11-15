@@ -73,15 +73,11 @@ The rules come from treating every model output and every file as untrusted:
 
 ## v6 changes (2026-11-15)
 
-- **Local demo mode.** `docker compose up -d` (Postgres 17 with pgvector), then
-  `uv run python -m app.demo seed` and `/demo-login`. Only an OpenRouter key is needed:
-  Langfuse and Firebase settings are optional (tracing is off without keys). intervals.icu is
-  simulated for athlete id `demo`: synthetic wellness and activities from the date, and an
-  in-memory calendar for "Send to watch".
-- **Demo mode can't reach production.** `/demo-login` and the fake intervals.icu exist only when
-  `ENV=dev`; `/demo-login` also needs a request from localhost without a proxy header. Cloud Run
-  runs with `ENV=prod`, and `app/demo.py` never ships data (`.gcloudignore` uploads only `app/`,
-  `migrations/` and the lock files). Tests: `tests/test_demo.py`.
+- **Sample watch data.** Anyone without Garmin or intervals.icu can choose it in setup: their
+  account is connected to a simulated intervals.icu athlete (`app/demo.py`): wellness and
+  activities generated from the date, an in-memory calendar for "Send to watch", no network.
+  The same simulated athlete is used by the end-to-end eval. A local `/demo-login` existed
+  briefly in v6 and was removed: the deliverable is the deployed app.
 - **Open sign-up (`OPEN_SIGNUP=true` in production).** Any verified Google account can sign
   in. People on `ALLOWED_EMAILS` are members and use the app's OpenRouter key with a monthly cap.
   Everyone else is a guest: `llm.check_budget` refuses every model and embedding call until the
@@ -89,5 +85,3 @@ The rules come from treating every model output and every file as untrusted:
   encrypted). Setup step 1 asks for it. Guests without Garmin can choose **sample watch data**:
   their account is connected to the simulated athlete, so nothing reaches a real watch. Tests:
   `tests/test_open_signup.py`. Risk left: guests' rows and files use our Neon storage.
-- **Checked on a clean copy:** the tracked files copied to an empty folder, a fresh database,
-  only an OpenRouter key: migrations, seed, demo login and a real chat turn worked.

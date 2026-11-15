@@ -42,7 +42,7 @@ intervals are wide, so read the numbers as levels, not as small differences.
 | C7 Safety gate | 40 (20 red flags) | recall · false-alarm rate | **1.00** · 0.00 | 0.84–1.00 · 0.00–0.16 | target recall 1.0 | Missing a red flag is the costly error, so recall first; false alarms only cost a warning |
 | C1 Tool routing (agent) | 60 | macro-F1 · exact match · no write on a pure question | 0.83 · 0.78 · **1.00** | exact 0.66–0.87 | v2 fixed router 0.93 · 0.90 | Tools are a multi-label choice, so F1; a write on a question is the harmful error, so it is reported alone |
 | C2 Log extractor | 43 (59 gold events) | (kind, day) F1 · day accuracy · field accuracy | **0.92** · 0.95 · 1.00 (23 checks) | – | target F1 ≥ 0.80 | A log is useful only with the right kind **and** the right day; dates are the hard part in UA/EN |
-| C3 Nutrition | 50 NutriBench + 10 Ukrainian | kcal MAE · share within ±20% | **69 kcal** · 76% (NB); **35 kcal** (UA) | – | predict-the-mean 191 / 112 kcal | MAE is in the unit the user feels (kcal); ±20% is the usual tolerance of food labels |
+| C3 Nutrition | 50 NutriBench + 10 Ukrainian | kcal MAE · share within ±20% | **72 kcal** · 73% (NB); **35 kcal** · 90% (UA); earlier runs 69 kcal | – | predict-the-mean 191 / 112 kcal | MAE is in the unit the user feels (kcal); ±20% is the usual tolerance of food labels |
 | C4 Facts from files | 1 export, 24 planted facts | recall · precision | **1.00** · 1.00 (27 proposed) | – | – | Facts are confirmed by the user, so recall matters most; precision shows the review load |
 | C4 Search | 24 questions | recall@5 · recall@1 · MRR | **0.92** · 0.46 · 0.60 | r@5 0.74–0.98 | v1 chunks 0.83 · 0.29 · 0.48 | The coach reads the top 5 excerpts, so recall@5 is what reaches the model |
 | C5 Day type | 30 | accuracy · Cohen's κ · within one level | **0.93** · **0.91** · 1.00 | acc 0.79–0.98 | majority class 0.33 · κ 0; device-only rule 0.60 · κ 0.49 | Classes are ordered and imbalanced: κ corrects for chance, "within one level" shows how bad the misses are |
@@ -52,8 +52,10 @@ intervals are wide, so read the numbers as levels, not as small differences.
 | Prompt injection | 10 attacks | attack success rate · uses the real fact | **0.00** · 1.00 | 0.00–0.28 | without the wrapper: 0.00 · 1.00 | Any successful attack is a failure, so the rate of success; utility shows the defence didn't break answers |
 | **End-to-end agent (new)** | 12 turns, 34 checks | case pass rate · check accuracy · nothing sent to the watch without a tap | **1.00** · 1.00 · **yes** (12/12); first run 0.92 | cases 0.76–1.00 | – | Checks what lands in the database (kinds, dates, items, reminders, proposals) after a real turn, not just the reply |
 
-C3 macro detail (MAE, NutriBench / Ukrainian): carbs 11.4 / 3.2 g (baseline 28.7 / 15.7),
-protein 2.7 / 1.8 g (8.5 / 9.8), fat 4.2 / 2.8 g (9.4 / 9.0). C6 judge criteria (1–5): safety
+C3 macro detail (MAE, NutriBench / Ukrainian, run of 15 Nov evening): carbs 11.9 / 3.2 g
+(baseline 28.7 / 15.7), protein 2.7 / 1.7 g (8.5 / 9.8), fat 4.2 / 2.6 g (9.4 / 9.0). One
+NutriBench meal failed to parse (49 scored). Across three runs the NutriBench kcal MAE was 68.8,
+69.1 and 71.5: the spread between runs is about 3 kcal. C6 judge criteria (1–5): safety
 fit 4.8, respects the athlete's plan 4.2, specificity 3.6, rationale 4.0.
 
 ### What is covered how

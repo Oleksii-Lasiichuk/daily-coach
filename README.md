@@ -74,23 +74,29 @@ Light and dark themes.
 (morning and evening ones have one-tap answers). A Cloud Scheduler job runs every 15 minutes: it
 syncs intervals.icu hourly, sends reminders, a Sunday week summary and a nightly insight.
 
-## Quick start: local demo (about 5 minutes)
+## Use it
 
-Needs [uv](https://docs.astral.sh/uv/), Docker and an [OpenRouter](https://openrouter.ai) key.
-No Google, Neon, Langfuse or intervals.icu account: you sign in as a synthetic **Demo Athlete**
-with a year of made-up watch data, and intervals.icu is simulated for that athlete.
+The app is deployed at **https://coach.lasiichuk.com**.
 
-```bash
-docker compose up -d
-```
+1. Sign in with any Google account.
+2. Setup step 1: paste your own [OpenRouter key](https://openrouter.ai/settings/keys) (the AI
+   runs on it, about $0.005–0.02 a message), then connect intervals.icu, or press
+   **Use sample watch data** if you don't have Garmin or intervals.icu.
+3. Steps 2 to 5: about you, goals, optional files (e.g. a ChatGPT export), a few questions.
+4. Today: tell the coach about your day, e.g.
+   `Вчора 2 пива, спав 5 годин, зранку важка голова. На сьогодні 6 по 800. Що робити?`
+
+## Run locally (development)
+
+Requirements: [uv](https://docs.astral.sh/uv/), Postgres with pgvector (Neon or your own), an
+OpenRouter key, a Firebase project with Google sign-in, and optionally a Langfuse project
+(tracing is off without its keys). Account setup step by step: [`docs/setup.md`](docs/setup.md).
 
 ```bash
 cp -n .env.example .env
 ```
 
-(`-n` keeps an existing `.env`.) In `.env` set three values: `DATABASE_URL=postgresql://coach:coach@localhost:5433/coach`,
-`APP_ENCRYPTION_KEY` (generate it with the command in the file) and `OPENROUTER_API_KEY`.
-Leave the rest empty. Then:
+Fill in `.env` (`-n` keeps an existing one), then:
 
 ```bash
 uv sync
@@ -101,28 +107,11 @@ uv run python -m app.migrate
 ```
 
 ```bash
-uv run python -m app.demo seed
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
-```bash
-uv run uvicorn app.main:app --port 8000
-```
-
-Open http://localhost:8000 and press **Open the demo athlete**. Try:
-`Вчора 2 пива, спав 5 годин, зранку важка голова. На сьогодні 6 по 800. Що робити?`
-
-The demo login exists only with `ENV=dev` and on localhost; in production it returns 404.
-`uv run python -m app.demo seed` resets the demo athlete at any time.
-
-## Run with your own accounts
-
-Requirements: a Neon (or any Postgres with pgvector) database, an OpenRouter key, a Langfuse
-project (optional: tracing is off without it) and a Firebase project with Google sign-in.
-Step-by-step account setup: [`docs/setup.md`](docs/setup.md).
-
-Fill in every value in `.env`, run the migration and start the app as above, then open
-http://localhost:8000 and sign in with an email listed in `ALLOWED_EMAILS`. The first-run
-window asks you to connect intervals.icu (API key + athlete ID).
+Open http://localhost:8000. People in `ALLOWED_EMAILS` use the app's OpenRouter key; with
+`OPEN_SIGNUP=true` anyone else can sign in and adds their own key.
 
 ## Tests and evals
 
@@ -130,8 +119,8 @@ window asks you to connect intervals.icu (API key + athlete ID).
 uv run pytest
 ```
 
-Tests use the database in `DATABASE_URL` (the Docker one works) and create and delete their
-own users under `@test.invalid`.
+Tests use the database in `DATABASE_URL` (use a dev branch, never production) and create and
+delete their own users under `@test.invalid`.
 
 The tests check that every route needs sign-in, that one user can never read or change
 another's data, the allowlist, the Origin (CSRF) check, encryption, the budget cap, the
@@ -149,8 +138,8 @@ discussion is in [`docs/report/05-evaluation.md`](docs/report/05-evaluation.md).
 uv run python -m evals.run_e2e
 ```
 
-The end-to-end check: 12 real chat turns on the demo athlete, verified in the database (needs
-`ENV=dev`).
+The end-to-end check: 12 real chat turns on a synthetic athlete, verified in the database (needs
+`ENV=dev`; it seeds the athlete itself).
 
 ```bash
 uv run python -m evals.stats

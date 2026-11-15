@@ -1,15 +1,14 @@
 ---
 name: ui-check
-description: Check a page or UI change in the running app at 375 px and 1280 px, light and dark, on the demo athlete. Use for /ui-check or before calling any UI work done.
+description: Check a page or UI change in the running app at 375 px and 1280 px, light and dark, on a test account with sample watch data. Use for /ui-check or before calling any UI work done.
 ---
 
 Check the page or change named in the user's message.
 
 ## Steps
 
-1. Make sure the app runs locally on the demo athlete (README "Quick start"): Docker Postgres,
-   `uv run python -m app.demo seed`, `uv run uvicorn app.main:app --port 8000`, then open
-   `/demo-login`. Never check UI on a real account.
+1. Run the app (`uv run uvicorn app.main:app --port 8000`) and sign in with a test account
+   that uses **sample watch data** (setup step 1). Never check UI on a real person's data.
 2. For each of 375 px and 1280 px, light and dark:
    - open the page, take a screenshot, read the text;
    - check `document.documentElement.scrollWidth` equals the viewport width (no sideways

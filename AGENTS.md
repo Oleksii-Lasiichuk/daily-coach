@@ -77,7 +77,7 @@ Full rules and reasons: `docs/design-guidelines.md`. Read it before UI, auth or 
 ## Done means
 
 - Code runs; the relevant eval script runs and its result is recorded.
-- UI and agent checks run on the local demo athlete (`/demo-login`), never on a real account.
+- UI and agent checks use a test account with sample watch data, never a real person's data.
 - Report what changed, what was verified, what is not verified.
 
 ## Communication
