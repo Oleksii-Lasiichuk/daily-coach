@@ -150,7 +150,7 @@ sequenceDiagram
   T->>DB: 3 log rows, each with Undo
   A->>T: plan_sessions("6×800 today?")
   T->>T: C5: sleep 5.2 h vs 7.1, HRV 47 vs 67, RHR 55 vs 49, beer → Recovery
-  T->>T: C6: replace 6×800 m with an easy 30 min session; validator OK
+  T->>T: C6: replace 6×800 m with an easy 30 min session, validator OK
   T->>DB: proposal (status: proposed)
   A-->>U: short answer in Ukrainian + session card
   U->>App: presses Send to watch
@@ -207,12 +207,12 @@ Halving the chunk size from 2,800 to 1,400 characters raised search recall@5 fro
 
 ```mermaid
 flowchart LR
-  X["Untrusted text<br/>(file excerpt, screenshot,<br/>tool result)"] --> W["1. Wrapped as<br/>untrusted_file_excerpts"]
-  W --> R["2. Prompt rule:<br/>data, never instructions"]
-  R --> K["3. Code: update_profile accepts<br/>10 fixed keys, values ≤ 200 chars"]
-  K --> F["4. Facts from files are<br/>only proposed"]
-  F --> B["5. Watch only via the<br/>Send to watch button"]
-  B --> U["6. Every write has Undo"]
+  X["Untrusted text<br/>(file excerpt, screenshot,<br/>tool result)"] --> W["Layer 1: Wrapped as<br/>untrusted_file_excerpts"]
+  W --> R["Layer 2: Prompt rule:<br/>data, never instructions"]
+  R --> K["Layer 3: Code: update_profile accepts<br/>10 fixed keys, values ≤ 200 chars"]
+  K --> F["Layer 4: Facts from files are<br/>only proposed"]
+  F --> B["Layer 5: Watch only via the<br/>Send to watch button"]
+  B --> U["Layer 6: Every write has Undo"]
 ```
 <sub><b>Figure 5.</b> Layers 3–6 don't depend on the model. Even if a model obeys an injected
 instruction, it can't change its own instructions, can't save a file's claims as facts, and can't
