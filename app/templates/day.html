@@ -1,18 +1,52 @@
 {% extends "base.html" %}
 {% block title %}{{ day | fdate("dm") }} · Daily Coach{% endblock %}
 {% block main %}
-<div class="page" style="max-width:860px">
-  <p class="small muted"><a href="/journal?month={{ day.strftime('%Y-%m') }}">{{ _("Journal") }}</a> · {{ day | fdate("full") }}</p>
+<div class="page" style="max-width:980px">
+  <div class="daynav">
+    <a class="btn sm ghost" href="/day/{{ prev_d.isoformat() }}" aria-label="{{ _('Previous day') }}">{{ icon("chevron-left") }}</a>
+    <div class="grow"><h1>{{ day | fdate("full") }}</h1>{% if day == today %}<span class="tiny muted">{{ _("Today") }}</span>{% endif %}</div>
+    {% if day != today %}<a class="btn sm ghost" href="/day/{{ today.isoformat() }}">{{ _("Today") }}</a>{% endif %}
+    {% if next_d <= today %}<a class="btn sm ghost" href="/day/{{ next_d.isoformat() }}" aria-label="{{ _('Next day') }}">{{ icon("chevron-right") }}</a>{% endif %}
+  </div>
   {% if error %}<p class="notice error small" style="margin-top:10px">{{ _("The AI couldn't finish. Try again.") }}</p>{% endif %}
-  <div class="card" style="margin-top:10px">
+
+  <div class="card" style="margin-top:12px">
     <div class="row between">
       {% if assessment %}<p class="daytype {{ assessment.day_type }}">{{ _(DAY_NAMES[assessment.day_type] ~ " day") }}</p>{% else %}<p class="daytype">{{ _("Not assessed yet") }}</p>{% endif %}
       {% if not is_future %}<form method="post" action="/day/{{ day.isoformat() }}/assess"><button class="btn sm" title="{{ _('Reads that day\'s watch data and logs and decides the day type.') }}">{{ icon("refresh") }}{{ _("Assess again") if assessment else _("Assess this day") }}</button></form>{% endif %}
     </div>
     {% if assessment %}<p class="small" style="color:var(--ink-2)">{{ assessment.inputs.summary or "" }}</p>
       <ul class="list small" style="margin-top:6px">{% for r in assessment.reasons %}<li><span class="grow">{{ r.text }}</span><span class="badge">{{ r.evidence }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if stats %}
+    <div class="tiles-grid" style="margin-top:12px">
+      {% for s in stats %}
+      <div class="tile static" ><span class="k">{{ _(s.label) }}</span><span class="v">{{ s.value }}{% if s.unit %}<small> {{ _(s.unit) }}</small>{% endif %}</span>
+        <span class="u">{{ _("usual") }} {{ s.usual if s.usual is not none else "–" }}{% if s.usual and s.key != "form" and s.value != s.usual %} · {{ "+" if s.value > s.usual }}{{ ((s.value - s.usual) / s.usual * 100) | round | int }}%{% endif %}</span></div>
+      {% endfor %}
+    </div>
+    <p class="tiny faint" style="margin-top:6px">{{ _("“usual” is your average of the 7 days before. One value per day from Garmin via intervals.icu.") }}</p>
+    {% elif not is_future %}<p class="small muted" style="margin-top:8px">{{ _("No watch data for this day.") }}</p>{% endif %}
   </div>
+
+  {% if data.meta and not is_future %}
+  <div class="card chartbox" data-n="0" data-m1="sleep_h" data-m2="hrv" style="margin-top:12px">
+    <div class="chart-controls">
+      <select class="m1 dot1" aria-label="{{ _('First metric') }}">{% for m in data.meta %}<option value="{{ m.key }}">{{ _(m.label) }}</option>{% endfor %}</select>
+      <select class="m2 dot2" aria-label="{{ _('Second metric') }}"><option value="">{{ _("None") }}</option>{% for m in data.meta %}<option value="{{ m.key }}">{{ _(m.label) }}</option>{% endfor %}</select>
+      <span class="tiny muted" style="margin-left:auto">{{ _("3 weeks before and after") }}</span>
+    </div>
+    <div class="plot"></div>
+    <div class="readout tiny"></div>
+  </div>
+  {% endif %}
+
   <div class="grid2" style="margin-top:12px">
+    <div class="card"><h2>{{ _("Training") }}</h2>
+      {% for a in acts %}<div class="act-row"><b class="small">{{ a.name or a.type }}</b>
+        <div class="tiny muted">{{ a.type }}{% if a.km %} · {{ a.km }} km{% endif %} · {{ a.minutes }} {{ _("min") }}{% if a.avg_hr %} · {{ _("avg HR") }} {{ a.avg_hr | int }}{% endif %}{% if a.max_hr %} / {{ a.max_hr | int }}{% endif %}{% if a.elev %} · ↑{{ a.elev | int }} m{% endif %}{% if a.load %} · {{ _("load") }} {{ a.load }}{% endif %}{% if a.kcal %} · {{ a.kcal | int }} kcal{% endif %}</div></div>{% endfor %}
+      {% for p in proposals %}<div style="margin-top:10px">{% include "partials/session_card.html" %}</div>{% endfor %}
+      {% if not acts and not proposals %}<p class="small muted">{{ _("No session recorded.") }}</p>{% endif %}
+    </div>
     <div class="card"><h2>{{ _("Log") }}</h2><p class="small muted">{{ totals.kcal | int }} kcal · {{ _("P") }} {{ totals.protein_g | int }} · {{ _("C") }} {{ totals.carbs_g | int }} · {{ _("F") }} {{ totals.fat_g | int }}</p>
       {% if logs %}<ul class="list small" style="margin-top:6px">{% for lg in logs %}{% with next="/day/" ~ day.isoformat() %}{% include "partials/log_row.html" %}{% endwith %}{% endfor %}</ul>
       {% else %}<p class="small muted">{{ _("Nothing logged.") }}</p>{% endif %}
@@ -23,10 +57,15 @@
         <div><button class="btn sm primary">{{ icon("plus") }}{{ _("Add") }}</button> <span class="tiny muted">{{ _("Read like a chat message, but always dated this day.") }}</span></div>
       </form>{% endif %}
     </div>
-    <div class="card"><h2>{{ _("Session") }}</h2>
-      {% if proposal %}<p>{{ proposal.workout.name }} <span class="badge">{{ _({"applied": "On watch", "proposed": "Suggested", "undone": "Removed"}.get(proposal.status, proposal.status)) }}</span></p><p class="small muted" style="margin-top:4px">{{ proposal.rationale }}</p>
-      {% else %}<p class="small muted">{{ _("No session recorded.") }}</p>{% endif %}</div>
   </div>
   {% if messages %}<div class="card" style="margin-top:12px"><h2>{{ _("Conversation") }}</h2><div class="thread" style="padding:8px 0;max-width:none">{% for m in messages %}{% include "partials/msg.html" %}{% endfor %}</div></div>{% endif %}
 </div>
+{% endblock %}
+{% block body %}{{ super() }}
+{% if data.meta and not is_future %}
+<link rel="stylesheet" href="/static/css/uplot.min.css">
+<script src="/static/js/uplot.min.js"></script>
+<script src="/static/js/charts.js?v=1"></script>
+<script>initCharts({ data: {{ data | tojson }}, lang: {{ lang | tojson }}, labels: {{ {"open": _("Open this day")} | tojson }}, markDay: {{ day.isoformat() | tojson }}, storeKey: "day", height: 220 });</script>
+{% endif %}
 {% endblock %}

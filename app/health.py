@@ -14,9 +14,14 @@ from app.db import connection
 log = logging.getLogger("health")
 RUN_TYPES = {"Run", "TrailRun", "VirtualRun", "Treadmill"}
 
+# intervals.icu wellness field -> our key. Garmin fills a subset; empty ones are skipped.
 FIELDS = {"hrv": "hrv", "restingHR": "resting_hr", "sleepSecs": "sleep_h", "sleepScore":
-          "sleep_score", "weight": "weight_kg", "vo2max": "vo2max", "ctl": "fitness",
-          "atl": "fatigue", "steps": "steps"}
+          "sleep_score", "sleepQuality": "sleep_quality", "avgSleepingHR": "sleep_hr",
+          "weight": "weight_kg", "bodyFat": "body_fat", "vo2max": "vo2max", "ctl": "fitness",
+          "atl": "fatigue", "rampRate": "ramp", "steps": "steps", "stress": "stress",
+          "readiness": "readiness", "spO2": "spo2", "respiration": "respiration",
+          "kcalConsumed": "kcal_in"}
+VERSION = 2  # bump when FIELDS grow: the next sync re-reads the whole year
 
 
 def last_synced(user_id: str) -> date | None:
@@ -30,7 +35,10 @@ def sync(user_id: str, today: date, days: int = 365) -> int:
     """Fetches what's missing (from the last synced day − 3, or a year back). Returns rows."""
     conn = intervals.connection_for(user_id)
     last = last_synced(user_id)
-    first = (last - timedelta(days=3)) if last else today - timedelta(days=days)
+    with connection() as c:
+        current = c.execute("select exists (select 1 from wellness_daily where user_id = %s and "
+                            "(data->>'v')::int = %s) as ok", (user_id, VERSION)).fetchone()["ok"]
+    first = (last - timedelta(days=3)) if last and current else today - timedelta(days=days)
     wellness = intervals.get_wellness(conn, first, today)
     acts = intervals.get_activities(conn, first, today)
     with connection() as c:
@@ -38,7 +46,8 @@ def sync(user_id: str, today: date, days: int = 365) -> int:
             cur.executemany(
                 "insert into wellness_daily (user_id, day, data) values (%s, %s, %s) "
                 "on conflict (user_id, day) do update set data = excluded.data",
-                [(user_id, w["id"], Jsonb({FIELDS[k]: w.get(k) for k in FIELDS}))
+                [(user_id, w["id"], Jsonb({"v": VERSION} | {
+                    FIELDS[k]: w.get(k) for k in FIELDS if w.get(k) is not None}))
                  for w in wellness if w.get("id")])
             cur.executemany(
                 "insert into activities (user_id, id, day, type, data) values (%s, %s, %s, %s, %s) "
@@ -49,6 +58,8 @@ def sync(user_id: str, today: date, days: int = 365) -> int:
                       "minutes": round((a.get("moving_time") or 0) / 60),
                       "load": a.get("icu_training_load"), "avg_hr": a.get("average_heartrate"),
                       "feel": a.get("feel"), "rpe": a.get("icu_rpe"),
+                      "max_hr": a.get("max_heartrate"), "elev": a.get("total_elevation_gain"),
+                      "kcal": a.get("calories"),
                       "gear": (a.get("gear") or {}).get("name") if isinstance(
                           a.get("gear"), dict) else None}))
                  for a in acts if a.get("id")])
@@ -167,8 +178,12 @@ def series(user_id: str, first: date, last: date) -> list[dict]:
     out = []
     for r in rows:
         d = dict(r["data"])
+        d.pop("v", None)
         if d.get("sleep_h"):
             d["sleep_h"] = d["sleep_h"] / 3600
+        if isinstance(d.get("fitness"), (int, float)) and isinstance(d.get("fatigue"),
+                                                                      (int, float)):
+            d["form"] = d["fitness"] - d["fatigue"]
         d = {k: (round(v, 1) if isinstance(v, float) else v) for k, v in d.items()}
         out.append({"day": r["day"].isoformat(), **d})
     return out

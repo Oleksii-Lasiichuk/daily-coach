@@ -60,19 +60,31 @@ def spark(values: list[float | None], w: int = 200, h: int = 44,
     return "M" + " L".join(f"{x},{y}" for x, y in coords)
 
 
-METRICS = [  # key, label, unit, what it means (shown on the card)
-    ("hrv", "HRV", "ms", "Heart rate variability overnight. Higher than your usual = recovered; "
-     "a drop of 10% or more = stress, illness, alcohol or hard training."),
-    ("resting_hr", "Resting HR", "bpm", "Lower is better. 5+ bpm above your usual often means "
+# key, label, unit, decimals, what it means. Only metrics with data are offered.
+METRICS = [
+    ("hrv", "HRV", "ms", 0, "Heart rate variability overnight. Higher than your usual = "
+     "recovered; a drop of 10% or more = stress, illness, alcohol or hard training."),
+    ("resting_hr", "Resting HR", "bpm", 0, "Lower is better. 5+ bpm above your usual often means "
      "fatigue or getting ill."),
-    ("sleep_h", "Sleep", "h", "Time asleep from your watch."),
-    ("weight_kg", "Weight", "kg", "From your scale or what you entered in Garmin."),
-    ("fitness", "Fitness", "", "intervals.icu fitness (CTL): your training load over the last "
-     "6 weeks. Rises slowly when you train consistently."),
-    ("fatigue", "Fatigue", "", "intervals.icu fatigue (ATL): load of the last week. Fitness minus "
-     "fatigue is your form."),
-    ("vo2max", "VO2max", "", "Estimated by your watch from runs with heart rate."),
-    ("steps", "Steps", "", "Daily steps."),
+    ("sleep_h", "Sleep", "h", 1, "Time asleep from your watch."),
+    ("sleep_score", "Sleep score", "", 0, "Garmin's 0–100 sleep score."),
+    ("sleep_quality", "Sleep quality", "", 0, "intervals.icu sleep quality (1 great … 4 poor)."),
+    ("sleep_hr", "Sleeping HR", "bpm", 0, "Average heart rate while asleep."),
+    ("stress", "Stress", "", 0, "Average stress for the day, as sent by your watch."),
+    ("readiness", "Readiness", "", 0, "Training readiness, as sent by your watch."),
+    ("spo2", "SpO2", "%", 0, "Blood oxygen overnight."),
+    ("respiration", "Respiration", "brpm", 1, "Breaths per minute while asleep."),
+    ("weight_kg", "Weight", "kg", 1, "From your scale or what you entered in Garmin."),
+    ("body_fat", "Body fat", "%", 1, "From a smart scale."),
+    ("vo2max", "VO2max", "", 0, "Estimated by your watch from runs with heart rate."),
+    ("fitness", "Fitness", "", 0, "intervals.icu fitness (CTL): training load of the last 6 "
+     "weeks. Rises slowly when you train consistently."),
+    ("fatigue", "Fatigue", "", 0, "intervals.icu fatigue (ATL): load of the last week."),
+    ("form", "Form", "", 0, "Fitness minus fatigue. −10 to −30: building; below −30: too much; "
+     "above +5: fresh."),
+    ("load", "Training load", "", 0, "Sum of the day's session loads (intervals.icu)."),
+    ("km", "Distance", "km", 1, "Total distance of the day's sessions."),
+    ("steps", "Steps", "", 0, "Daily steps."),
 ]
 
 
@@ -83,9 +95,52 @@ def _num(v) -> float | None:
         return None
 
 
+def chart_data(user_id: str, today: date, days: int = 730) -> dict:
+    """Every day of the last `days` (gaps as null) for the interactive charts."""
+    first = today - timedelta(days=days - 1)
+    rows = {r["day"]: r for r in health.series(user_id, first, today)}
+    acts: dict[str, dict] = {}
+    for a in health.activities(user_id, first, today):
+        d = acts.setdefault(a["day"], {"load": 0, "km": 0})
+        d["load"] += a.get("load") or 0
+        d["km"] = round(d["km"] + (a.get("km") or 0), 1)
+    dates = [(first + timedelta(days=i)).isoformat() for i in range(days)]
+    start = next((i for i, d in enumerate(dates) if d in rows or d in acts), len(dates) - 1)
+    dates = dates[start:]
+    series, meta = {}, []
+    for key, label, unit, dec, about in METRICS:
+        src = acts if key in ("load", "km") else rows
+        vals = [(src.get(d) or {}).get(key) for d in dates]
+        vals = [v if isinstance(v, (int, float)) else None for v in vals]
+        if key in ("load", "km"):
+            vals = [v or None for v in vals]
+        if sum(v is not None for v in vals) < 2:
+            continue
+        series[key] = vals
+        meta.append({"key": key, "label": label, "unit": unit, "dec": dec, "about": about})
+    return {"dates": dates, "series": series, "meta": meta}
+
+
+def tiles(rows: list[dict], meta: list[dict], today: date) -> list[dict]:
+    """Latest value, 7-day and 30-day averages per metric."""
+    def avg(key: str, dec: int, n: int):
+        v = [r[key] for r in rows if r["day"] > (today - timedelta(days=n)).isoformat()
+             and isinstance(r.get(key), (int, float))]
+        return round(sum(v) / len(v), dec or None) if v else None
+
+    out = []
+    for m in meta:
+        if m["key"] in ("load", "km"):
+            continue
+        last, last_day = health.latest(rows, m["key"])
+        if last is not None:
+            out.append(m | {"last": last, "last_day": last_day, "avg7": avg(m["key"], m["dec"], 7),
+                            "avg30": avg(m["key"], m["dec"], 30)})
+    return out
+
+
 @router.get("/health", response_class=HTMLResponse)
-def health_page(request: Request, days: int = 90, user: store.User = Depends(current_user)):
-    days = days if days in (30, 90, 365) else 90
+def health_page(request: Request, user: store.User = Depends(current_user)):
     today = _today(user)
     connected = store.get_secret(user.id, "intervals") is not None
     sync_error = None
@@ -96,27 +151,9 @@ def health_page(request: Request, days: int = 90, user: store.User = Depends(cur
             sync_error = str(e)
     else:
         health.maybe_sync(user.id, datetime.now(ZoneInfo(user.time_zone)))
-    rows = health.series(user.id, today - timedelta(days=days), today)
     profile = store.get_profile(user.id)
-    goal_w = _num((profile.get("target_weight_kg") or {}).get("value"))
-    metrics = []
-    for key, label, unit, about in METRICS:
-        vals = [r.get(key) for r in rows]
-        if days > 90:  # a year of daily points is noise; draw the 7-day average
-            vals = rolling(vals, 7)
-        last, last_day = health.latest(rows, key)
-        nums = [v for v in vals if isinstance(v, (int, float))]
-        if not nums:
-            continue
-        lo, hi = min(nums), max(nums)
-        m = {"key": key, "label": label, "unit": unit, "about": about, "last": last,
-             "last_day": last_day, "avg": round(sum(nums) / len(nums), 1), "min": lo, "max": hi}
-        if key == "weight_kg" and goal_w:
-            lo, hi = min(lo, goal_w), max(hi, goal_w)
-            m["goal"] = goal_w
-            m["goal_y"] = round(44 - 3 - (goal_w - lo) / ((hi - lo) or 1) * 38, 1)
-        m["path"] = spark(vals, lo=lo, hi=hi)
-        metrics.append(m)
+    data = chart_data(user.id, today)
+    rows = health.series(user.id, today - timedelta(days=30), today)
     items = [f for f in store.list_facts(user.id, status=None)
              if f["category"] in ("health", "injury", "medication", "lab")]
     with connection() as c:
@@ -124,13 +161,14 @@ def health_page(request: Request, days: int = 90, user: store.User = Depends(cur
                               "(until is null or until >= %s) order by id",
                               (user.id, today)).fetchall()
     zones = (profile.get("sport_settings") or {}).get("value") or {}
-    pain = health.pain_trend(user.id, today, max(days, 30))
+    pain = health.pain_trend(user.id, today, 90)
     for p in pain:
         p["path"] = spark([v for _, v in p["points"]], lo=0, hi=10)
     return templates.TemplateResponse(request, "health.html", shell(
-        user, "/health", days=days, metrics=metrics, items=items, reminders=reminders, zones=zones,
-        connected=connected, sync_error=sync_error, today=today, pain=pain, goal_w=goal_w,
-        patterns=patterns.find(user.id, today), has_wellness=bool(rows)))
+        user, "/health", data=data, tiles=tiles(rows, data["meta"], today), items=items,
+        reminders=reminders, zones=zones, connected=connected, sync_error=sync_error,
+        today=today, pain=pain, patterns=patterns.find(user.id, today),
+        goal_w=_num((profile.get("target_weight_kg") or {}).get("value"))))
 
 
 @router.get("/training", response_class=HTMLResponse)
@@ -169,13 +207,8 @@ def training(request: Request, week: str = "", user: store.User = Depends(curren
                      "type": (assessments.get(d) or {}).get("day_type")})
     items = store.list_facts(user.id, status=None)
     gear = [f for f in items if f["category"] == "gear"]
-    races = [f for f in items if f["category"] in ("race", "goal")]
-    for r in races:
-        try:
-            when = date.fromisoformat(str((r.get("details") or {}).get("date") or "")[:10])
-            r["days_left"] = (when - today).days
-        except ValueError:
-            r["days_left"] = None
+    goals_ctx = goal_cards(user.id, [f for f in items if f["category"] in ("race", "goal")],
+                           today)
     month = health.activities(user.id, today - timedelta(days=28), today)
     load = {}
     for a in month:
@@ -184,7 +217,72 @@ def training(request: Request, week: str = "", user: store.User = Depends(curren
         t["km"] = round(t["km"] + (a.get("km") or 0), 1)
         t["min"] += a.get("minutes") or 0
     return templates.TemplateResponse(request, "training.html", shell(
-        user, "/training", days=days, start=start, today=today, gear=gear, races=races,
+        user, "/training", days=days, start=start, today=today, gear=gear,
+        this_week=today - timedelta(days=today.weekday()),
+        gear_types={f["id"]: gear_type(f) for f in gear}, **goals_ctx,
         load=load, km=health.gear_km(user.id, gear), plan_source=(store.get_profile(user.id).get(
             "plan_source") or {}).get("value"), prev=(start - timedelta(days=7)).isoformat(),
         next=(start + timedelta(days=7)).isoformat()))
+
+
+def _when(f: dict) -> date | None:
+    raw = (f.get("details") or {}).get("date") or (str(f["until"]) if f.get("until") else "")
+    try:
+        return date.fromisoformat(str(raw)[:10])
+    except ValueError:
+        return None
+
+
+def goal_cards(user_id: str, items: list[dict], today: date) -> dict:
+    """Races (countdown, share of the build-up done, fitness trend) and goals (weight progress
+    when it is a weight goal)."""
+    rows = health.series(user_id, today - timedelta(days=400), today)
+    fit_now, _ = health.latest(rows, "fitness")
+    month_ago = [r for r in rows if r["day"] <= (today - timedelta(days=28)).isoformat()]
+    fit_then, _ = health.latest(month_ago, "fitness")
+    weight_now, _ = health.latest(rows, "weight_kg")
+    target_w = _num((store.get_profile(user_id).get("target_weight_kg") or {}).get("value"))
+    races, past, goals = [], [], []
+    for f in items:
+        if f["status"] != "active":
+            continue
+        d = f.get("details") or {}
+        if f["category"] == "race":
+            when = _when(f)
+            if when and when < today:
+                past.append(f | {"when": when})
+                continue
+            card = f | {"when": when, "days_left": (when - today).days if when else None,
+                        "target": d.get("target_time") or d.get("target_pace"),
+                        "distance": d.get("distance")}
+            if when:
+                total = max(1, (when - f["created_at"].date()).days)
+                card["done_pct"] = max(0, min(100, round(100 * (today - f["created_at"].date())
+                                                         .days / total)))
+            races.append(card)
+        else:
+            card = dict(f)
+            if target_w and weight_now and any(w in f["text"].lower() for w in (
+                    "weight", "kg", "ваг", "схуд", "кг")):
+                start_rows = [r for r in rows if r["day"] >= f["created_at"].date().isoformat()]
+                start_w, _ = next(((r["weight_kg"], r["day"]) for r in start_rows
+                                   if r.get("weight_kg")), (weight_now, None))
+                span = (start_w - target_w) or 1
+                card["weight"] = {"start": start_w, "now": weight_now, "target": target_w,
+                                  "pct": max(0, min(100, round(100 * (start_w - weight_now)
+                                                               / span)))}
+            goals.append(card)
+    races.sort(key=lambda r: r["when"] or date.max)
+    return {"races": races, "past_races": past, "goals": goals,
+            "fitness": {"now": fit_now, "then": fit_then}}
+
+
+def gear_type(f: dict) -> str:
+    t = ((f.get("details") or {}).get("type") or "").lower() + " " + f["text"].lower()
+    for key, words in [("hrm", ("hrm", "strap", "heart rate", "пульсометр", "нагруд")),
+                       ("watch", ("watch", "forerunner", "fenix", "годинник", "epix", "coros")),
+                       ("bike", ("bike", "велосипед", "ride", "trek", "canyon")),
+                       ("shoes", ("shoe", "кросів", "кросовк", "pegasus", "speedcross"))]:
+        if any(w in t for w in words):
+            return key
+    return "other"
