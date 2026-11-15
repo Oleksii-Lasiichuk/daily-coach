@@ -14,6 +14,10 @@ food, drinks, pain, mood, what your plan says), and it:
 - finds patterns in your own log (computed in code), tracks pain per body part, habits, shoe
   km and the countdown to your race.
 
+**Try it:** https://coach.lasiichuk.com. Sign in with any Google account; as a guest you add
+your own [OpenRouter key](https://openrouter.ai/settings/keys) (the AI runs on it, about
+$0.005–0.02 a message) and can pick sample watch data if you don't use intervals.icu.
+
 **Flow:** sign in with Google → a 5-step setup (connect intervals.icu · about you · goals ·
 your files · a few questions) → **Today** (chat with quick log, the day card with "Why?", the
 session with "Send to watch", habits, fuel). The interface is in English or Ukrainian.
@@ -81,10 +85,10 @@ docker compose up -d
 ```
 
 ```bash
-cp .env.example .env
+cp -n .env.example .env
 ```
 
-In `.env` set three values: `DATABASE_URL=postgresql://coach:coach@localhost:5433/coach`,
+(`-n` keeps an existing `.env`.) In `.env` set three values: `DATABASE_URL=postgresql://coach:coach@localhost:5433/coach`,
 `APP_ENCRYPTION_KEY` (generate it with the command in the file) and `OPENROUTER_API_KEY`.
 Leave the rest empty. Then:
 

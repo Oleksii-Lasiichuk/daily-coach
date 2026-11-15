@@ -7,9 +7,12 @@ the current ones (v6). Code and run steps: [README](../../README.md).
 
 ## 1. Problem and scope
 
-I train with a Garmin watch. Its plan knows my sleep, HRV and training load, but not that I
-drank last night, that my knee hurts, that I ate badly or bought new shoes. I used to fix the
-plan by hand.
+I train with a Garmin watch. Its Garmin-coach plan knows my sleep, HRV and training load, but not: my feelings,
+job/uni load, what exact food i ate for breakfast,  whether i drank beer last night, that my knee hurts, that i bought new shoes and  that in 4y i wanna do Ironman. But that is type of data he must know to recommend personal workouts.
+Before, i had huge Project 'Life&Sports' with ChatGPT pro, which provided me with advice on the best workouts for me, equipment purchases, as well as recommendations on health and injury prevention.
+But my garmin coach recomendations still could not be adjusted to it, and he still doesn't know what happens in my life. 
+
+I wanted more flexability and adjutability, so here is..:
 
 **Daily Coach** is a chat assistant for a runner (or any endurance athlete). You write, speak or
 send a photo in Ukrainian, English or both. It:
@@ -20,10 +23,12 @@ send a photo in Ukrainian, English or both. It:
    after you press **Send to watch**;
 5. answers questions from your own data and your uploaded notes.
 
-**Users:** me and my brother, invite-only, live at coach.lasiichuk.com. A synthetic "Demo
-Athlete" is used for the demo, evaluation and anyone running it locally.
+**Users:** me and my brother, live at https://coach.lasiichuk.com. Anyone else can sign in with
+Google as a guest: guests add their own OpenRouter key (the AI runs on their account) and can
+pick sample watch data instead of connecting intervals.icu. A synthetic "Demo Athlete" is used
+for the demo, the evaluation and anyone running it locally.
 
-**Out of scope:** medical diagnosis, a training plan generator for a whole season, a social
+**Out of scope (for now)** medical diagnosis, a training plan generator for a whole season, a social
 feed, coaches managing many athletes.
 
 ## 2. Requirements
@@ -178,8 +183,10 @@ assistant; intervals are wide. The next step is labelling two weeks of real use.
 - The coach can change only 10 known profile fields; facts from files wait for your OK; file
   excerpts are wrapped as untrusted data.
 - Impossible amounts (5 kg of sushi, 5 L of vodka) are rejected in code before saving.
-- Sign-in via Google with an allowlist; every query scoped by user; CSRF check; keys encrypted;
-  per-user spending cap and rate limit. Details: [06-deployment.md](06-deployment.md).
+- Sign-in via Google. Members (an email list) use the app's key with a monthly cap; guests must
+  add their own OpenRouter key before any model or embedding call (checked in code, tested).
+  Every query is scoped by user (two-user test on every endpoint); CSRF check; keys encrypted;
+  rate limit. Details: [06-deployment.md](06-deployment.md).
 
 ## 8. CRISP-DM
 

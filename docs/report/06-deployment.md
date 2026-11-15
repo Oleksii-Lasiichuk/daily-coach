@@ -82,5 +82,12 @@ The rules come from treating every model output and every file as untrusted:
   `ENV=dev`; `/demo-login` also needs a request from localhost without a proxy header. Cloud Run
   runs with `ENV=prod`, and `app/demo.py` never ships data (`.gcloudignore` uploads only `app/`,
   `migrations/` and the lock files). Tests: `tests/test_demo.py`.
+- **Open sign-up (`OPEN_SIGNUP=true` in production).** Any verified Google account can sign
+  in. People on `ALLOWED_EMAILS` are members and use the app's OpenRouter key with a monthly cap.
+  Everyone else is a guest: `llm.check_budget` refuses every model and embedding call until the
+  guest saves their own key (validated against OpenRouter's free key-info endpoint, stored
+  encrypted). Setup step 1 asks for it. Guests without Garmin can choose **sample watch data**:
+  their account is connected to the simulated athlete, so nothing reaches a real watch. Tests:
+  `tests/test_open_signup.py`. Risk left: guests' rows and files use our Neon storage.
 - **Checked on a clean copy:** the tracked files copied to an empty folder, a fresh database,
   only an OpenRouter key: migrations, seed, demo login and a real chat turn worked.
