@@ -26,7 +26,7 @@ a diff.
 - **Logs:** typed events (`kind`, `day`, optional time, kind-specific fields).
   - "Day" is the date in the user's time zone; the time is stored in UTC.
   - Sleep is stored on the day you wake up.
-- **Facts:** durable knowledge in 8 categories, shown and editable in About me.
+- **Facts:** durable knowledge in 8 categories, shown and editable on the Memory page.
 - **Profile:** key/value with a source (`intervals` / `user` / `ai`). The interviewer decides
   which fields matter, so the columns are not fixed.
 - **Wellness:** turned into a compact summary with 7-day baselines computed in code (not by the

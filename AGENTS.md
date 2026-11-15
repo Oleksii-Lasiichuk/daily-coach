@@ -69,7 +69,7 @@ Full rules and reasons: `docs/design-guidelines.md`. Read it before UI, auth or 
 - Every personal-data query is scoped by `user_id`; a two-user isolation test covers each endpoint.
 - Secrets server-side only; user API keys encrypted at rest, never logged, never sent to an LLM.
 - LLM output that drives logic is parsed into a Pydantic model; writes to intervals.icu only
-  after the user presses Apply.
+  after the user presses Send to watch.
 - Schema changes only through numbered SQL migrations. Times stored in UTC, shown in the user's time zone.
 - UI follows the design system in `docs/design-guidelines.md`; check screenshots at 375 px and
   1280 px, light and dark, before calling UI work done.
@@ -77,6 +77,7 @@ Full rules and reasons: `docs/design-guidelines.md`. Read it before UI, auth or 
 ## Done means
 
 - Code runs; the relevant eval script runs and its result is recorded.
+- UI and agent checks run on the local demo athlete (`/demo-login`), never on a real account.
 - Report what changed, what was verified, what is not verified.
 
 ## Communication
@@ -97,5 +98,7 @@ In `.claude/skills/` (`.agents/skills/` is a symlink to it):
 - `/plan` — write a plan before non-trivial work.
 - `/implement` — build a plan step by step with verification.
 - `/explain` — explain code or concepts in a teaching style.
+- `/eval` — run a component eval, refresh the intervals, update the report from the result file.
+- `/ui-check` — check a page at 375/1280 px, light/dark, EN/UA, on the demo athlete.
 - `langfuse` — official Langfuse skill (github.com/langfuse/skills): tracing, datasets, evals.
   Every LLM call goes through `app/llm.py` (`trace()` + `complete()`).

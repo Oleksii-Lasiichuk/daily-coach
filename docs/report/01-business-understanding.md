@@ -3,6 +3,18 @@
 CRISP-DM phase: 1. Business understanding (plus first data/tool research).
 Status: proposal, researched 2026-11-14. Prices and API facts change; re-check before building.
 
+> **Superseded in parts.** This is the original proposal. What changed since, and why:
+>
+> | Proposal | Shipped (v5) | Why |
+> |---|---|---|
+> | Fixed pipeline with a C1 router | One coach agent; components are its tools; C1 scored as tool routing | Requests were open-ended (gear, reminders, screenshots, week plans) |
+> | C1 eval on 150 real messages from my ChatGPT history | 60 synthetic messages | No personal data in a public repo |
+> | C3 grounded in a food database, ablation LLM-only vs grounded | LLM-only, scored on NutriBench against a baseline; the ablation is not done | Time; see 05-evaluation, "Not evaluated" |
+> | C4 "history wiki" | Uploaded files → proposed facts with quotes + search | Users confirm facts; search covers the rest |
+> | Apply | **Send to watch** | Plainer wording |
+>
+> The current diagram and the walk-through of one message are in the [report README](README.md).
+
 ## 1. Problem
 
 I train with a Garmin watch. Garmin Coach and Daily Suggested Workouts look at sensor data
@@ -107,8 +119,8 @@ The validator in C6 is plain code, not an LLM: it parses the workout, and checks
 5. **C4** finds relevant history: "left knee overload, March 2026".
 6. **C6** sees today's plan "6×800 m intervals" and proposes: today 40 min Z1 run *or* 1500 m
    easy swim; move intervals to Thursday. The validator checks it, and the app shows
-   [Apply] [Change].
-7. I press **Apply** → intervals.icu event updated → Garmin Connect → watch after sync.
+   [Send to watch] [Dismiss].
+7. I press **Send to watch** → intervals.icu event updated → Garmin Connect → watch after sync.
 
 ### Diagram
 

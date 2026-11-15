@@ -70,3 +70,17 @@ The rules come from treating every model output and every file as untrusted:
   for tracing and the database.
 - **Plans:** each step was planned in `docs/plans/` and checked with a "verify" command before
   moving on.
+
+## v6 changes (2026-11-15)
+
+- **Local demo mode.** `docker compose up -d` (Postgres 17 with pgvector), then
+  `uv run python -m app.demo seed` and `/demo-login`. Only an OpenRouter key is needed:
+  Langfuse and Firebase settings are optional (tracing is off without keys). intervals.icu is
+  simulated for athlete id `demo`: synthetic wellness and activities from the date, and an
+  in-memory calendar for "Send to watch".
+- **Demo mode can't reach production.** `/demo-login` and the fake intervals.icu exist only when
+  `ENV=dev`; `/demo-login` also needs a request from localhost without a proxy header. Cloud Run
+  runs with `ENV=prod`, and `app/demo.py` never ships data (`.gcloudignore` uploads only `app/`,
+  `migrations/` and the lock files). Tests: `tests/test_demo.py`.
+- **Checked on a clean copy:** the tracked files copied to an empty folder, a fresh database,
+  only an OpenRouter key: migrations, seed, demo login and a real chat turn worked.

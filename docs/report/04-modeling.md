@@ -1,9 +1,14 @@
 # 04 — Modeling
 
-CRISP-DM phase 4. The system is a pipeline of small, separately evaluated LLM components plus
+CRISP-DM phase 4. The system is a set of small, separately evaluated LLM components plus
 code. It is not one big prompt and not RAG.
 
-## Components
+> **Read this first.** The table below and the next sections describe **v2** (a fixed pipeline
+> with a router). Since v3 the components are tools of one coach agent, and C1 is scored as tool
+> routing. The current component table, diagram and one-input walk-through are in the
+> [report README](README.md). The v3 to v5 sections further down say what changed and why.
+
+## Components (v2, kept for history)
 
 | | Purpose | Input → output | Model | Why this model |
 |---|---|---|---|---|
@@ -33,7 +38,7 @@ code. It is not one big prompt and not RAG.
     format was verified by creating real events and reading back the parsed steps.
 - **Parallel calls.** C7 and C1 run in parallel. A full turn takes ~10–18 s; a log-only turn
   is faster.
-- **Human in the loop.** Nothing is written to intervals.icu until the user presses **Apply**;
+- **Human in the loop.** Nothing is written to intervals.icu until the user presses **Send to watch**;
   **Undo** deletes the event.
 - **Prompts.** One Markdown file per component in `app/prompts/`.
 - **Tracing.** Langfuse traces every turn (`handle-chat-turn`), with one generation per
@@ -49,19 +54,21 @@ code. It is not one big prompt and not RAG.
   parallel LLM calls), and the page polls the next step, so a 5 MB export is read without
   background workers on Cloud Run.
 - **Setup is a form flow, not a chat.** Research (see plan 04) found chat-based onboarding helps
-  only when the chat actually does the setup work. Our setup needs specific inputs, so it is 4
-  short steps. C0 runs in step 4 and asks ≤ 5 questions about what is still missing after
+  only when the chat actually does the setup work. Our setup needs specific inputs, so it is a
+  short form flow (5 steps since v4). C0 runs in the last step and asks ≤ 5 questions about what is still missing after
   intervals.icu, the form and the files.
-- **Voice input.** The browser's speech recognition (Web Speech API, `uk-UA` / `en-US`) turns
-  speech into text, which you check before sending. A server-side speech-to-text model
-  was the alternative; it lost on cost and time for this submission.
+- **Voice input.** The browser records audio and the server sends it to a speech-capable model
+  (Gemini Flash-Lite via OpenRouter), which returns the text into the message box; you check it
+  before sending. v2 used the browser's Web Speech API; since v3 one server-side path handles
+  every browser and keeps Ukrainian, English and mixed speech as spoken (webm, mp4 and wav
+  tested). Not evaluated with a metric (see 05-evaluation, "Not evaluated").
 
 ## Main alternative considered
 
 One agent with tools (read wellness, write logs, create workout) instead of a fixed pipeline. It
 lost because:
 - it is harder to evaluate per component;
-- it is harder to guarantee "no write without Apply";
+- it is harder to guarantee "no write without Send to watch";
 - cost and latency are less predictable.
 
 ## v3 (2026-11-14, late): from a fixed pipeline to an agent
@@ -81,7 +88,7 @@ create reminders, read a Garmin plan screenshot, plan the week. So the fixed pip
 
 **Design rules kept:**
 - every write is recorded with an undo recipe and shown as a line with **Undo**;
-- the watch is only written after **Apply**;
+- the watch is only written after **Send to watch**;
 - the safety gate (C7) runs in parallel and is passed into the agent's context;
 - at most 6 tool steps per message;
 - a monthly cap per user, unless the user adds their own OpenRouter key.
@@ -105,7 +112,7 @@ because the answer is a calculation, and a calculation shouldn't be made up:
 
 | Component | Input → output | How |
 |---|---|---|
-| Patterns | 90 days of logs + wellness → "after alcohol your next-morning HRV is 15% lower (10 nights vs 50)" | Compare next-morning HRV, resting HR and sleep after tagged days (alcohol, a meal after 21:00, > 300 mg caffeine, < 6.5 h sleep) with other days; shown only with ≥ 3 vs ≥ 5 nights and ≥ 5% difference (`app/patterns.py`) |
+| Patterns | 90 days of logs + wellness → "after alcohol your next-morning HRV is 15% lower (10 nights vs 50)" | Compare next-morning HRV, resting HR and sleep after tagged days (alcohol, a meal after 21:00, > 300 mg caffeine, < 6.5 h sleep) with other days; shown only with ≥ 5 vs ≥ 10 nights, ≥ 5% difference and Welch t ≥ 2.5 (v6; was 3 vs 5 nights and 5%, which fired on random data) (`app/patterns.py`) |
 | Pain trend | pain logs (C2 already extracts body part and 0–10) → per body part: points, latest, 7-day vs previous 7-day trend | `health.pain_trend` |
 | Session fuel | planned workout + weight → before / during / after | Sports-nutrition rules of thumb: 1–2 g/kg carbs before long sessions, 30–60 g/h during sessions over 75 min (60–90 g/h over 150 min), 1 g/kg carbs + 0.3 g/kg protein after hard or long ones; carb target ≥ 7 g/kg on a day with a 90+ min session |
 | Shoe km | gear items + runs from intervals.icu → km per shoe, "replace soon" at 85% of 600 km | Runs with a gear name go to the matching shoe; others to the newest shoe |

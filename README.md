@@ -18,7 +18,8 @@ food, drinks, pain, mood, what your plan says), and it:
 your files · a few questions) → **Today** (chat with quick log, the day card with "Why?", the
 session with "Send to watch", habits, fuel). The interface is in English or Ukrainian.
 
-UCU NLP course, Assignment 1. The report is in [`docs/report/`](docs/report/), the plans in
+UCU NLP course, Assignment 1. **Report: [`docs/report/README.md`](docs/report/README.md)**
+(phase files in [`docs/report/`](docs/report/)), the plans in
 [`docs/plans/`](docs/plans/), and the agent setup in [`AGENTS.md`](AGENTS.md) and
 [`.claude/skills/`](.claude/skills/).
 
@@ -35,7 +36,7 @@ message / voice / photo ─┬─ C7 safety gate (parallel)
                               save_item / end_item → knowledge items (goals, races, gear, health…)
                               set_reminder → push notifications · update_profile
                               set_planned_workouts ← plan screenshot (vision) or chat
-                              assess_day → C5 · plan_sessions → C6 + validator → card → Apply
+                              assess_day → C5 · plan_sessions → C6 + validator → card → Send to watch
                               nutrition_summary · health_summary · search_memory → C4 files
 ```
 
@@ -69,17 +70,23 @@ Light and dark themes.
 (morning and evening ones have one-tap answers). A Cloud Scheduler job runs every 15 minutes: it
 syncs intervals.icu hourly, sends reminders, a Sunday week summary and a nightly insight.
 
-## Run locally
+## Quick start: local demo (about 5 minutes)
 
-Requirements: [uv](https://docs.astral.sh/uv/), a Neon (or any Postgres) database, an OpenRouter
-key, a Langfuse project and a Firebase project with Google sign-in. Step-by-step account setup:
-[`docs/setup.md`](docs/setup.md).
+Needs [uv](https://docs.astral.sh/uv/), Docker and an [OpenRouter](https://openrouter.ai) key.
+No Google, Neon, Langfuse or intervals.icu account: you sign in as a synthetic **Demo Athlete**
+with a year of made-up watch data, and intervals.icu is simulated for that athlete.
+
+```bash
+docker compose up -d
+```
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in `.env`, then:
+In `.env` set three values: `DATABASE_URL=postgresql://coach:coach@localhost:5433/coach`,
+`APP_ENCRYPTION_KEY` (generate it with the command in the file) and `OPENROUTER_API_KEY`.
+Leave the rest empty. Then:
 
 ```bash
 uv sync
@@ -90,10 +97,27 @@ uv run python -m app.migrate
 ```
 
 ```bash
-uv run uvicorn app.main:app --reload --port 8000
+uv run python -m app.demo seed
 ```
 
-Open http://localhost:8000 and sign in with an email listed in `ALLOWED_EMAILS`. The first-run
+```bash
+uv run uvicorn app.main:app --port 8000
+```
+
+Open http://localhost:8000 and press **Open the demo athlete**. Try:
+`Вчора 2 пива, спав 5 годин, зранку важка голова. На сьогодні 6 по 800. Що робити?`
+
+The demo login exists only with `ENV=dev` and on localhost; in production it returns 404.
+`uv run python -m app.demo seed` resets the demo athlete at any time.
+
+## Run with your own accounts
+
+Requirements: a Neon (or any Postgres with pgvector) database, an OpenRouter key, a Langfuse
+project (optional: tracing is off without it) and a Firebase project with Google sign-in.
+Step-by-step account setup: [`docs/setup.md`](docs/setup.md).
+
+Fill in every value in `.env`, run the migration and start the app as above, then open
+http://localhost:8000 and sign in with an email listed in `ALLOWED_EMAILS`. The first-run
 window asks you to connect intervals.icu (API key + athlete ID).
 
 ## Tests and evals
@@ -101,6 +125,9 @@ window asks you to connect intervals.icu (API key + athlete ID).
 ```bash
 uv run pytest
 ```
+
+Tests use the database in `DATABASE_URL` (the Docker one works) and create and delete their
+own users under `@test.invalid`.
 
 The tests check that every route needs sign-in, that one user can never read or change
 another's data, the allowlist, the Origin (CSRF) check, encryption, the budget cap, the
@@ -113,6 +140,19 @@ uv run python -m evals.run_all
 
 This runs every component eval and prints a summary. Results go to `evals/results/`; the
 discussion is in [`docs/report/05-evaluation.md`](docs/report/05-evaluation.md).
+
+```bash
+uv run python -m evals.run_e2e
+```
+
+The end-to-end check: 12 real chat turns on the demo athlete, verified in the database (needs
+`ENV=dev`).
+
+```bash
+uv run python -m evals.stats
+```
+
+95% intervals for the rate metrics and the majority-class baseline for the day type.
 
 ## Deploy
 
