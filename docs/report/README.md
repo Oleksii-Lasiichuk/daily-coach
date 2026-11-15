@@ -380,33 +380,7 @@ answers in the language you write in.
   endpoint, CSRF, encryption, budget and guest keys, validator, patterns. Details:
   [06-deployment.md](06-deployment.md).
 
-## 9. What I learned
-
-1. **Split the problem until each part can be measured.** "The coach is good" can't be
-   evaluated; "sleep goes on the morning you wake up" can. The agent works because its tools are
-   small enough to score alone.
-2. **The cheapest fix is often in the data, not the prompt.** HR zones as upper limits, race
-   dates missing from the context: both "model errors" were representation errors.
-3. **Give numbers to code and language to the model.** Totals, limits, date arithmetic,
-   validation and statistics are deterministic; the model reads text, picks tools and explains.
-   This also made safety *checkable*.
-4. **Temporal normalisation is the hardest NLP part of a diary.** "Вчора ввечері" said at 09:30,
-   "спав 5 годин" after "вчора 2 пива": the errors are about time, not about entities.
-5. **An agent trades measurability for flexibility.** Moving from a router to an agent lowered
-   the routing score (0.93 → 0.83–0.87 across runs) but handled open requests (gear, screenshots, week plans).
-   Re-scoring it as tool routing, plus an end-to-end eval in the database, recovered most of
-   what was lost.
-6. **Small eval sets need intervals, and statistical claims in a product need tests.** 20/20 is
-   "at least 0.84". The same honesty applies to features: the patterns card needed a
-   significance threshold chosen by simulation.
-7. **Prompt injection is a systems problem.** The model resisted all 10 attacks with or without
-   the wrapper, so the set is too easy to show what the wrapper adds; the guarantees that matter
-   are the ones that don't need the model to behave.
-8. **An AI coding assistant needs rules and checks, not just prompts.** It drifted (stale docs,
-   claims of "done" without checks) until AGENTS.md defined "done" and every failure became a
-   test (section 11).
-
-## 10. Limitations and future work
+## 9. Limitations and future work
 
 **Limitations:** eval sets are small (10–60 cases), synthetic, written with the coding assistant
 and labelled by one annotator; vision and voice are not measured; intervals.icu is required for
@@ -416,7 +390,7 @@ ablation from the proposal); a vision set of plan screenshots and meals; a morni
 with Send / Keep buttons; a coach mode where a human coach approves the AI's proposals.
 Workflows: [plan 09](../plans/09-next-version.md).
 
-## 11. How the AI coding assistant was used
+## 10. How the AI coding assistant was used
 
 Claude Code wrote most of the code under [AGENTS.md](../../AGENTS.md): project, grading
 criteria, CRISP-DM, security rules, and a definition of done (code runs, eval result recorded,
@@ -425,7 +399,7 @@ criteria, CRISP-DM, security rules, and a definition of done (code runs, eval re
 iteration. Every real failure became a rule, validator, test or eval case; the table and an
 honest list of what the assistant did badly are in [07-agentic-coding.md](07-agentic-coding.md).
 
-## 12. CRISP-DM
+## 11. CRISP-DM
 
 ```mermaid
 flowchart LR
