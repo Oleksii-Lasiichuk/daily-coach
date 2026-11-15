@@ -78,6 +78,7 @@ def settings_page(request: Request, user: store.User = Depends(current_user)):
         user, "/settings", p=prefs(user.id), models=llm.MODELS, nudges=NUDGES,
         limits=LIMITS if admin else [], credit=openrouter_credit() if admin else None,
         db_mb=round(float(db_mb), 1), month_cost=store.month_cost(user.id),
+        guest=not llm.is_member(user.id),
         cap=llm.MONTHLY_CAP_USD, own_key=store.get_secret(user.id, "openrouter"), subs=subs,
         prof=profile_vals, reminders=reminders, zones=ZONES, langs=i18n.LANGS,
         plan_sources=PLAN_SOURCES, secret=store.get_secret(user.id, "intervals"),
@@ -177,14 +178,28 @@ def save_models(model_default: str = Form(...), model_deep: str = Form(...),
     return RedirectResponse("/settings#advanced", status_code=303)
 
 
+def key_works(key: str) -> bool:
+    """Checks an OpenRouter key with its free key-info endpoint (no model call, no cost)."""
+    try:
+        r = httpx.get("https://openrouter.ai/api/v1/key", timeout=10,
+                      headers={"Authorization": f"Bearer {key}"})
+    except httpx.HTTPError:
+        return False
+    return r.status_code == 200
+
+
 @router.post("/profile/key")
-def save_key(api_key: str = Form(""), user: store.User = Depends(current_user)):
+def save_key(api_key: str = Form(""), next: str = Form(""),
+             user: store.User = Depends(current_user)):
     key = api_key.strip()
-    if key.startswith("sk-or-"):
+    back = next if next.startswith("/") and not next.startswith("//") else "/settings"
+    if key and not (key.startswith("sk-or-") and key_works(key)):
+        return RedirectResponse(back + "?error=key#advanced", status_code=303)
+    if key:
         store.save_secret(user.id, "openrouter", crypto.encrypt(key), crypto.last4(key), None)
-    elif not key:
+    elif llm.is_member(user.id):  # guests can replace their key, not remove it
         store.delete_secret(user.id, "openrouter")
-    return RedirectResponse("/settings#advanced", status_code=303)
+    return RedirectResponse(back + "#advanced", status_code=303)
 
 
 @router.post("/profile/nudges")
@@ -227,6 +242,15 @@ def connect(request: Request, api_key: str = Form(""), athlete_id: str = Form(""
         ctx = intervals_context(user, error=str(e), athlete_id=athlete_id)
     return templates.TemplateResponse(request, "partials/intervals.html", ctx,
                                       headers={"HX-Trigger": "intervalsChanged"})
+
+
+@router.post("/intervals/sample", response_class=HTMLResponse)
+def use_sample(request: Request, user: store.User = Depends(current_user)):
+    """No Garmin or intervals.icu: connect to the simulated athlete (synthetic watch data)."""
+    from app import demo
+    intervals.connect_user(user.id, "sample-data", demo.ATHLETE_ID)
+    return templates.TemplateResponse(request, "partials/intervals.html", intervals_context(
+        user, connected_name="sample watch data"), headers={"HX-Trigger": "intervalsChanged"})
 
 
 @router.post("/intervals/disconnect", response_class=HTMLResponse)

@@ -36,7 +36,8 @@ def verify_google_login(token: str) -> dict:
                                             audience=get_settings().firebase_project_id)
     if not claims or not claims.get("email_verified"):
         raise NotAllowed("email not verified")
-    if claims["email"].lower() not in get_settings().allowed_email_set:
+    s = get_settings()
+    if not s.open_signup and claims["email"].lower() not in s.allowed_email_set:
         raise NotAllowed("email not on the allowlist")
     return claims
 

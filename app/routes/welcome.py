@@ -46,7 +46,10 @@ def welcome(request: Request, user: store.User = Depends(current_user)):
         chosen = [x.strip() for x in chosen.split(",")]
     from app.routes.profile import PLAN_SOURCES
     ctx = intervals_context(user, step=step, prof=prof, sports=list(dict.fromkeys(own + SPORTS)),
-                            chosen=chosen, distances=DISTANCES, plan_sources=PLAN_SOURCES)
+                            chosen=chosen, distances=DISTANCES, plan_sources=PLAN_SOURCES,
+                            guest=not llm.is_member(user.id),
+                            own_key=store.get_secret(user.id, "openrouter"),
+                            key_error=request.query_params.get("error") == "key")
     if step == 4:
         ctx |= files_context(user, setup=True, next_url="/welcome/4/done")
     return templates.TemplateResponse(request, "welcome.html", ctx)
@@ -65,7 +68,9 @@ def back(user: store.User = Depends(current_user)):
 @router.post("/welcome/1")
 def step1(user: store.User = Depends(current_user)):
     if not store.get_secret(user.id, "intervals"):
-        return _go(1)  # required
+        return _go(1)  # required (real or sample watch data)
+    if not llm.is_member(user.id) and not llm.uses_own_key(user.id):
+        return _go(1)  # guests bring their own OpenRouter key
     return _set(user, 2)
 
 

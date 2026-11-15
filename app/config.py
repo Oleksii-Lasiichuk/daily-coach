@@ -14,7 +14,11 @@ class Settings(BaseSettings):
 
     env: Literal["dev", "prod"] = "dev"
     app_origin: str  # comma-separated if the app is reachable on several domains
-    allowed_emails: str = ""  # comma-separated; empty = nobody signs in with Google
+    # Members: these emails use the app's OpenRouter key (with a monthly cap). Comma-separated.
+    allowed_emails: str = ""
+    # OPEN_SIGNUP=true: any verified Google account can sign in as a guest. Guests must add
+    # their own OpenRouter key before the AI runs, so they never spend the app's key.
+    open_signup: bool = False
 
     # Neon: pooled URL for the app, direct (unpooled) URL for migrations.
     database_url: str

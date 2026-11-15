@@ -128,11 +128,13 @@ def decode(raw: bytes) -> str:
 
 # --- embeddings and search ---------------------------------------------------------------
 
-def embed(texts: list[str]) -> list[list[float]]:
+def embed(texts: list[str], user_id: str | None = None) -> list[list[float]]:
+    """Embeddings on the user's own key when they have one (guests must), else the app's."""
+    llm.check_budget(user_id)
     out = []
     for i in range(0, len(texts), 64):
-        r = llm._client.embeddings.create(model=EMBED_MODEL, input=texts[i:i + 64],
-                                          dimensions=EMBED_DIMS)
+        r = llm.client_for(user_id).embeddings.create(model=EMBED_MODEL, input=texts[i:i + 64],
+                                                      dimensions=EMBED_DIMS)
         out += [d.embedding for d in r.data]
     return out
 
@@ -148,7 +150,7 @@ def search(user_id: str, query: str, k: int = 5) -> list[dict]:
                         (user_id,)).fetchone()
         if not has:
             return []
-        q = _vec(embed([query])[0])
+        q = _vec(embed([query], user_id)[0])
         rows = c.execute(
             """select s.filename, ch.text, 1 - (ch.embedding <=> %s::vector) as score
                from chunks ch join sources s on s.id = ch.source_id
@@ -224,7 +226,7 @@ def step(user_id: str, source_id: int) -> dict:
     if not rows:
         return _finish(user_id, source_id)
     try:
-        vectors = embed([r["text"] for r in rows])
+        vectors = embed([r["text"] for r in rows], user_id)
         batches = [rows[i:i + BATCH] for i in range(0, len(rows), BATCH)]
         with llm.trace("ingest-file-step", input={"file": src["filename"], "from": rows[0]["idx"]},
                        user_id=user_id, tags=["ingest"]):

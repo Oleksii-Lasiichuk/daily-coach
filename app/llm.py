@@ -81,14 +81,36 @@ def uses_own_key(user_id: str) -> bool:
     return store.get_secret(user_id, "openrouter") is not None
 
 
+def is_member(user_id: str) -> bool:
+    """Members may use the app's key; guests from open sign-up may not. Without open sign-up
+    only allowlisted people can sign in, so everyone is a member (also tests and evals)."""
+    if not settings.open_signup:
+        return True
+    from app import demo, store
+    user = store.get_user(user_id)
+    email = user.email.lower() if user else ""
+    return email in settings.allowed_email_set or (demo.enabled() and email == demo.EMAIL)
+
+
+def check_budget(user_id: str | None) -> None:
+    """Before every model call: guests need their own key; members have a monthly cap."""
+    from app import store
+    if not user_id or uses_own_key(user_id):
+        return
+    if not is_member(user_id):
+        raise BudgetExceeded("Add your own OpenRouter key in Settings → Advanced to use the AI. "
+                             "Guests pay for their own AI use.")
+    if store.month_cost(user_id) >= MONTHLY_CAP_USD:
+        raise BudgetExceeded(f"Monthly AI budget of ${MONTHLY_CAP_USD:.0f} is used up. Add your "
+                             "own OpenRouter key in Settings → Advanced to continue.")
+
+
 def chat(*, name: str, model: str, messages: list[dict], tools: list[dict] | None = None,
          user_id: str | None = None, max_tokens: int = 1500, temperature: float = 0.3):
     """One raw chat call with tools (the coach agent). Budget, usage and tracing included."""
     from app import store
 
-    if user_id and not uses_own_key(user_id) and store.month_cost(user_id) >= MONTHLY_CAP_USD:
-        raise BudgetExceeded(f"Monthly AI budget of ${MONTHLY_CAP_USD:.0f} is used up. Add your "
-                             "own OpenRouter key in Profile to continue.")
+    check_budget(user_id)
     extra: dict[str, Any] = {"usage": {"include": True}}
     if model in (SMART_MODEL, DEEP_MODEL):
         extra["reasoning"] = {"effort": "low"}
@@ -156,8 +178,7 @@ def complete(*, name: str, messages: list[dict[str, str]], model: str = FAST_MOD
     With `user_id`, the monthly cap is checked first and the cost is recorded in llm_usage."""
     from app import store  # local import: store needs the DB, evals may run without users
 
-    if user_id and not uses_own_key(user_id) and store.month_cost(user_id) >= MONTHLY_CAP_USD:
-        raise BudgetExceeded(f"Monthly AI budget of ${MONTHLY_CAP_USD:.0f} is used up.")
+    check_budget(user_id)
     kwargs: dict[str, Any] = {
         "model": model,
         "messages": messages,

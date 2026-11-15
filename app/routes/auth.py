@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from app import demo, store
 from app.auth import NotAllowed, current_user, verify_google_login
+from app.config import get_settings
 from app.web import templates
 
 router = APIRouter()
@@ -27,7 +28,8 @@ def login_page(request: Request):
     host = (request.headers.get("x-forwarded-host") or request.url.hostname or "").split(":")[0]
     auth_domain = host if host in HOSTED_DOMAINS else None
     return templates.TemplateResponse(request, "login.html", {
-        "auth_domain": auth_domain, "demo": demo.enabled() and _local(request)})
+        "auth_domain": auth_domain, "demo": demo.enabled() and _local(request),
+        "open_signup": get_settings().open_signup})
 
 
 def _local(request: Request) -> bool:

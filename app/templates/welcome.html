@@ -7,15 +7,36 @@
       <form method="post" action="/settings/lang" style="margin:0 0 0 12px"><input type="hidden" name="lang" value="{{ 'en' if lang == 'uk' else 'uk' }}"><input type="hidden" name="next" value="/welcome"><button class="link tiny">{{ "English" if lang == "uk" else "Українська" }}</button></form></div>
     <p class="tiny muted" style="margin-top:14px">{{ _("Step") }} {{ step }} / 5</p>
     {% if step == 1 %}
-      <h1 id="wtitle" style="margin-top:4px">{{ _("Connect intervals.icu") }}</h1>
-      <p class="muted small" style="margin:6px 0 10px">{{ _("intervals.icu is a free training site. Your Garmin syncs sleep, HRV, resting heart rate, weight and workouts to it; the coach reads them there and sends adjusted workouts back to your watch. This step is required.") }}</p>
+      {% if guest %}
+      <h1 id="wtitle" style="margin-top:4px">{{ _("Your AI key") }}</h1>
+      <p class="muted small" style="margin:6px 0 10px">{{ _("Guests use their own OpenRouter key, so the AI runs on your account. A message costs about $0.005–0.02.") }} <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">{{ _("Create a key at openrouter.ai") }}</a>.</p>
+      {% if own_key %}<p class="notice small">{{ _("Key saved") }} · ••••{{ own_key.last4 }}</p>
+      {% else %}
+      {% if key_error %}<p class="notice error small" style="margin-bottom:10px">{{ _("OpenRouter didn't accept that key. Check it and try again.") }}</p>{% endif %}
+      <form method="post" action="/profile/key" class="row" style="gap:8px;align-items:flex-end">
+        <input type="hidden" name="next" value="/welcome">
+        <div class="grow"><label for="gkey">{{ _("OpenRouter API key") }}</label><input id="gkey" name="api_key" type="password" placeholder="sk-or-…" autocomplete="off" required></div>
+        <button class="btn primary">{{ _("Save key") }}</button>
+      </form>
+      <p class="hint">{{ _("Stored encrypted; only the last 4 characters are shown. Never sent to the AI.") }}</p>
+      {% endif %}
+      <hr style="margin:18px 0;border:0;border-top:1px solid var(--line)">
+      {% endif %}
+      <h{{ 2 if guest else 1 }} {% if not guest %}id="wtitle"{% endif %} style="margin-top:4px">{{ _("Connect intervals.icu") }}</h{{ 2 if guest else 1 }}>
+      <p class="muted small" style="margin:6px 0 10px">{{ _("intervals.icu is a free training site. Your Garmin syncs sleep, HRV, resting heart rate, weight and workouts to it; the coach reads them there and sends adjusted workouts back to your watch.") }} {{ _("Connect it, or use sample watch data below.") }}</p>
       <ol class="small steps-list">
         <li>{{ _("No account yet?") }} <a href="https://intervals.icu" target="_blank" rel="noopener">{{ _("Create one at intervals.icu") }}</a> {{ _("(free, sign in with Google).") }}</li>
         <li>{{ _("There, open") }} <a href="https://intervals.icu/settings" target="_blank" rel="noopener">Settings</a> → Garmin Connect → <b>Connect</b>, {{ _("and allow uploading planned workouts so sessions reach your watch.") }}</li>
         <li>{{ _("Same Settings page, Developer Settings: copy your athlete ID and create an API key. Paste both below.") }}</li>
       </ol>
       {% include "partials/intervals.html" %}
-      <form method="post" action="/welcome/1" class="row between" style="margin-top:20px"><span></span><button class="btn ink" {{ "" if secret else "disabled" }}>{{ _("Continue") }}</button></form>
+      {% if not secret %}
+      <div class="row" style="gap:8px;margin-top:14px;align-items:center;flex-wrap:wrap">
+        <span class="small muted">{{ _("No Garmin or intervals.icu account?") }}</span>
+        <button class="btn sm" hx-post="/intervals/sample" hx-target="#intervals" hx-swap="outerHTML">{{ _("Use sample watch data") }}</button></div>
+      <p class="hint">{{ _("A year of made-up sleep, HRV and runs, so you can try everything. “Send to watch” is then simulated.") }}</p>
+      {% endif %}
+      <form method="post" action="/welcome/1" class="row between" style="margin-top:20px"><span></span><button class="btn ink" {{ "" if secret and (own_key or not guest) else "disabled" }}>{{ _("Continue") }}</button></form>
       <script>document.body.addEventListener("intervalsChanged", () => setTimeout(() => location.reload(), 400));</script>
     {% elif step == 2 %}
       <h1 id="wtitle" style="margin-top:4px">{{ _("About you") }}</h1>

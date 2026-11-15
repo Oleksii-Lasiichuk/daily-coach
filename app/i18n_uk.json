@@ -670,5 +670,20 @@
 "usually 10–20 s": "зазвичай 10–20 с",
 "Prefer not to say": "Не вказувати",
 "Male": "Чоловіча",
-"Female": "Жіноча"
+"Female": "Жіноча",
+"Connect it, or use sample watch data below.": "Підключи його або візьми зразкові дані з годинника нижче.",
+"Your AI key": "Твій ключ для ШІ",
+"Guests use their own OpenRouter key, so the AI runs on your account. A message costs about $0.005–0.02.": "Гості використовують власний ключ OpenRouter, тож ШІ працює за твій рахунок. Повідомлення коштує приблизно $0.005–0.02.",
+"Create a key at openrouter.ai": "Створи ключ на openrouter.ai",
+"Key saved": "Ключ збережено",
+"OpenRouter didn't accept that key. Check it and try again.": "OpenRouter не прийняв цей ключ. Перевір і спробуй ще раз.",
+"OpenRouter API key": "Ключ API OpenRouter",
+"Save key": "Зберегти ключ",
+"Stored encrypted; only the last 4 characters are shown. Never sent to the AI.": "Зберігається зашифрованим; видно лише 4 останні символи. Ніколи не передається ШІ.",
+"No Garmin or intervals.icu account?": "Немає Garmin чи акаунта intervals.icu?",
+"Use sample watch data": "Взяти зразкові дані",
+"A year of made-up sleep, HRV and runs, so you can try everything. “Send to watch” is then simulated.": "Рік вигаданих даних про сон, HRV і пробіжки, щоб спробувати все. «Надіслати на годинник» тоді лише імітується.",
+"Sample watch data": "Зразкові дані з годинника",
+"made-up numbers; “Send to watch” is simulated": "вигадані числа; «Надіслати на годинник» імітується",
+"Your OpenRouter key": "Твій ключ OpenRouter"
 }

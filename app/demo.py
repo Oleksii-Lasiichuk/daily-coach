@@ -6,6 +6,8 @@
   from localhost (tested in tests/test_demo.py).
 - intervals.icu is faked for athlete id "demo" only: wellness and activities are generated from
   the date, and "Send to watch" lands in an in-memory calendar. Real athletes are untouched.
+  Any user (also in production) can pick "sample watch data" in setup, which connects their own
+  account to this fake athlete: synthetic numbers, no network, nothing reaches a real watch.
 
 All numbers are synthetic. Today is made to look like a hard morning (short sleep, low HRV), so
 the main demo case has something to react to.
@@ -35,7 +37,8 @@ def enabled() -> bool:
 
 
 def is_demo(athlete_id: str) -> bool:
-    return enabled() and athlete_id == ATHLETE_ID
+    """The simulated intervals.icu athlete (sample watch data)."""
+    return athlete_id == ATHLETE_ID
 
 
 def _today() -> date:
@@ -85,7 +88,7 @@ def _activity_day(d: date) -> list[dict]:
              "gear": {"name": "Hoka Clifton 9"}}]
 
 
-ATHLETE = {"id": ATHLETE_ID, "name": NAME, "sex": "M", "icu_date_of_birth": "1995-04-12",
+ATHLETE = {"id": ATHLETE_ID, "sex": "M", "icu_date_of_birth": "1995-04-12",
            "height": 1.80, "icu_weight": 75.4, "icu_resting_hr": 49, "timezone": "Europe/Kyiv",
            "sportSettings": [{"types": ["Run", "TrailRun", "VirtualRun"], "lthr": 171,
                               "max_hr": 192, "hr_zones": [143, 157, 166, 175, 181, 186, 192],

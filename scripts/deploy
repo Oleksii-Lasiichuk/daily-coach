@@ -31,7 +31,7 @@ done
 $GC run deploy coach --source . --region $REGION --allow-unauthenticated \
   --min-instances 0 --max-instances 2 --memory 512Mi --cpu 1 --concurrency 20 --timeout 120 \
   --set-secrets "DATABASE_URL=database-url:latest,OPENROUTER_API_KEY=openrouter-api-key:latest,APP_ENCRYPTION_KEY=app-encryption-key:latest,LANGFUSE_SECRET_KEY=langfuse-secret-key:latest,VAPID_PRIVATE_KEY=vapid-private-key:latest,CRON_SECRET=cron-secret:latest" \
-  --set-env-vars "^;^ENV=prod;APP_ORIGIN=$ORIGINS;ALLOWED_EMAILS=$(env_value ALLOWED_EMAILS);ADMIN_EMAILS=$(env_value ADMIN_EMAILS);LANGFUSE_PUBLIC_KEY=$LF_PUBLIC;LANGFUSE_BASE_URL=https://cloud.langfuse.com;LANGFUSE_TRACING_ENVIRONMENT=production;FIREBASE_PROJECT_ID=$PROJECT;FIREBASE_WEB_API_KEY=$(env_value FIREBASE_WEB_API_KEY);FIREBASE_AUTH_DOMAIN=$(env_value FIREBASE_AUTH_DOMAIN);FIREBASE_APP_ID=$(env_value FIREBASE_APP_ID);VAPID_PUBLIC_KEY=$(env_value VAPID_PUBLIC_KEY)"
+  --set-env-vars "^;^ENV=prod;OPEN_SIGNUP=${OPEN_SIGNUP:-true};APP_ORIGIN=$ORIGINS;ALLOWED_EMAILS=$(env_value ALLOWED_EMAILS);ADMIN_EMAILS=$(env_value ADMIN_EMAILS);LANGFUSE_PUBLIC_KEY=$LF_PUBLIC;LANGFUSE_BASE_URL=https://cloud.langfuse.com;LANGFUSE_TRACING_ENVIRONMENT=production;FIREBASE_PROJECT_ID=$PROJECT;FIREBASE_WEB_API_KEY=$(env_value FIREBASE_WEB_API_KEY);FIREBASE_AUTH_DOMAIN=$(env_value FIREBASE_AUTH_DOMAIN);FIREBASE_APP_ID=$(env_value FIREBASE_APP_ID);VAPID_PUBLIC_KEY=$(env_value VAPID_PUBLIC_KEY)"
 
 firebase deploy --only hosting --project $PROJECT
 echo "Done: https://$PROJECT.web.app"

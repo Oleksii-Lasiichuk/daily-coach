@@ -20,10 +20,8 @@ def test_demo_login_is_404_from_a_proxy(client):
 
 
 def test_fake_intervals_only_for_the_demo_athlete(monkeypatch):
-    monkeypatch.setattr(get_settings(), "env", "dev")
+    monkeypatch.setattr(get_settings(), "env", "prod")  # sample data works in prod too
     rows = intervals.get_wellness(intervals.Conn("demo", "x"), date(2026, 11, 1),
                                   date(2026, 11, 7))
     assert len(rows) == 7 and all("hrv" in r for r in rows)
-    assert not demo.is_demo("i12345")
-    monkeypatch.setattr(get_settings(), "env", "prod")
-    assert not demo.is_demo("demo")  # in prod "demo" is just an unknown athlete id
+    assert demo.is_demo("demo") and not demo.is_demo("i12345")

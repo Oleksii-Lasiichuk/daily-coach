@@ -72,8 +72,9 @@
         </form>
         <p class="tiny muted" style="margin-top:8px">{{ _("A message costs about $0.005–0.02 with Gemini 3.8 Flash; Claude Sonnet 5.5 costs about 4× more.") }}</p>
         <p class="small" style="margin-top:12px">{{ _("This month") }}: <b>${{ "%.2f" | format(month_cost) }}</b>{% if not own_key %} <span class="muted">{{ _("of") }} ${{ cap | int }}</span>{% endif %}</p>
+        {% if error == "key" %}<p class="notice error small" style="margin-top:8px">{{ _("OpenRouter didn't accept that key. Check it and try again.") }}</p>{% endif %}
         <form method="post" action="/profile/key" class="row" style="gap:8px;margin-top:10px;align-items:flex-end">
-          <div class="grow"><label for="okey">{{ _("Your own OpenRouter key (optional)") }}</label>
+          <div class="grow"><label for="okey">{{ _("Your OpenRouter key") if guest else _("Your own OpenRouter key (optional)") }}</label>
             <input id="okey" name="api_key" type="password" placeholder="{{ '••••' ~ own_key.last4 if own_key else 'sk-or-…' }}" autocomplete="off"></div>
           <button class="btn sm">{{ _("Replace") if own_key else _("Use my key") }}</button>
         </form>
