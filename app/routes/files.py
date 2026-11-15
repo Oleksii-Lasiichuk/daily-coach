@@ -5,8 +5,10 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import sources, store
 from app.auth import current_user
+from app.db import connection
 from app.web import templates, ui
 
+GUEST_MAX_FILES = 5
 router = APIRouter(dependencies=[Depends(current_user)])
 
 
@@ -26,6 +28,14 @@ def _ctx(request: Request, user: store.User, **extra) -> dict:
 async def upload(request: Request, files: list[UploadFile],
                  user: store.User = Depends(current_user)):
     errors = []
+    from app import llm
+    if not llm.is_member(user.id):  # guests: a few files, so open sign-up can't fill the DB
+        with connection() as c:
+            have = c.execute("select count(*) as n from sources where user_id = %s",
+                             (user.id,)).fetchone()["n"]
+        if have + len(files) > GUEST_MAX_FILES:
+            errors.append(f"Guests can keep up to {GUEST_MAX_FILES} files. Delete one first.")
+            files = []
     for f in files:
         raw = await f.read(sources.MAX_BYTES + 1)
         try:

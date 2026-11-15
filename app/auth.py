@@ -14,9 +14,8 @@ from starlette.responses import JSONResponse, Response
 from app import store
 from app.config import get_settings
 
-# /healthz is reserved on Cloud Run; /cron/tick checks its own secret header; /sw.js is static JS;
-# /demo-login answers 404 unless ENV=dev and the request comes from localhost.
-PUBLIC_PATHS = {"/login", "/auth/session", "/status", "/sw.js", "/cron/tick", "/demo-login"}
+# /healthz is reserved on Cloud Run; /cron/tick checks its own secret header; /sw.js is static JS.
+PUBLIC_PATHS = {"/login", "/auth/session", "/status", "/sw.js", "/cron/tick"}
 SESSION_MAX_AGE = 14 * 24 * 3600
 
 _google_request = google_requests.Request()

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from app import llm
+from app import llm, store
 from app.pipeline.common import prompt, to_json
 
 # Slot key -> how it can be satisfied besides a profile field (a fact category).
@@ -65,6 +65,7 @@ def interview(message: str, profile: dict, facts: list[dict], recent: list[dict]
         "recent_conversation": [f"{m['role']}: {m['content'][:300]}" for m in recent[-6:]],
         "latest_message": message,
         "max_questions": max_questions,
+        "write_in": "Ukrainian" if user_id and store.user_lang(user_id) == "uk" else "English",
         "from_user_files": file_excerpts or [],
     }
     r = llm.complete(name="interview-user", schema=InterviewTurn, model=llm.SMART_MODEL,

@@ -78,7 +78,7 @@
             <input id="okey" name="api_key" type="password" placeholder="{{ '••••' ~ own_key.last4 if own_key else 'sk-or-…' }}" autocomplete="off"></div>
           <button class="btn sm">{{ _("Replace") if own_key else _("Use my key") }}</button>
         </form>
-        <p class="hint">{{ _("With your own key, your messages are billed to your OpenRouter account and there's no monthly cap. Leave empty and save to remove it.") }}</p>
+        <p class="hint">{% if guest %}{{ _("Your messages are billed to this OpenRouter key. Paste a new one to replace it.") }}{% else %}{{ _("With your own key, your messages are billed to your OpenRouter account and there's no monthly cap. Leave empty and save to remove it.") }}{% endif %}</p>
         <form method="post" action="/welcome/restart" style="margin-top:14px"><button class="btn sm">{{ _("Run setup again") }}</button></form>
       </details>
       {% if is_admin %}

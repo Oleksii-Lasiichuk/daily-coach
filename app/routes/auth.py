@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel
 
-from app import demo, store
+from app import store
 from app.auth import NotAllowed, current_user, verify_google_login
 from app.config import get_settings
 from app.web import templates
@@ -28,27 +28,7 @@ def login_page(request: Request):
     host = (request.headers.get("x-forwarded-host") or request.url.hostname or "").split(":")[0]
     auth_domain = host if host in HOSTED_DOMAINS else None
     return templates.TemplateResponse(request, "login.html", {
-        "auth_domain": auth_domain, "demo": demo.enabled() and _local(request),
-        "open_signup": get_settings().open_signup})
-
-
-def _local(request: Request) -> bool:
-    """True only for a browser on this machine (not behind a proxy or a hosted domain)."""
-    host = (request.url.hostname or "").lower()
-    return (host in ("localhost", "127.0.0.1") and not request.headers.get("x-forwarded-host")
-            and (request.client.host if request.client else "") in ("127.0.0.1", "::1",
-                                                                     "testclient"))
-
-
-@router.get("/demo-login")
-def demo_login(request: Request):
-    """Local demo only: sign in as the synthetic Demo Athlete (seeded on first use)."""
-    if not (demo.enabled() and _local(request)):
-        raise HTTPException(status_code=404)
-    uid = demo.user_id() or demo.seed()
-    request.session.clear()
-    request.session["user_id"] = uid
-    return RedirectResponse("/", status_code=303)
+        "auth_domain": auth_domain, "open_signup": get_settings().open_signup})
 
 
 @router.post("/auth/session")

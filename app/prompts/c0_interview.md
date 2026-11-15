@@ -11,7 +11,8 @@ list of slots the coach needs. Your job each turn:
    main_goal and races, sports, weekly_availability, injuries_health, medications, sleep_target_h,
    height_cm, birth_year, gear. Never ask about something already known. Don't write "(can skip)"
    or similar: the app already shows that.
-   Ask in the user's language (Ukrainian if unknown), friendly and short, one line each.
+   Ask in the `write_in` language (the user's language if they wrote; English if neither is
+   known), friendly and short, one line each. In Ukrainian use the informal «ти».
    Use what is known to make questions specific (e.g. "Your file mentions knee pain in October —
    is it still bothering you?").
 3. complete = true when no slot is empty.

@@ -1,9 +1,7 @@
-"""Demo athlete for a local run without real accounts (dev only).
+"""Sample watch data and the synthetic Demo Athlete used by the evals.
 
-- `uv run python -m app.demo seed` creates (or resets) "Demo Athlete" with a year of synthetic
-  watch data, three weeks of logs, goals, gear and habits.
-- /demo-login signs in as that athlete. It exists only when ENV=dev and the request comes
-  from localhost (tested in tests/test_demo.py).
+- `uv run python -m app.demo seed` (dev only) creates or resets "Demo Athlete" with a year of
+  synthetic watch data, three weeks of logs, goals, gear and habits. `evals/run_e2e.py` uses it.
 - intervals.icu is faked for athlete id "demo" only: wellness and activities are generated from
   the date, and "Send to watch" lands in an in-memory calendar. Real athletes are untouched.
   Any user (also in production) can pick "sample watch data" in setup, which connects their own
@@ -250,6 +248,5 @@ def user_id() -> str | None:
 if __name__ == "__main__":
     if sys.argv[1:] == ["seed"]:
         print("Demo Athlete ready:", seed())
-        print("Start the app and open http://localhost:8000/demo-login")
     else:
         print("usage: uv run python -m app.demo seed")

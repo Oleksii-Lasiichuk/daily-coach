@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     langfuse_base_url: str = "https://cloud.langfuse.com"
     langfuse_tracing_environment: str = "dev"
 
-    # Google sign-in. Optional for a local demo run (/demo-login works without it).
+    # Google sign-in (Firebase web config; public values).
     firebase_project_id: str = ""
     firebase_web_api_key: str = ""
     firebase_auth_domain: str = ""

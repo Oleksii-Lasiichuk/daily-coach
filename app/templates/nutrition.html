@@ -41,7 +41,7 @@
       <button class="btn sm" style="margin-top:10px" onclick="location.href='/?ask=' + encodeURIComponent({{ (_('Analyse how I ate over the last') ~ ' ' ~ (days if days > 1 else 7) ~ ' ' ~ _('days and what to change')) | tojson }})">{{ _("Ask the coach for an analysis") }}</button>
     </div>
   </div>
-  <p class="notice small" style="margin-top:14px">{{ icon("info") }} {{ _("These are estimates from your words and photos. On a public test set (NutriBench) the average error is 69 kcal per meal, about ±20% for most meals. If you know better, fix a meal below: ×½, ×2, your own kcal, or new text.") }}</p>
+  <p class="notice small" style="margin-top:14px">{{ icon("info") }} {{ _("These are estimates from your words and photos. On a public test set (NutriBench) the average error is about 70 kcal per meal; about 3 meals in 4 are within ±20%. If you know better, fix a meal below: ×½, ×2, your own kcal, or new text.") }}</p>
   <div class="grid2" style="margin-top:14px">
     <div class="card"><h2>{{ _("Nutrients") }}</h2>
       <table class="tbl small">{% for k in ["protein_g", "carbs_g", "fiber_g", "fat_g", "sat_fat_g"] %}{{ nrow(byk[k]) }}{% endfor %}</table>
