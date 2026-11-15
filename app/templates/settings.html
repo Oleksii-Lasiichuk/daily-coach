@@ -50,6 +50,10 @@
           <p class="hint">{{ _("The morning and evening ones have answer buttons (slept badly / OK / great) on Android and desktop. Leave a time empty to skip it.") }}</p>
           <button class="btn sm" style="margin-top:8px">{{ _("Save times") }}</button>
         </form>
+        <form method="post" action="/settings/report-now" style="margin-top:10px" onsubmit="this.querySelector('button').disabled=true">
+          <button class="btn sm ghost">{{ _("Write my morning report now") }}</button>
+          <span class="tiny muted">{{ _("At the morning time it's written automatically: into the chat, and as a notification.") }}</span></form>
+        {% if error == "report" %}<p class="notice error small" style="margin-top:8px">{{ _("Couldn't write the report. Try again.") }}</p>{% endif %}
         <h2 style="margin-top:16px">{{ _("Medication and other reminders") }}</h2>
         {% if reminders %}<ul class="list small">{% for r in reminders %}
           <li><span class="badge {{ 'accent' if r.kind == 'medication' }}">{{ r.times | join(", ") }}</span><span class="grow">{{ r.text }}{% if r.until %} <span class="muted">· {{ _("until") }} {{ r.until | fdate("dm") }}</span>{% endif %}</span>

@@ -2,7 +2,7 @@
 
 import html
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -72,6 +72,7 @@ def _fdate(ctx, d, style: str = "day") -> str:
 templates.env.filters["local_time"] = local_time
 templates.env.filters["md"] = md
 templates.env.filters["fdate"] = _fdate
+templates.env.filters["prevday"] = lambda d: (d - timedelta(days=1)).isoformat()
 templates.env.globals["_"] = _t
 templates.env.globals["DAY_NAMES"] = DAY_NAMES
 
@@ -82,6 +83,52 @@ def _fuel(workout: dict, user_id: str):
 
 
 templates.env.globals["session_fuel"] = _fuel
+
+
+def hr_zones(user_id: str, sport: str) -> dict[int, tuple[int | None, int]]:
+    """{zone: (low bpm or None, high bpm)} for the sport, from the intervals.icu profile."""
+    from app import store
+    settings = (store.get_profile(user_id).get("sport_settings") or {}).get("value") or {}
+    entry = next((v for v in settings.values() if sport in v.get("types", [])), None)
+    entry = entry or next(iter(settings.values()), {})
+    out = {}
+    for k, v in (entry.get("hr_zones_bpm") or {}).items():
+        try:
+            if v.startswith("up to"):
+                out[int(k[1:])] = (None, int(v.split()[-1]))
+            else:
+                lo, hi = v.split("-")
+                out[int(k[1:])] = (int(lo), int(hi))
+        except (ValueError, IndexError):
+            continue
+    return out
+
+
+def zone_bpm(zones: dict, lo: int | None, hi: int | None) -> str:
+    lo, hi = lo or hi, hi or lo
+    if not lo or lo not in zones or hi not in zones:
+        return ""
+    low, high = zones[lo][0], zones[hi][1]
+    return f"{low}–{high}" if low else f"<{high}"
+
+
+def workout_profile(w: dict) -> list[dict]:
+    """Segments for the workout bar: width = share of time, height = zone."""
+    segs = []
+    for b in w.get("blocks", []):
+        for _ in range(b.get("repeats", 1)):
+            for s in b.get("steps", []):
+                mins = s.get("duration_min") or (s.get("distance_m") or 0) / 1000 * 6
+                segs.append({"min": mins, "z": s.get("zone_high") or s.get("zone_low") or 1,
+                             "kind": s.get("kind")})
+    total = sum(x["min"] for x in segs) or 1
+    for x in segs:
+        x["pct"] = round(100 * x["min"] / total, 2)
+    return segs
+
+
+templates.env.globals.update(hr_zones=hr_zones, zone_bpm=zone_bpm,
+                             workout_profile=workout_profile)
 
 
 def ui(user) -> dict:

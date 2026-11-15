@@ -15,7 +15,7 @@
   </script>
   <meta name="theme-color" content="#FAF8F5">
   <link rel="preload" href="/static/fonts/FixelText-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/static/css/app.css?v=6">
+  <link rel="stylesheet" href="/static/css/app.css?v=7">
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/static/icon.svg">
@@ -53,13 +53,27 @@
 </nav>
 {% block modal %}{% endblock %}
 {% endblock %}
+<dialog id="sheet" class="sheet" aria-labelledby="sheet-title"><button class="icon sheet-x" type="button" onclick="this.closest('dialog').close()" aria-label="{{ _('Close') }}">{{ icon("x") }}</button><div id="sheet-body"></div></dialog>
 <div id="toast" role="status" hidden></div>
 <script>
+  function speak(btn) {  // reads a coach message aloud with the device's own voice
+    if (!("speechSynthesis" in window)) { toast({{ _("This browser can't read aloud.") | tojson }}); return; }
+    if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
+    const text = btn.closest(".msg").querySelector(".body").innerText;
+    const u = new SpeechSynthesisUtterance(text); u.lang = /[а-яіїєґ]/i.test(text) ? "uk-UA" : "en-GB";
+    const v = speechSynthesis.getVoices().find(x => x.lang.startsWith(u.lang.slice(0, 2))); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
   function toast(t) { const el = document.getElementById("toast"); el.textContent = t; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 5000); }
   function toggleTheme() {
     const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = t; try { localStorage.setItem("theme", t); } catch (e) {}
+    document.dispatchEvent(new Event("themechange"));
   }
+  // Details sheet: any element with hx-get="…/sheet" hx-target="#sheet-body" opens it.
+  const sheet = document.getElementById("sheet");
+  document.addEventListener("htmx:afterSwap", (e) => { if (e.detail.target.id === "sheet-body" && !sheet.open) sheet.showModal(); });
+  sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.close(); });
   document.addEventListener("htmx:responseError", (e) => toast(e.detail.xhr.status === 401 ? {{ _("Your session ended. Sign in again.") | tojson }} : (e.detail.xhr.responseText || {{ _("Something went wrong. Try again.") | tojson }}).slice(0, 200)));
   document.addEventListener("htmx:sendError", () => toast({{ _("No connection. Try again.") | tojson }}));
   // resizable side panes (desktop): drag the 6 px handle, width is remembered

@@ -1,6 +1,6 @@
 {% from "_icons.html" import icon with context %}
 <div class="card">
-  <div class="row between"><span class="label">{{ day | fdate("day") }}</span>
+  <div class="row between"><span class="daylink"><a href="/day/{{ (day | prevday) }}" aria-label="{{ _('Previous day') }}">{{ icon("chevron-left") }}</a><a href="/day/{{ day.isoformat() }}" class="label" style="width:auto;padding:0 4px;color:var(--muted)" title="{{ _('Open the full day') }}">{{ day | fdate("day") }}</a></span>
     <button class="btn sm ghost" hx-post="/today/assess" hx-swap="none" title="{{ _('Reads last night\'s sleep, HRV and resting HR, and what you logged today; decides the day type and suggests a session.') }}">{{ icon("refresh") }}{{ _("Check again") if assessment else _("Check my day") }}</button></div>
   {% if assessment %}
     <p class="daytype {{ assessment.day_type }}" style="margin-top:2px">{{ _(DAY_NAMES[assessment.day_type] ~ " day") }}</p>
@@ -25,16 +25,22 @@
   </div>
   <details class="explain"><summary>{{ icon("info") }} {{ _("What these numbers mean") }}</summary>
     <ul class="small">
-      <li><b>{{ _("usual") }}</b> — {{ _("your average of the 7 days before today, so you compare with yourself, not with others.") }}</li>
-      <li><b>HRV</b> — {{ _("heart rate variability overnight. Higher than usual means recovered; 10% or more below usual means stress, illness, alcohol or hard training.") }}</li>
-      <li><b>{{ _("Resting HR") }}</b> — {{ _("lower is better; 5+ bpm above usual often means fatigue or getting ill.") }}</li>
-      <li><b>{{ _("Form") }}</b> — {{ _("fitness (load of the last 6 weeks) minus fatigue (load of the last week), from intervals.icu. −10 to −30: you're building fitness; below −30: too much; above +5: fresh, good before a race.") }}</li>
+      <li><b>{{ _("usual") }}</b>: {{ _("your average of the 7 days before today, so you compare with yourself, not with others.") }}</li>
+      <li><b>HRV</b>: {{ _("heart rate variability overnight. Higher than usual means recovered; 10% or more below usual means stress, illness, alcohol or hard training.") }}</li>
+      <li><b>{{ _("Resting HR") }}</b>: {{ _("lower is better; 5+ bpm above usual often means fatigue or getting ill.") }}</li>
+      <li><b>{{ _("Form") }}</b>: {{ _("fitness (load of the last 6 weeks) minus fatigue (load of the last week), from intervals.icu. −10 to −30: you're building fitness; below −30: too much; above +5: fresh, good before a race.") }}</li>
     </ul></details>
   {% elif not connected %}<p class="small" style="margin-top:8px"><a href="/settings#intervals">{{ _("Connect intervals.icu") }}</a> {{ _("to see sleep and HRV.") }}</p>
   {% elif wellness_error %}<p class="notice error small" style="margin-top:8px">{{ wellness_error }}</p>{% endif %}
   {% if weather %}<p class="small muted" style="margin-top:8px">{{ icon("cloud") }} {{ weather.place }}: {{ weather.t_min | round | int }}–{{ weather.t_max | round | int }}°C{% if weather.rain_mm %} · {{ _("rain") }} {{ weather.rain_mm }} mm{% endif %}{% if weather.air %} · {{ _("air") }} {{ _(weather.air) }}{% endif %}</p>{% endif %}
   {% if rail_error %}<p class="notice error small" style="margin-top:8px">{{ rail_error }}</p>{% endif %}
 </div>
+
+{% if not has_push %}
+<div class="card push-off small"><b>{{ _("Notifications are off") }}</b>
+  <p class="muted" style="margin-top:2px">{{ _("Your morning report and reminders can't reach you. The report also appears here in the chat each morning.") }}</p>
+  <a class="btn sm" style="margin-top:8px" href="/settings#reminders">{{ icon("bell") }}{{ _("Turn on") }}</a></div>
+{% endif %}
 
 {% if race %}
 <div class="card row" style="gap:12px;padding:12px 14px">
@@ -81,7 +87,7 @@
   {% if totals.caffeine_mg > 300 or totals.sugar_g > 50 %}<p class="tiny" style="color:var(--warn);margin-top:8px">{% if totals.caffeine_mg > 300 %}{{ _("Caffeine") }} {{ totals.caffeine_mg | int }} mg. {% endif %}{% if totals.sugar_g > 50 %}{{ _("Sugar") }} {{ totals.sugar_g | int }} g.{% endif %}</p>{% endif %}
   <div style="margin-top:10px">
     {% if suggestion %}<p class="small"><span class="muted">{{ _("Next") }} {{ _(suggestion.meal) }}:</span> {{ suggestion.text }}</p>{% endif %}
-    <button class="btn sm ghost" style="margin-top:4px;padding-left:0" hx-post="/nutrition/suggest" hx-swap="none" title="{{ _('Builds a meal from foods you often eat that fills what is missing today.') }}">{{ icon("zap") }}{{ _("Another idea") if suggestion else _("Suggest my next meal") }}</button>
+    <button class="btn sm ghost" style="margin-top:4px;padding-left:0" hx-post="/nutrition/suggest" hx-swap="none" title="{{ _('Builds a meal from foods you often eat that fills what is missing today.') }}">{{ _("Another idea") if suggestion else _("Suggest my next meal") }}</button>
   </div>
 </div>
 

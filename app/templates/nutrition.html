@@ -38,14 +38,14 @@
         {% if s.eaten_each_of_last_3_days %}<li><span class="badge">{{ _("repeat") }}</span><span>{{ _("Every day for 3 days") }}: {{ s.eaten_each_of_last_3_days | join(", ") }}.</span></li>{% endif %}
         {% if not s.too_much and not s.too_little and not s.eaten_each_of_last_3_days %}<li class="muted">{{ _("Nothing unusual. Keep logging for a clearer picture.") }}</li>{% endif %}
       </ul>
-      <button class="btn sm" style="margin-top:10px" onclick="location.href='/?ask=' + encodeURIComponent({{ (_('Analyse how I ate over the last') ~ ' ' ~ (days if days > 1 else 7) ~ ' ' ~ _('days and what to change')) | tojson }})">{{ icon("zap") }}{{ _("Ask the coach for an analysis") }}</button>
+      <button class="btn sm" style="margin-top:10px" onclick="location.href='/?ask=' + encodeURIComponent({{ (_('Analyse how I ate over the last') ~ ' ' ~ (days if days > 1 else 7) ~ ' ' ~ _('days and what to change')) | tojson }})">{{ _("Ask the coach for an analysis") }}</button>
     </div>
   </div>
   <p class="notice small" style="margin-top:14px">{{ icon("info") }} {{ _("These are estimates from your words and photos. On a public test set (NutriBench) the average error is 69 kcal per meal, about ±20% for most meals. If you know better, fix a meal below: ×½, ×2, your own kcal, or new text.") }}</p>
   <div class="grid2" style="margin-top:14px">
     <div class="card"><h2>{{ _("Nutrients") }}</h2>
       <table class="tbl small">{% for k in ["protein_g", "carbs_g", "fiber_g", "fat_g", "sat_fat_g"] %}{{ nrow(byk[k]) }}{% endfor %}</table>
-      <p class="label" style="margin-top:12px">{{ _("Limits — less is better") }}</p>
+      <p class="label" style="margin-top:12px">{{ _("Limits: less is better") }}</p>
       <table class="tbl small">{% for k in ["sugar_g", "salt_g", "caffeine_mg", "alcohol_g"] %}{{ nrow(byk[k]) }}{% endfor %}</table>
       <details style="margin-top:10px"><summary class="small" style="cursor:pointer">{{ _("Vitamins and minerals") }} (7){% set lows = rows | selectattr("key", "in", ["iron_mg", "calcium_mg", "potassium_mg", "magnesium_mg", "vit_c_mg", "vit_d_ug"]) | selectattr("flag", "equalto", "low") | list %}{% if lows %} · <span class="badge warn">{{ lows | length }} {{ _("low") }}</span>{% endif %}</summary>
         <table class="tbl small" style="margin-top:6px">{% for k in ["iron_mg", "calcium_mg", "potassium_mg", "magnesium_mg", "vit_c_mg", "vit_d_ug"] %}{{ nrow(byk[k]) }}{% endfor %}</table>

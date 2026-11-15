@@ -153,13 +153,19 @@ class Turn:
                      + (f" · {round(kcal)} kcal" if kcal else ""), {"op": "delete_logs",
                                                                      "ids": new_ids})
         # Lasting facts are only suggested; the coach decides with save_item (no duplicates).
-        return {"logged": result.logged, "possible_items": done.get("possible_items", [])}
+        out = {"logged": result.logged, "possible_items": done.get("possible_items", [])}
+        if done.get("rejected"):
+            out["not_logged_unrealistic"] = done["rejected"]
+        return out
 
     def save_item(self, category: str, text: str, term: str = "long", until: str | None = None,
                   details: dict | None = None) -> Any:
-        known = {f["text"].lower() for f in store.list_facts(self.user.id)}
-        if text.lower() in known:
-            return {"status": "already saved"}
+        from app import tidy
+        same = tidy.near_duplicate(text, [f for f in store.list_facts(self.user.id)
+                                          if f["category"] == category])
+        if same:
+            return {"status": "already saved", "item_id": same["id"], "text": same["text"],
+                    "note": "Don't save it again. If it changed, end_item the old one first."}
         if category not in CATEGORIES:
             category = "note"
         with connection() as c:
@@ -187,6 +193,7 @@ class Turn:
             return {"error": f"'{key}' can't be set here; use save_item for goals and "
                              "preferences"}
         old = store.get_profile(self.user.id).get(key)
+        value = str(value)[:200]
         store.set_profile_field(self.user.id, key, value, "ai", actor="ai")
         self.act("update_profile", f"Profile: {key.replace('_', ' ')} = {value}",
                  {"op": "profile", "key": key, "value": old["value"] if old else None})

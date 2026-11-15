@@ -3,7 +3,8 @@
 <div class="msg you">{% for a in m.attachments or [] %}{% if a.thumb %}<img src="{{ a.thumb }}" alt="{{ _('Photo you sent') }}">{% endif %}{% endfor %}{{ m.content if m.content != "(photo)" }}</div>
 {% else %}
 <div class="msg coach">
-  <div class="who"><span class="mark">{{ icon("activity") }}</span>{{ _("Coach") }}{% if m.created_at %} · {{ m.created_at | local_time(user.time_zone) }}{% endif %}</div>
+  <div class="who"><span class="mark">{{ icon("activity") }}</span>{{ _("Coach") }}{% if m.created_at %} · {{ m.created_at | local_time(user.time_zone) }}{% endif %}{% if (m.attachments or []) | selectattr("type", "equalto", "report") | list %} <span class="report-tag">{{ _("Morning report") }}</span>{% endif %}
+    <button type="button" class="icon listen" onclick="speak(this)" title="{{ _('Listen') }}" aria-label="{{ _('Listen') }}">{{ icon("volume") }}</button></div>
   <div class="body">{{ m.content | md }}</div>
   {% if m.actions %}<div class="acts">{% for a in m.actions %}{% include "partials/action.html" %}{% endfor %}</div>{% endif %}
   {% for p in m.cards or [] %}<div style="margin-top:10px">{% include "partials/session_card.html" %}</div>{% endfor %}

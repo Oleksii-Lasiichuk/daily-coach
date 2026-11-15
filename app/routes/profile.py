@@ -115,6 +115,19 @@ def set_place(time_zone: str = Form(""), city: str = Form(""), plan_source: str 
     return RedirectResponse("/settings?saved=you#you", status_code=303)
 
 
+@router.post("/settings/report-now")
+def report_now(user: store.User = Depends(current_user)):
+    """Writes this morning's report now (into the chat, and as a push if it's on)."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from app import push
+    text = push.morning_report(user.id, datetime.now(ZoneInfo(user.time_zone)))
+    if text:
+        push.send(user.id, "Morning report", text[:240])
+    return RedirectResponse("/" if text else "/settings?error=report#reminders", status_code=303)
+
+
 @router.post("/settings/reminders")
 def add_reminder(text: str = Form(""), times: str = Form(""), until: str = Form(""),
                  user: store.User = Depends(current_user)):

@@ -19,6 +19,7 @@ from app.web import shell, templates
 router = APIRouter(dependencies=[Depends(current_user)])
 log = logging.getLogger("pages")
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
+RATE_PER_10_MIN = 30
 
 
 def today_of(user: store.User) -> date:
@@ -66,8 +67,12 @@ def rail_context(user: store.User) -> dict:
     session_min = max([p["workout"].get("minutes") or 0 for p in proposals
                        if p["status"] != "undone"], default=0)
     profile = store.get_profile(user.id)
+    with connection() as c:
+        has_push = c.execute("select exists (select 1 from push_subscriptions where user_id = %s)"
+                             " as p", (user.id,)).fetchone()["p"]
     return {
-        "day": day, "connected": connected, "snapshot": snapshot, "wellness_error": wellness_error,
+        "day": day, "connected": connected, "has_push": has_push, "snapshot": snapshot,
+        "wellness_error": wellness_error,
         "assessment": a, "proposals": proposals,
         "planned": [lg for lg in logs if lg["kind"] == "planned_workout"],
         "meals": [lg for lg in logs if lg["data"].get("nutrition")],
@@ -114,6 +119,14 @@ async def chat(request: Request, text: str = Form(""), mode: str = Form("auto"),
                deep: str = Form(""), images: list[UploadFile] | None = None,
                user: store.User = Depends(current_user)):
     text = text.strip()[:4000]
+    with connection() as c:  # a cap against runaway scripts or a stolen session
+        recent = c.execute("select count(*) as n from chat_messages where user_id = %s and "
+                           "role = 'user' and created_at > now() - interval '10 minutes'",
+                           (user.id,)).fetchone()["n"]
+    if recent >= RATE_PER_10_MIN:
+        ctx = shell(user, "/", reply_msgs=[], error="Too many messages in a short time. Wait a "
+                    "few minutes.", **rail_context(user))
+        return templates.TemplateResponse(request, "partials/turn.html", ctx)
     pics = []
     for f in images or []:
         raw = await f.read(MAX_IMAGE_BYTES + 1)
@@ -220,6 +233,17 @@ def safe_next(url: str) -> bool:
     return url.startswith("/") and not url.startswith("//") and "\\" not in url
 
 
+@router.get("/logs/{log_id}/sheet", response_class=HTMLResponse)
+def log_sheet(request: Request, log_id: int, next: str = "/nutrition",
+              user: store.User = Depends(current_user)):
+    lg = store.get_log(user.id, log_id)
+    if not lg:
+        return HTMLResponse("", status_code=404)
+    return templates.TemplateResponse(request, "partials/log_sheet.html", shell(
+        user, "/nutrition", lg=lg, next=next if safe_next(next) else "/nutrition",
+        labels=nutrition_stats.LABELS, units=nutrition_stats.UNITS))
+
+
 @router.post("/logs/{log_id}/edit")
 def edit_log(log_id: int, next: str = Form("/nutrition"), factor: str = Form(""),
              kcal: str = Form(""), text: str = Form(""),
@@ -234,15 +258,19 @@ def edit_log(log_id: int, next: str = Form("/nutrition"), factor: str = Form("")
     old_kcal = nutrition_stats.meal_totals(data).get("kcal") or 0
     try:
         if factor:
-            data = nutrition_stats.scale_nutrition(data, max(0.1, min(float(factor), 10)))
+            data = nutrition_stats.scale_nutrition(data, max(0.1, min(float(factor), 3)))
         elif kcal and old_kcal:
-            data = nutrition_stats.scale_nutrition(data, max(0, float(kcal)) / old_kcal)
+            data = nutrition_stats.scale_nutrition(data, min(max(0, float(kcal)), 4000)
+                                                   / old_kcal)
         elif text.strip() and text.strip() != data.get("description"):
             from app.pipeline import nutrition
             data["description"] = text.strip()[:300]
             if lg["kind"] in ("meal", "drink", "alcohol"):
                 data["nutrition"] = nutrition.estimate(data["description"], user.id).model_dump()
     except (ValueError, llm.LLMError):
+        return RedirectResponse(back, status_code=303)
+    from app.pipeline.turn import implausible
+    if implausible(lg["kind"], data):
         return RedirectResponse(back, status_code=303)
     data["edited"] = True
     store.update_log_data(user.id, log_id, data)
@@ -367,8 +395,15 @@ def journal(request: Request, month: str = "", user: store.User = Depends(curren
     last = first.replace(day=calendar.monthrange(first.year, first.month)[1])
     data = history.days_between(user.id, first, last)
     weeks = calendar.Calendar(firstweekday=0).monthdatescalendar(first.year, first.month)
+    cells: dict[date, dict] = {}
+    for r in health.series(user.id, first, last):
+        cells.setdefault(date.fromisoformat(r["day"]), {})["sleep"] = r.get("sleep_h")
+    for a in health.activities(user.id, first, last):
+        c = cells.setdefault(date.fromisoformat(a["day"]), {})
+        c["km"] = round(c.get("km", 0) + (a.get("km") or 0), 1)
+        c["min"] = c.get("min", 0) + (a.get("minutes") or 0)
     return templates.TemplateResponse(request, "journal.html", shell(
-        user, "/journal", first=first, weeks=weeks, data=data, today=today,
+        user, "/journal", first=first, weeks=weeks, data=data, today=today, cells=cells,
         week=history.week_review(user.id, today),
         prev_m=(first - timedelta(days=1)).strftime("%Y-%m"),
         next_m=(last + timedelta(days=1)).strftime("%Y-%m") if last < today else None,
@@ -387,11 +422,34 @@ def day_page(request: Request, day: str, user: store.User = Depends(current_user
                 if start <= m["created_at"] < start + timedelta(days=1)]
     logs = store.logs_between(user.id, d, d)
     proposals = store.proposals_for_day(user.id, d)
+    today = today_of(user)
+    from app.routes.data_pages import chart_data
+    rows = health.series(user.id, d - timedelta(days=7), d)
+    this = next((r for r in rows if r["day"] == d.isoformat()), {})
+    before = [r for r in rows if r["day"] < d.isoformat()]
+    stats = []
+    for key, label, unit, dec in DAY_STATS:
+        v = this.get(key)
+        vals = [r[key] for r in before if isinstance(r.get(key), (int, float))]
+        usual = round(sum(vals) / len(vals), dec or None) if vals else None
+        if v is not None:
+            stats.append({"key": key, "label": label, "unit": unit,
+                          "value": round(v, dec or None), "usual": usual})
+    data = chart_data(user.id, min(today, d + timedelta(days=8)), 120)
     return templates.TemplateResponse(request, "day.html", shell(
         user, "/journal", day=d, assessment=store.get_assessment(user.id, d), logs=logs,
-        proposal=proposals[0] if proposals else None, messages=messages,
-        totals=nutrition_stats.day_totals(logs), is_future=d > today_of(user),
-        error=request.query_params.get("error")))
+        proposals=proposals, messages=messages, stats=stats, data=data,
+        acts=health.activities(user.id, d, d), totals=nutrition_stats.day_totals(logs),
+        is_future=d > today, today=today, prev_d=d - timedelta(days=1),
+        next_d=d + timedelta(days=1), error=request.query_params.get("error")))
+
+
+DAY_STATS = [("sleep_h", "Sleep", "h", 1), ("sleep_score", "Sleep score", "", 0),
+             ("hrv", "HRV", "ms", 0), ("resting_hr", "Resting HR", "bpm", 0),
+             ("sleep_hr", "Sleeping HR", "bpm", 0), ("stress", "Stress", "", 0),
+             ("readiness", "Readiness", "", 0), ("spo2", "SpO2", "%", 0),
+             ("respiration", "Respiration", "brpm", 1), ("steps", "Steps", "", 0),
+             ("weight_kg", "Weight", "kg", 1), ("form", "Form", "", 0)]
 
 
 @router.post("/day/{day}/add")

@@ -108,9 +108,9 @@ def tick() -> dict:
                 if key in NUDGE_TEXT and _due(now, hhmm) and _mark(uid, f"nudge:{key}", now):
                     title, body = NUDGE_TEXT[key]
                     if key == "morning":
-                        a = store.get_assessment(uid, now.date())
-                        if a:
-                            body = (a["inputs"].get("summary") or body)[:180]
+                        report = morning_report(uid, now)
+                        if report:
+                            title, body = "Morning report", report[:240]
                     q, actions = QUESTIONS.get(key, (None, None))
                     stats["nudges"] += send(uid, title, body, q=q, actions=actions)
         with connection() as c:
@@ -134,6 +134,55 @@ def tick() -> dict:
 def _mark(user_id: str, key: str, now: datetime) -> bool:
     """True the first time `key` is seen today (so each nudge goes out once)."""
     return store.mark_once(user_id, key, now.date())
+
+
+REPORT_PROMPT = """You write the athlete's morning report: 3–4 short sentences, plain text, no
+greeting, no emoji, no Markdown. Cover, with numbers: how they slept and recovered against their
+usual (sleep, HRV, resting HR), what today is (day type), today's session in one line (or rest),
+and one useful thing for today (fuel, a habit, the race countdown, pain to watch). Write in
+{language}. If watch data is missing, say so in a few words."""
+
+
+def morning_report(user_id: str, now: datetime) -> str | None:
+    """Checks the day (C5 + C6), writes a short report into the chat and returns its text."""
+    from app.pipeline.turn import TurnResult, assess_and_plan
+    user = store.get_user(user_id)
+    lang = "Ukrainian" if store.user_lang(user_id) == "uk" else "English"
+    done: dict = {}
+    with llm.trace("morning-report", input="morning", user_id=user_id, tags=["report"]):
+        try:
+            assess_and_plan(user, now.date(), "Morning check: what should I do today?", False,
+                            TurnResult(reply="", trace_id=None), done)
+        except (llm.LLMError, intervals.IntervalsError) as e:
+            log.warning("morning assess failed: %s", e)
+        try:
+            snap = intervals.day_snapshot(user_id, now.date())
+        except intervals.IntervalsError:
+            snap = None
+        data = {"today": now.date().isoformat(), "watch": {k: snap[k] for k in
+                                                          ("today", "baseline_7d")} if snap else
+                "not available", "day": done.get("day_type"), "session": done.get("workout"),
+                "yesterday": history.recent_digests(user_id, now.date(), 1),
+                "habits": [h["name"] for h in store.habits_for_day(user_id, now.date())],
+                "items": [f"{f['category']}: {f['text']}" for f in store.list_facts(user_id)
+                          if f["category"] in ("race", "injury", "medication", "health")]}
+        try:
+            r = llm.complete(name="write-morning-report", model=llm.SMART_MODEL,
+                             user_id=user_id, max_tokens=400, messages=[
+                                 {"role": "system", "content": REPORT_PROMPT.format(
+                                     language=lang)},
+                                 {"role": "user", "content": common.to_json(data)}])
+        except llm.LLMError as e:
+            log.warning("morning report failed: %s", e)
+            return None
+        text = r.text.strip()
+        trace_id = llm.current_trace_id()
+    llm.langfuse.flush()
+    with connection() as c:
+        c.execute("insert into chat_messages (user_id, role, content, trace_id, attachments) "
+                  "values (%s, 'assistant', %s, %s, '[{\"type\": \"report\"}]'::jsonb)",
+                  (user_id, text, trace_id))
+    return text
 
 
 INSIGHT_PROMPT = """You analyse an athlete's last 30 days: daily digests (food, drinks, sleep,

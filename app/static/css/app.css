@@ -311,3 +311,107 @@ abbr[title] { text-decoration: underline dotted var(--faint); text-underline-off
   .quick .label { display: none; }
   .empty-chat { margin-top: 2vh; }
 }
+
+/* ---------- v5: watch workout card ---------- */
+.session-card { padding: 14px 16px; }
+.session-card.on-watch { border-color: var(--good); }
+.session-card .badge svg { width: 12px; height: 12px; vertical-align: -2px; }
+.wk-name { font-size: 17px; font-weight: 500; margin-top: 6px; letter-spacing: -0.01em; }
+.wk-bar { display: flex; align-items: flex-end; gap: 1px; height: 40px; margin: 10px 0 6px; border-bottom: 1px solid var(--line); }
+.wk-bar i { display: block; border-radius: 2px 2px 0 0; min-width: 2px; }
+.wk-bar .z1 { background: #8FB3D9; } .wk-bar .z2 { background: #6BAF7E; } .wk-bar .z3 { background: #E3B341; }
+.wk-bar .z4 { background: #E5823A; } .wk-bar .z5 { background: #D2463A; }
+.wk-steps, .wk-steps ol { list-style: none; padding: 0; margin: 0; }
+.wk-steps { margin-top: 6px; }
+.wk-step { display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 7px 0 7px 10px; border-left: 3px solid var(--line); }
+.wk-step + .wk-step, .wk-rep + .wk-step, .wk-step + .wk-rep, .wk-rep + .wk-rep { margin-top: 2px; }
+.wk-step.k-warmup, .wk-step.k-cooldown { border-left-color: #8FB3D9; }
+.wk-step.k-steady { border-left-color: #6BAF7E; } .wk-step.k-work { border-left-color: #E5823A; }
+.wk-step.k-recovery { border-left-color: var(--faint); }
+.wk-amt { font-size: 13px; color: var(--muted); padding-top: 1px; white-space: nowrap; }
+.wk-what { display: flex; flex-direction: column; font-size: 14px; }
+.wk-what b { font-weight: 500; }
+.wk-rep { position: relative; background: var(--sunk); border-radius: 10px; padding: 6px 8px 6px 40px; margin: 4px 0; }
+.wk-x { position: absolute; left: 10px; top: 10px; font-weight: 500; font-size: 14px; color: var(--accent); }
+.wk-why { margin-top: 10px; color: var(--ink-2); }
+
+/* ---------- v5: sheets, clickable rows, charts ---------- */
+.sheet { border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--ink); padding: 22px; width: min(560px, calc(100vw - 24px));
+         max-height: calc(100dvh - 40px); overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); }
+.sheet::backdrop { background: rgba(15, 14, 12, .45); }
+.sheet-x { position: absolute; right: 10px; top: 10px; }
+.sheet { position: fixed; }
+.sheet-title { font-size: 18px; font-weight: 500; padding-right: 36px; }
+.sheet-meta { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-2); }
+.sheet-meta svg { width: 14px; height: 14px; vertical-align: -2px; color: var(--muted); }
+.quote { margin: 6px 0 0; padding: 8px 12px; border-left: 3px solid var(--line); color: var(--ink-2); font-size: 13.5px; background: var(--sunk); border-radius: 0 8px 8px 0; }
+.danger-t { color: var(--bad); }
+.click-row { cursor: pointer; border-radius: 8px; transition: background .12s; }
+.list > li.click-row { padding-left: 6px; padding-right: 6px; margin: 0 -6px; }
+.click-row:hover { background: var(--sunk); }
+.click-row:focus-visible { outline: 2px solid var(--accent); }
+.link svg { width: 14px; height: 14px; vertical-align: -2px; }
+.past > summary { cursor: pointer; }
+.tidy-group { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.page.wide { max-width: 1240px; }
+.chartbox { padding: 12px 14px 10px; }
+.chartbox + .chartbox { margin-top: 12px; }
+.chart-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+.chart-controls select { width: auto; height: 34px; font-size: 14px; padding: 4px 10px; }
+.chart-controls .switch { margin-left: auto; }
+.plot { width: 100%; min-height: 200px; }
+.readout { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; min-height: 22px; margin-top: 4px; color: var(--ink-2); }
+.readout .rv { display: inline-flex; align-items: center; gap: 6px; }
+.dot1, .dot2 { border-left-width: 4px !important; }
+.dot1 { border-left-color: var(--accent) !important; } .dot2 { border-left-color: var(--recover) !important; }
+.readout i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; }
+.readout i.dot1 { background: var(--accent); } .readout i.dot2 { background: var(--recover); }
+.u-select { background: var(--accent-soft) !important; opacity: .6; }
+.uplot { font-family: var(--font); }
+.tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 12px; }
+.tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer;
+        font: inherit; color: var(--ink); display: flex; flex-direction: column; gap: 2px; }
+.tile:hover { border-color: var(--faint); }
+.tile .k { font-size: 12px; color: var(--muted); } .tile .v { font-size: 20px; font-weight: 500; }
+.tile .v small { font-size: 12px; color: var(--muted); font-weight: 400; } .tile .u { font-size: 11.5px; color: var(--muted); }
+.goals { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.goal-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; text-align: left; font: inherit; color: var(--ink); }
+.goal-card.race { border-color: var(--accent); }
+.goal-card .label svg { width: 13px; height: 13px; vertical-align: -2px; color: var(--accent); }
+.goal-title { font-size: 18px; font-weight: 500; margin-top: 6px; letter-spacing: -0.01em; line-height: 1.3; }
+.race-stats { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 12px; }
+.race-stats > div { display: flex; flex-direction: column; }
+.race-stats .big { font-size: 30px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; }
+.race-stats .big.sm { font-size: 22px; padding-top: 6px; }
+.race-stats .k { font-size: 12px; color: var(--muted); }
+.bar.thick { height: 8px; border-radius: 4px; }
+.bar.thick > i { background: var(--accent); }
+.click-card { cursor: pointer; transition: border-color .12s, background .12s; }
+.click-card:hover { border-color: var(--faint); }
+.goal-card.race.click-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.add-card { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px dashed var(--line); background: transparent;
+            color: var(--muted); cursor: pointer; min-height: 90px; font: inherit; }
+.add-card:hover { border-color: var(--faint); color: var(--ink-2); }
+.week a.day { text-decoration: none; color: inherit; transition: border-color .12s; }
+.week a.day:hover { border-color: var(--faint); }
+.gear-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; }
+.gear { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--panel); }
+.gear.add-card { min-height: 0; padding: 10px; border-radius: 12px; }
+.gear-ic { width: 32px; height: 32px; border-radius: 9px; background: var(--sunk); display: grid; place-items: center; flex: none; }
+.gear-ic svg { width: 17px; height: 17px; color: var(--ink-2); }
+.daynav { display: flex; align-items: center; gap: 8px; }
+.daynav h1 { font-size: 20px; }
+.tile.static { cursor: default; }
+.tile.static:hover { border-color: var(--line); }
+.act-row + .act-row { margin-top: 8px; }
+.daylink { display: inline-flex; align-items: center; gap: 2px; }
+.daylink a { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; color: var(--muted); }
+.daylink a:hover { background: var(--sunk); color: var(--ink); }
+.daylink svg { width: 16px; height: 16px; }
+.cal .info { display: block; font-size: 11px; color: var(--muted); line-height: 1.3; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal td { height: 76px; }
+.push-off { border-color: var(--warn); }
+.listen { margin-left: auto; width: 26px; height: 26px; }
+.listen svg { width: 15px; height: 15px; }
+.msg.coach .who { width: 100%; }
+.report-tag { font-size: 11.5px; padding: 0 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
