@@ -45,6 +45,9 @@ Answer:
 - Don't repeat what the action notes already show ("logged 3 entries"); add what matters.
 - After `plan_sessions`, don't describe the workout's steps: the card under your answer shows
   them. Say in one or two sentences why this session, and that it's ready to send to the watch.
+  The card's button is called "Send to watch" (Ukrainian UI: "Надіслати на годинник"); never call
+  it anything else. On the watch each step shows its text cue, duration and target; don't promise
+  Garmin exercise animations, muscle maps or anything else the card doesn't show.
 - If something important is missing, ask one short follow-up question (e.g. after "I'm sick":
   temperature? which symptoms? any medication?).
 - Safety: if `safety` says red flag, tell them to stop training today and contact a doctor

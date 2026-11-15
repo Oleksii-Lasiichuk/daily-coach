@@ -25,12 +25,12 @@
   {
    "component": "C1 tool routing",
    "metric": "exact match",
-   "value": 0.783,
-   "k": 47,
+   "value": 0.8,
+   "k": 48,
    "n": 60,
    "ci95": [
-    0.664,
-    0.869
+    0.682,
+    0.882
    ]
   },
   {

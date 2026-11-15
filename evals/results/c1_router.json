@@ -2,14 +2,14 @@
  "component": "c1_router",
  "metrics": {
   "n": 60,
-  "macro_f1": 0.834,
-  "exact_match": 0.783,
+  "macro_f1": 0.871,
+  "exact_match": 0.8,
   "no_write_on_questions": 1.0,
   "f1_log": 0.905,
-  "f1_plan": 0.824,
-  "f1_profile": 0.774
+  "f1_plan": 0.909,
+  "f1_profile": 0.8
  },
- "n_failures": 13,
+ "n_failures": 12,
  "failures": [
   {
    "text": "Garmin wants 8x400 today",
@@ -17,7 +17,6 @@
     "log"
    ],
    "tools": [
-    "assess_day",
     "set_planned_workouts"
    ]
   },
@@ -41,18 +40,6 @@
    "tools": []
   },
   {
-   "text": "п'ю антибіотики до п'ятниці, лікар сказав без навантажень",
-   "gold": [
-    "log",
-    "profile"
-   ],
-   "tools": [
-    "log_entries",
-    "plan_sessions",
-    "save_item"
-   ]
-  },
-  {
    "text": "так",
    "gold": [
     "profile"
@@ -60,13 +47,13 @@
    "tools": []
   },
   {
-   "text": "Сьогодні настрій 2 з 5, все дратує",
+   "text": "Make tomorrow's workout harder, I feel great",
    "gold": [
-    "log"
+    "plan"
    ],
    "tools": [
-    "assess_day",
-    "log_entries"
+    "log_entries",
+    "plan_sessions"
    ]
   },
   {
@@ -75,6 +62,7 @@
     "log"
    ],
    "tools": [
+    "assess_day",
     "log_entries",
     "save_item"
    ]
@@ -87,6 +75,7 @@
    ],
    "tools": [
     "assess_day",
+    "health_summary",
     "set_planned_workouts"
    ]
   },
@@ -95,9 +84,7 @@
    "gold": [
     "profile"
    ],
-   "tools": [
-    "log_entries"
-   ]
+   "tools": []
   },
   {
    "text": "Прийняв ібупрофен 400 мг від коліна",
@@ -136,8 +123,8 @@
     "question"
    ],
    "tools": [
-    "log_entries",
-    "save_item"
+    "assess_day",
+    "log_entries"
    ]
   }
  ],
@@ -148,14 +135,14 @@
    "f1": 0.905
   },
   "plan": {
-   "precision": 0.737,
-   "recall": 0.933,
-   "f1": 0.824
+   "precision": 0.833,
+   "recall": 1.0,
+   "f1": 0.909
   },
   "profile": {
-   "precision": 0.75,
+   "precision": 0.8,
    "recall": 0.8,
-   "f1": 0.774
+   "f1": 0.8
   }
  }
 }

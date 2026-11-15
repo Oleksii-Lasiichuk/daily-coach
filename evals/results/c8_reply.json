@@ -11,94 +11,94 @@
  "failures": [],
  "all": [
   {
-   "reply": "Your Zone 2 heart rate is 124–143 bpm.",
+   "reply": "Your zone 2 heart rate is 124–143 bpm.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states Zone 2 as 124–143 bpm, matching both the reference answer and the Run hr_zones_bpm data in the context."
+   "comment": "The reply gives Zone 2 as 124–143 bpm, which matches the context's hr_zones_bpm and the reference answer. No unsupported athlete facts are stated."
   },
   {
-   "reply": "Ваш пороговий темп — 4:07 хв/км при пороговому пульсі 185 уд/хв.",
+   "reply": "Твій пороговий темп для бігу становить 4:07 хв/км при пороговому пульсі 185 уд/хв.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply gives threshold pace 4:07 per km, matching the reference and the Run threshold_pace_per_km in context. It also states threshold heart rate 185 bpm, which matches the Run lthr value of 185. Both facts are supported by the context."
+   "comment": "The reply correctly states the threshold pace of 4:07 per km, which matches the context. The LTHR of 185 bpm is also supported by the context (sport_settings.Run.lthr = 185)."
   },
   {
-   "reply": "Your race is the Lviv Half Marathon on April 12, 2027. Your goal is to finish under 1:45.",
+   "reply": "Your Lviv Half Marathon is on 12 April 2027.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly gives the Lviv Half Marathon date of 12 April 2027, matching the reference and the facts list. The goal of finishing under 1:45 is supported by the profile's main_goal field, so nothing is invented."
+   "comment": "The reply correctly states the race date (12 April 2027) and Lviv Half Marathon, both supported by the facts list in the context."
   },
   {
-   "reply": "На ваших Nike Pegasus 41 зараз 600 км.",
+   "reply": "На твоїх Nike Pegasus 41 зараз 600 км.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states the shoes' mileage (600 km) for the Nike Pegasus 41, matching the reference and the gear fact in the context. No unsupported claims."
+   "comment": "The reply correctly states 600 km on the Nike Pegasus 41, matching the gear fact in the context and the reference answer."
   },
   {
-   "reply": "You logged 5 hours of sleep last night.",
+   "reply": "You slept 5 hours last night.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states 5 hours of sleep, matching the sleep log dated 2026-11-14 (description '5 годин', sleep_hours 5). No unsupported facts are introduced."
+   "comment": "The reply correctly states 5 hours of sleep, matching the sleep log dated 2026-11-14 (sleep_hours: 5). No unsupported facts were added."
   },
   {
-   "reply": "Сьогодні записано 320 ккал (вівсянка з бананом).",
+   "reply": "Сьогодні записано лише один прийом їжі: вівсянка з бананом на 320 ккал.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states 320 kcal from today's oatmeal with banana log entry, matching the reference and the context meal log dated 2026-11-14."
+   "comment": "The reply correctly states that only one meal (oatmeal with banana, 320 kcal) is logged today, matching the reference and the context's logs for 2026-11-14. No unsupported facts are introduced."
   },
   {
    "reply": "I don't have your VO2max yet.",
    "correct": true,
    "grounded": true,
-   "comment": "The context has no VO2max value, and the reply clearly says it is not available rather than inventing one. It makes no other athlete-specific claims."
+   "comment": "The context has no VO2max value, and the reply clearly says it is not available rather than inventing one. No athlete facts are asserted in the reply, so it is grounded."
   },
   {
-   "reply": "У мене немає даних про вашу вагу. Напишіть поточну вагу, щоб я додав її до профілю.",
+   "reply": "У мене немає даних про твою вагу. Напиши актуальну вагу, і я збережу її в профіль.",
    "correct": true,
    "grounded": true,
-   "comment": "The context has no weight data, and the reply clearly says it has no information about the athlete's weight instead of inventing a number. It makes no other athlete-specific claims."
+   "comment": "The question asks for the athlete's weight, which is absent from the context (only height is given). The reply clearly states there is no weight data and does not invent a figure. The offer to save a provided weight is not a fact about the athlete, so grounding holds."
   },
   {
-   "reply": "Yes, you logged 4 beers (6 standard drinks) yesterday, November 13.",
+   "reply": "Yes, you logged 4 beers (6 standard drinks) yesterday.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states 4 beers (6 standard drinks) on 2026-11-13, matching the alcohol log and the reference answer. All facts are supported by the context."
+   "comment": "The reply correctly states that yesterday (2026-11-13) the athlete logged 4 beers, which the context records as 6 alcohol drinks. Both facts are supported by the logs."
   },
   {
-   "reply": "I don't have your cycling FTP in your profile or records yet.",
+   "reply": "I don't have your cycling FTP data yet.",
    "correct": true,
    "grounded": true,
-   "comment": "The context has no bike/FTP data, and the reply correctly says the FTP is not in the profile or records instead of inventing a value. It makes no other athlete-specific claims."
+   "comment": "The context has no bike FTP data, and the reply clearly says the cycling FTP is not available rather than inventing a value. It makes no other athlete-specific claims."
   },
   {
-   "reply": "У вас зафіксовано біль у лівому коліні з понеділка. Як воно почувається зараз?",
+   "reply": "У тебе зафіксований біль у лівому коліні з понеділка. Як воно зараз себе почуває?",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states the left knee pain since Monday, which matches the facts list and the reference answer. The follow-up question is not a factual claim about the athlete, so grounding holds."
+   "comment": "The reply correctly states the left knee pain since Monday, which matches the facts list and the reference answer. It asks a follow-up question without adding any unsupported athlete facts."
   },
   {
-   "reply": "You are scheduled to train 4 days a week: Monday, Wednesday, and Friday for 1 hour, plus Saturday for 2 hours.",
+   "reply": "You have 4 training days per week in your availability: Monday, Wednesday, and Friday for 1 hour each, plus Saturday for 2 hours.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states 4 training days (Mon, Wed, Fri at 1 h and Sat at 2 h), matching the weekly_availability context and the reference answer."
+   "comment": "The reply correctly states 4 training days (Mon, Wed, Fri at 1 h each and Sat at 2 h), matching the weekly_availability context and the reference answer."
   },
   {
    "reply": "Your main goal is a half marathon under 1:45 in April.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states the main goal as a half marathon under 1:45 in April, matching the profile and the reference answer. No unsupported athlete facts are added."
+   "comment": "The reply correctly states the main goal as a half marathon under 1:45 in April, matching the profile and the reference answer. No unsupported facts are added."
   },
   {
-   "reply": "У мене поки немає даних про ваш пульс у спокої. Ви можете вказати його вручну або підключити синхронізацію з годинником.",
+   "reply": "У мене поки немає даних про твій пульс у спокої. Якщо ти знаєш своє поточне значення або відстежуєш його годинником, напиши, і я збережу.",
    "correct": true,
    "grounded": true,
-   "comment": "The context has no resting heart rate data, and the reply clearly says it is unavailable without inventing a value. The suggestion to enter it manually or sync a watch is general advice, not a fabricated athlete fact."
+   "comment": "The question asks for resting heart rate, which is not in the context (only LTHR, max HR, and HR zones are given). The reply clearly says the data is not available and does not invent a value. It makes no athlete-specific factual claims beyond that, so it is grounded."
   },
   {
-   "reply": "Your maximum heart rate is 204 bpm.",
+   "reply": "Your max heart rate is 204 bpm.",
    "correct": true,
    "grounded": true,
-   "comment": "The reply correctly states the max heart rate of 204 bpm, which matches the Run sport settings in the context and the reference answer."
+   "comment": "The reply states max heart rate 204 bpm, which matches the Run sport settings max_hr value in the context and the reference answer."
   }
  ]
 }
