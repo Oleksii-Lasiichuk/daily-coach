@@ -13,6 +13,7 @@ Run `uv run python -m app.llm "your message"` to send one traced call.
 
 import contextvars
 import json
+import logging
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -27,11 +28,14 @@ settings = get_settings()
 os.environ.setdefault("OTEL_SERVICE_NAME", "daily-coach")  # shown on every trace
 
 # Initialize the Langfuse client before importing the OpenAI wrapper, so the wrapper uses it.
+if not settings.langfuse_public_key:  # local demo without Langfuse: tracing off, no warning
+    logging.getLogger("langfuse").setLevel(logging.ERROR)
 langfuse = Langfuse(
     public_key=settings.langfuse_public_key,
     secret_key=settings.langfuse_secret_key,
     base_url=settings.langfuse_base_url,
     environment=settings.langfuse_tracing_environment,
+    tracing_enabled=bool(settings.langfuse_public_key),  # no keys (local demo): tracing off
 )
 
 from langfuse.openai import OpenAI  # noqa: E402

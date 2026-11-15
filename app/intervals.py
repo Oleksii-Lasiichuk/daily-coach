@@ -11,7 +11,7 @@ from datetime import date, timedelta
 
 import httpx
 
-from app import crypto, store
+from app import crypto, demo, store
 
 BASE = "https://intervals.icu/api/v1"
 log = logging.getLogger("intervals")
@@ -39,6 +39,8 @@ def connection_for(user_id: str) -> Conn:
 
 
 def _request(conn: Conn, method: str, path: str, **kwargs) -> httpx.Response:
+    if demo.is_demo(conn.athlete_id):  # local demo athlete: synthetic data, no network
+        return demo.fake_request(method, path, kwargs.get("params"), kwargs.get("json"))
     url = f"{BASE}{path}"
     for attempt in range(3):
         try:

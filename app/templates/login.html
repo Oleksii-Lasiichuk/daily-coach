@@ -9,6 +9,8 @@
     <button id="google" class="btn ink" type="button" style="width:100%;height:48px;margin-top:28px">Continue with Google</button>
     <p id="status" class="notice small" role="status" hidden style="margin-top:12px"></p>
     <p class="tiny muted" style="margin-top:12px">Private. Only invited Google accounts can sign in.</p>
+    {% if demo %}<a class="btn" href="/demo-login" style="width:100%;height:44px;margin-top:20px">Open the demo athlete</a>
+    <p class="tiny muted" style="margin-top:8px">Local run only: a synthetic athlete with a year of made-up watch data. No Google account or intervals.icu needed.</p>{% endif %}
   </div>
 </main>
 <script type="module">

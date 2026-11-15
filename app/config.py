@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     env: Literal["dev", "prod"] = "dev"
     app_origin: str  # comma-separated if the app is reachable on several domains
-    allowed_emails: str  # comma-separated
+    allowed_emails: str = ""  # comma-separated; empty = nobody signs in with Google
 
     # Neon: pooled URL for the app, direct (unpooled) URL for migrations.
     database_url: str
@@ -23,15 +23,17 @@ class Settings(BaseSettings):
     app_encryption_key: str
     openrouter_api_key: str
 
-    langfuse_public_key: str
-    langfuse_secret_key: str
+    # Optional: without keys, tracing is off and the app still works.
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
     langfuse_base_url: str = "https://cloud.langfuse.com"
     langfuse_tracing_environment: str = "dev"
 
-    firebase_project_id: str
-    firebase_web_api_key: str
-    firebase_auth_domain: str
-    firebase_app_id: str
+    # Google sign-in. Optional for a local demo run (/demo-login works without it).
+    firebase_project_id: str = ""
+    firebase_web_api_key: str = ""
+    firebase_auth_domain: str = ""
+    firebase_app_id: str = ""
 
     # Web push (VAPID). Optional: without them reminders still show in the app.
     vapid_public_key: str = ""
