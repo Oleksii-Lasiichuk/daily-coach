@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# gcloud for Daily Coach only.
+# CLOUDSDK_CONFIG points at a separate config folder, so this never sees your work
+# accounts, configs or application-default credentials in ~/.config/gcloud.
+# --project is always passed, so a wrong default project cannot be used.
+set -euo pipefail
+export CLOUDSDK_CONFIG="$HOME/.config/gcloud-daily-coach"
+exec gcloud --project=daily-coach-af64d "$@"

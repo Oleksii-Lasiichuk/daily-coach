@@ -1,0 +1,8 @@
+# Only what the image needs goes to Cloud Build. Never upload secrets or data.
+*
+!Dockerfile
+!pyproject.toml
+!uv.lock
+!app/**
+!migrations/**
+**/__pycache__

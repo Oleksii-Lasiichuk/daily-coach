@@ -1,0 +1,7 @@
+.env*
+.venv
+data
+evals
+docs
+node_modules
+tests

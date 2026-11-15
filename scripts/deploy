@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Deploy Daily Coach: Cloud Run service "coach" (europe-west1) + Firebase Hosting in front.
+# Uses ./scripts/gc (isolated gcloud config, project daily-coach-af64d) — never your work account.
+# Prod secrets come from Secret Manager; plain settings are read from .env (public values only).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+PROJECT=daily-coach-af64d
+REGION=europe-west1
+GC="./scripts/gc --quiet"
+
+account=$($GC config get account 2>/dev/null)
+echo "Deploying to project $PROJECT as $account"
+[ "$($GC config get project 2>/dev/null)" = "$PROJECT" ] || { echo "Wrong project"; exit 1; }
+
+env_value() { grep -E "^$1=" .env | head -1 | cut -d= -f2-; }
+prod_value() { grep -E "^$1=" .env.prod 2>/dev/null | head -1 | cut -d= -f2-; }
+
+ORIGINS="https://$PROJECT.web.app,https://$PROJECT.firebaseapp.com${EXTRA_ORIGIN:+,$EXTRA_ORIGIN}"
+LF_PUBLIC="${LANGFUSE_PUBLIC_KEY_PROD:-$(prod_value LANGFUSE_PUBLIC_KEY)}"
+[ -n "$LF_PUBLIC" ] || { echo "Set LANGFUSE_PUBLIC_KEY_PROD (prod Langfuse public key)"; exit 1; }
+
+# Cloud Run reads secrets as its runtime service account.
+NUMBER=$($GC projects describe $PROJECT --format='value(projectNumber)')
+SA="$NUMBER-compute@developer.gserviceaccount.com"
+for s in database-url openrouter-api-key app-encryption-key langfuse-secret-key vapid-private-key cron-secret; do
+  $GC secrets add-iam-policy-binding "$s" --member="serviceAccount:$SA" \
+    --role=roles/secretmanager.secretAccessor --condition=None >/dev/null
+done
+
+# Comma-separated values need gcloud's alternative delimiter syntax (^;^).
+$GC run deploy coach --source . --region $REGION --allow-unauthenticated \
+  --min-instances 0 --max-instances 2 --memory 512Mi --cpu 1 --concurrency 20 --timeout 120 \
+  --set-secrets "DATABASE_URL=database-url:latest,OPENROUTER_API_KEY=openrouter-api-key:latest,APP_ENCRYPTION_KEY=app-encryption-key:latest,LANGFUSE_SECRET_KEY=langfuse-secret-key:latest,VAPID_PRIVATE_KEY=vapid-private-key:latest,CRON_SECRET=cron-secret:latest" \
+  --set-env-vars "^;^ENV=prod;APP_ORIGIN=$ORIGINS;ALLOWED_EMAILS=$(env_value ALLOWED_EMAILS);ADMIN_EMAILS=$(env_value ADMIN_EMAILS);LANGFUSE_PUBLIC_KEY=$LF_PUBLIC;LANGFUSE_BASE_URL=https://cloud.langfuse.com;LANGFUSE_TRACING_ENVIRONMENT=production;FIREBASE_PROJECT_ID=$PROJECT;FIREBASE_WEB_API_KEY=$(env_value FIREBASE_WEB_API_KEY);FIREBASE_AUTH_DOMAIN=$(env_value FIREBASE_AUTH_DOMAIN);FIREBASE_APP_ID=$(env_value FIREBASE_APP_ID);VAPID_PUBLIC_KEY=$(env_value VAPID_PUBLIC_KEY)"
+
+firebase deploy --only hosting --project $PROJECT
+echo "Done: https://$PROJECT.web.app"

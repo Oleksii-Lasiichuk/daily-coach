@@ -1,0 +1,19 @@
+.env
+.env.*
+!.env.example
+data/private/
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+firebase-debug.log
+.firebase/
+.neon
+node_modules/
+node_modules/
+.neon
+.env.backup
+data/raw/
+
+# course material (not ours to publish)
+NLP. Assignment 1. Build an NLP System.pdf

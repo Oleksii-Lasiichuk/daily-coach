@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Apply migrations to the production Neon branch. The URL is read from Secret Manager into this
+# command's environment only; it is never printed or written to disk.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+DATABASE_URL="$(./scripts/gc secrets versions access latest --secret=database-url)" \
+DATABASE_URL_UNPOOLED="" uv run python -m app.migrate
