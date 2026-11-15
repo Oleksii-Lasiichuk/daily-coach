@@ -57,6 +57,7 @@ C8 and C6 were run again:
 | C1 macro-F1 · exact · no write on questions | 0.84 · 0.80 · 1.00 | 0.83 · 0.78 · **1.00** |
 | C8 correct · grounded · says "missing" | 1.00 · 1.00 · 1.00 | 1.00 · 1.00 · 1.00 |
 | C6 valid first try · after retry · judge | 0.85 · 1.00 · 4.11 | 0.80 · 1.00 · 3.94 |
+| C6 with step cues (v5: every step names the exercise) | | **1.00** · 1.00 · **4.15** |
 
 These changes are within the run-to-run spread we saw before (C6 judge 3.98–4.11, first-try
 validity 0.85–0.90): one case is 1.7 points on C1 and 5 points on C6. The eval sets have no

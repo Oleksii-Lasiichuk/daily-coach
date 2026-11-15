@@ -40,6 +40,22 @@ Browser ─► Firebase Hosting (TLS, CDN) ─► Cloud Run "coach" (europe-west
   great). The service worker posts the answer, and it's logged without opening the app
   (Android and desktop; iPhone shows no buttons).
 
+## AI security (v5 review, 2026-11-15)
+
+The rules come from treating every model output and every file as untrusted:
+
+| Risk | What stops it (in code, not only in the prompt) |
+|---|---|
+| Prompt injection from files | File search results are wrapped as untrusted text; facts from files are only *proposed* until you keep them; the injection eval has 0/10 successes |
+| The model rewriting its own instructions | `update_profile` takes 10 fixed keys; values are capped at 200 characters; instructions are edited only by you |
+| The model acting on your watch | Nothing reaches intervals.icu or Garmin without your **Send to watch**; the validator checks zones and duration in code |
+| Another user's data | Every query is filtered by `user_id`; tests open every page and detail sheet as a second user |
+| Impossible or joke amounts ("5 kg of sushi", "5 L of vodka") | `implausible()` rejects an entry above physical limits (4,000 kcal, 3 kg, 150 g alcohol, 1,000 mg caffeine, sleep 0–16 h, pain 0–10) before it's saved; the coach then asks for the real amount and treats extreme alcohol as a safety concern. Manual edits are capped the same way |
+| Model numbers out of range | Nutrition totals are summed in code; negative values become 0; every structured output is a Pydantic model |
+| XSS through model text | Replies are HTML-escaped before the light Markdown; no links or HTML from the model are rendered |
+| Cost runaway | A $20 monthly cap per user on the app key, 30 messages per 10 minutes, max 6 tool steps per message, 4 images of 4 MB, 4,000 characters per message |
+| Secrets | Keys are encrypted at rest, never logged, never put into a prompt; admin pages are for `ADMIN_EMAILS` only |
+
 ## Cost
 
 | Item | Monthly cost |
