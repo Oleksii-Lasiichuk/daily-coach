@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Training") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <div class="pagehead">
+    <h1>{{ _("Training") }}</h1>
+    <div class="row">
+      <a class="btn sm ghost" href="?week={{ prev }}">{{ _("Earlier") }}</a><span class="small muted">{{ start | fdate("dm") }} – {{ days[-1].date | fdate("dm") }}</span><a class="btn sm ghost" href="?week={{ next }}">{{ _("Later") }}</a>
+      <button class="btn sm primary" title="{{ _('The coach plans the days left this week from your plan, recovery and goals.') }}" onclick="location.href='/?ask=' + encodeURIComponent({{ _('Plan the rest of my week. Keep the key sessions of my plan if I have one, and make the days before them easier if I need it.') | tojson }})">{{ icon("zap") }}{{ _("Plan my week") }}</button>
+    </div>
+  </div>
+  <div class="week">
+    {% for d in days %}
+    <div class="day {{ 'today' if d.date == today }}">
+      <div class="d"><span>{{ d.date | fdate("short") }}</span>{% if d.type %}<span class="badge {{ {'recover': '', 'easy': 'good', 'normal': '', 'push': 'accent'}[d.type] }}">{{ _(DAY_NAMES[d.type]) }}</span>{% endif %}</div>
+      {% for g in d.planned %}<div><span class="tiny muted">{{ _("Your plan") }}{% if g.data.source == "intervals" %} · intervals.icu{% endif %}</span><br>{{ g.data.description }}</div>{% endfor %}
+      {% for p in d.proposals %}<div><span class="tiny" style="color:var(--accent)">{{ _("On watch") if p.status == "applied" else _("Coach suggests") }}</span><br>{{ p.workout.name }}</div>{% endfor %}
+      {% for a in d.acts %}<div><span class="tiny" style="color:var(--good)">{{ _("Done") }} · {{ a.type }}</span><br>{{ a.name or a.type }}<div class="tiny muted">{% if a.km %}{{ a.km }} km · {% endif %}{{ a.minutes }} {{ _("min") }}{% if a.load %} · <abbr title="{{ _('Training load from intervals.icu: how hard the session was, from heart rate and time. An hour at threshold ≈ 100; an easy hour ≈ 40–60.') }}">{{ _("load") }} {{ a.load }}</abbr>{% endif %}</div></div>{% endfor %}
+      {% if not d.planned and not d.proposals and not d.acts %}<span class="tiny faint">{{ _("Rest") }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="small muted" style="margin-top:10px">
+    {% if plan_source == "garmin_coach" %}{{ _("Garmin Coach's plan doesn't reach intervals.icu, so send a screenshot of its week on Today — the coach reads it and keeps it here.") }}
+    {% elif plan_source == "none" %}{{ _("You don't follow a plan: ask “Plan my week” and the coach plans from your goals and recent load.") }}
+    {% else %}{{ _("Workouts on your intervals.icu calendar appear here automatically (synced hourly). Following an app like Garmin Coach? Send a screenshot of its week on Today.") }}{% endif %}
+    <a href="/settings#you">{{ _("Change") }}</a></p>
+  <div class="grid3" style="margin-top:14px">
+    <div class="card"><h2>{{ _("Last 4 weeks") }}</h2>
+      {% if load %}<table class="tbl small"><tr><th></th><th class="num">{{ _("sessions") }}</th><th class="num">km</th><th class="num">{{ _("hours") }}</th></tr>{% for t, v in load.items() %}<tr><td>{{ t }}</td><td class="num">{{ v.n }}</td><td class="num">{{ v.km }}</td><td class="num">{{ (v.min / 60) | round(1) }}</td></tr>{% endfor %}</table>
+      {% else %}<p class="small muted">{{ _("No activities synced yet.") }}</p>{% endif %}</div>
+    <div class="card"><h2>{{ _("Goals and races") }}</h2>
+      {% with items=races, cats=["race", "goal"], next="/training", placeholder="Lviv Half Marathon, 12 April 2027, under 1:45", empty="Tell the coach your races and goals, or add them here." %}{% include "partials/items.html" %}{% endwith %}</div>
+    <div class="card"><h2>{{ _("Gear") }}</h2>
+      {% with items=gear, cats=["gear"], next="/training", placeholder="Salomon Speedcross 6, trail shoes", empty="Shoes get a km counter: runs since you add them are counted.", km=km %}{% include "partials/items.html" %}{% endwith %}</div>
+  </div>
+</div>
+{% endblock %}

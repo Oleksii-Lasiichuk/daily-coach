@@ -1,0 +1,26 @@
+{# One log entry with edit controls. Needs: lg, next. #}
+{% from "_icons.html" import icon with context %}
+{% set n = lg.data.nutrition %}{% set kc = ((n.totals.kcal if n.totals else n.kcal) if n else none) %}
+<li>
+  <span class="muted" style="width:46px;flex:none">{{ lg.occurred_at | local_time(user.time_zone) if lg.occurred_at else "—" }}</span>
+  <div class="grow">
+    <details class="edit"><summary><span>{{ lg.data.description }}{% if lg.data.pain_score is defined and lg.data.pain_score is not none and (lg.data.pain_score ~ "/10") not in lg.data.description %} · {{ lg.data.pain_score }}/10{% endif %}</span>{{ icon("pencil") }}</summary>
+      <div class="stack" style="margin-top:8px">
+        {% if n %}
+        <div class="row" style="gap:6px">
+          <span class="tiny muted">{{ _("Portion") }}</span>
+          {% for f, lab in [("0.5", "×½"), ("1.5", "×1.5"), ("2", "×2")] %}
+          <form method="post" action="/logs/{{ lg.id }}/edit"><input type="hidden" name="next" value="{{ next }}"><input type="hidden" name="factor" value="{{ f }}"><button class="btn sm">{{ lab }}</button></form>{% endfor %}
+          <form method="post" action="/logs/{{ lg.id }}/edit" class="row" style="gap:6px;flex-wrap:nowrap"><input type="hidden" name="next" value="{{ next }}">
+            <input name="kcal" inputmode="numeric" placeholder="{{ kc | int if kc is not none else '' }}" aria-label="{{ _('Calories') }}" style="height:32px;width:80px"><button class="btn sm">{{ _("Set kcal") }}</button></form>
+        </div>
+        {% endif %}
+        <form method="post" action="/logs/{{ lg.id }}/edit" class="row" style="gap:6px;flex-wrap:nowrap"><input type="hidden" name="next" value="{{ next }}">
+          <input name="text" value="{{ lg.data.description }}" aria-label="{{ _('Text') }}" style="height:32px"><button class="btn sm" title="{{ _('Saves the text; food is estimated again') }}">{{ _("Save") }}</button></form>
+      </div>
+    </details>
+    {% if n and n["items"] %}<div class="tiny muted">{% for it in n["items"] %}{{ it.name }}{% if it.grams %} {{ it.grams | round | int }} g{% endif %}{{ ", " if not loop.last }}{% endfor %}{% if lg.data.edited %} · {{ _("edited") }}{% endif %}</div>{% endif %}
+  </div>
+  <span class="num" style="white-space:nowrap">{% if kc is not none and kc %}{{ kc | int }} kcal{% endif %}</span>
+  <form method="post" action="/logs/{{ lg.id }}/delete" onsubmit="return confirm({{ _('Delete this entry?') | tojson }})"><input type="hidden" name="next" value="{{ next }}"><button class="icon sm-icon" title="{{ _('Delete') }}">{{ icon("x") }}</button></form>
+</li>

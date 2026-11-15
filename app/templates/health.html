@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Health") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <div class="pagehead">
+    <h1>{{ _("Health") }}</h1>
+    <div class="seg">{% for d, lab in [(30, "30 days"), (90, "90 days"), (365, "Year")] %}<a href="?days={{ d }}" {% if days == d %}aria-current="true"{% endif %}>{{ _(lab) }}</a>{% endfor %}</div>
+  </div>
+  {% if sync_error %}<p class="notice error" style="margin-bottom:12px">{{ sync_error }}</p>{% endif %}
+  {% if not connected %}<div class="card" style="margin-bottom:14px"><h2>{{ _("Connect intervals.icu") }}</h2><p class="small muted">{{ _("Your Garmin sends sleep, HRV, resting heart rate, weight and training to intervals.icu.") }} <a href="/settings#intervals">{{ _("Connect it in Settings") }}</a> {{ _("to see a year of it here.") }}</p></div>{% endif %}
+  {% if metrics %}
+  <div class="grid3">
+    {% for m in metrics %}
+    <div class="card" style="padding:12px 14px">
+      <div class="row between"><span class="label">{{ _(m.label) }}</span><span class="tiny muted">{{ _("average") }} {{ m.avg }}</span></div>
+      <p class="metric"><span class="v">{{ m.last }}{% if m.unit %} <small>{{ _(m.unit) }}</small>{% endif %}</span></p>
+      {% if m.path %}<svg class="spark" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="{{ _(m.label) }}: {{ m.min }}–{{ m.max }}">{% if m.goal %}<line class="goal" x1="0" x2="200" y1="{{ m.goal_y }}" y2="{{ m.goal_y }}"/>{% endif %}<path d="{{ m.path }}"/></svg>{% endif %}
+      <div class="row between tiny muted"><span>min {{ m.min }}</span><span>{{ m.last_day }}</span><span>max {{ m.max }}</span></div>
+      {% if m.key == "weight_kg" %}
+      <form method="post" action="/profile/basics" class="row tiny" style="gap:6px;margin-top:6px;flex-wrap:nowrap">
+        <input type="hidden" name="next" value="/health"><span class="muted">{{ _("Goal") }}</span>
+        <input name="target_weight_kg" value="{{ goal_w or '' }}" inputmode="decimal" placeholder="kg" aria-label="{{ _('Goal weight, kg') }}" style="height:30px;width:70px">
+        <button class="link">{{ _("Save") }}</button>{% if m.goal %}<span class="muted grow" style="text-align:right">{{ (m.last - m.goal) | round(1) }} kg {{ _("to go") }}</span>{% endif %}</form>
+      {% endif %}
+      <p class="tiny faint" style="margin-top:6px">{{ _(m.about) }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="grid2" style="margin-top:14px">
+    <div class="stack">
+      <div class="card"><h2>{{ _("Pain and niggles") }}</h2>
+        {% if pain %}<ul class="list">{% for p in pain %}
+          <li><div class="grow"><div class="row between"><b class="small">{{ p.where | capitalize }}</b>
+              <span class="small">{{ p.latest | int }}/10 {% if p.trend == "worse" %}<span class="badge bad">{{ _("getting worse") }}</span>{% elif p.trend == "better" %}<span class="badge good">{{ _("getting better") }}</span>{% elif p.trend == "same" %}<span class="badge">{{ _("about the same") }}</span>{% endif %}</span></div>
+            {% if p.path %}<svg class="spark pain" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="{{ p.where }}"><path d="{{ p.path }}"/></svg>{% endif %}
+            <div class="tiny muted">{{ p.n }} {{ _("entries") }} · {{ _("worst") }} {{ p.max | int }}/10 · {{ _("last") }} {{ p.latest_day | fdate("dm") }}</div></div></li>
+        {% endfor %}</ul>
+        <p class="tiny faint">{{ _("Trend: the last 7 days against the 7 before. Getting worse for a week? Rest that part and see a physio.") }}</p>
+        {% else %}<p class="small muted">{{ _("Tell the coach when something hurts, with a score: “left knee 3/10 after the run”. It's plotted here so you see if it's getting better.") }}</p>{% endif %}
+      </div>
+      <div class="card"><h2>{{ _("Patterns from your log") }}</h2>
+        {% if patterns %}<ul class="list small">{% for p in patterns %}<li><span class="badge {{ 'bad' if p.worse else 'good' }}">{{ "−" if p.diff < 0 else "+" }}{{ (p.diff | abs * 100) | round | int }}%</span><span class="grow">{{ _("After {tag}, your next-morning {metric} is {pct}% {word} ({n} nights vs {m}).").format(tag=_(p.tag_text), metric=_(p.label), pct=p.pct, word=_(p.word), n=p.n, m=p.n_other) }}</span></li>{% endfor %}</ul>
+        <p class="tiny faint">{{ _("Computed from your own days, not general advice. Shown only with at least 3 nights against 5.") }}</p>
+        {% else %}<p class="small muted">{{ _("After a few weeks of logs and watch data, this shows how alcohol, late meals, caffeine and short sleep change your next-morning HRV, resting HR and sleep.") }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card"><h2>{{ _("Conditions, medication and lab results") }}</h2>
+        {% with items=items, cats=["health", "injury", "medication", "lab"], next="/health", placeholder="Antibiotics (amoxicillin) until 22 Nov", empty="Tell the coach about illness, injuries or medication, or add them here." %}{% include "partials/items.html" %}{% endwith %}
+        {% if reminders %}<p class="small" style="margin-top:10px">{{ icon("bell") }} {% for r in reminders %}{{ r.text }} — {{ r.times | join(", ") }}{{ "; " if not loop.last }}{% endfor %}. <a href="/settings#reminders">{{ _("Manage reminders") }}</a></p>{% endif %}
+      </div>
+      {% if zones %}<div class="card"><h2>{{ _("Your zones") }}</h2>
+        <table class="tbl small">{% for sport, z in zones.items() %}
+          <tr><td style="width:22%">{{ sport }}</td><td>{% if z.hr_zones_bpm %}{% for k, v in z.hr_zones_bpm.items() %}{{ k }} {{ v }}{{ " · " if not loop.last }}{% endfor %}{% endif %}
+            <div class="tiny muted">{% if z.lthr %}LTHR {{ z.lthr }} · {% endif %}{% if z.max_hr %}max {{ z.max_hr }}{% endif %}{% if z.threshold_pace_per_km %} · {{ _("threshold") }} {{ z.threshold_pace_per_km }}/km{% endif %}{% if z.threshold_pace_per_100m %} · {{ _("threshold") }} {{ z.threshold_pace_per_100m }}/100 m{% endif %}{% if z.ftp %} · FTP {{ z.ftp }} W{% endif %}</div></td></tr>
+        {% endfor %}</table>
+        <p class="tiny faint" style="margin-top:6px">{{ _("Heart rate zones in bpm, from intervals.icu. Z1–Z2 easy, Z3 steady, Z4 threshold, Z5 maximal.") }}</p></div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

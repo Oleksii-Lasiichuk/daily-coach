@@ -1,0 +1,81 @@
+{% from "_icons.html" import icon with context %}<!doctype html>
+<html lang="{{ lang or 'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Daily Coach{% endblock %}</title>
+  <script>
+    // theme before paint: saved choice, else the system setting
+    (function () { var t = null; try { t = localStorage.getItem("theme"); } catch (e) {}
+      if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = t;
+      try { var s = localStorage.getItem("sideW"), r = localStorage.getItem("railW");
+        if (s) document.documentElement.style.setProperty("--side-w", s + "px");
+        if (r) document.documentElement.style.setProperty("--rail-w", r + "px"); } catch (e) {} })();
+  </script>
+  <meta name="theme-color" content="#FAF8F5">
+  <link rel="preload" href="/static/fonts/FixelText-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css?v=6">
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icon.svg">
+  <script src="/static/js/htmx.min.js" defer></script>
+</head>
+<body>
+{% block body %}
+{% set nav = [("/", "Today", "chat"), ("/training", "Training", "run"), ("/nutrition", "Nutrition", "apple"),
+              ("/health", "Health", "heart"), ("/journal", "Journal", "calendar"), ("/memory", "Memory", "brain")] %}
+<div class="shell {% if has_rail %}has-rail{% endif %}" id="shell">
+  <aside class="side" aria-label="Main">
+    <a class="brand" href="/"><span class="mark">{{ icon("activity") }}</span>Daily Coach</a>
+    {% for href, label, ic in nav %}
+    <a class="navlink" href="{{ href }}" {% if active == href %}aria-current="page"{% endif %}>{{ icon(ic) }}<span>{{ _(label) }}</span>
+      {% if href == "/memory" and inbox_count %}<span class="count" title="{{ _('Facts from your files to review') }}">{{ inbox_count }}</span>{% endif %}</a>
+    {% endfor %}
+    <div class="spacer"></div>
+    <form method="post" action="/settings/lang" style="margin:0">
+      <input type="hidden" name="lang" value="{{ 'en' if lang == 'uk' else 'uk' }}"><input type="hidden" name="next" value="{{ request.url.path if request else '/' }}">
+      <button class="navlink plain" title="{{ _('Language of the app (the chat stays in your words)') }}">{{ icon("globe") }}<span>{{ "English" if lang == "uk" else "Українська" }}</span></button></form>
+    <button class="navlink plain" type="button" onclick="toggleTheme()">{{ icon("moon") }}<span>{{ _("Light / dark") }}</span></button>
+    <a class="navlink" href="/settings" {% if active == "/settings" %}aria-current="page"{% endif %}>{{ icon("settings") }}<span>{{ _("Settings") }}</span></a>
+  </aside>
+  <div class="resizer" data-var="--side-w" data-key="sideW" data-min="180" data-max="340" data-dir="1" aria-hidden="true"></div>
+  <main class="main" id="main">{% block main %}{% endblock %}</main>
+  {% if has_rail %}
+  <div class="resizer" data-var="--rail-w" data-key="railW" data-min="300" data-max="720" data-dir="-1" aria-hidden="true"></div>
+  <aside class="rail" id="rail" aria-label="Today">{% block rail %}{% endblock %}</aside>
+  {% endif %}
+</div>
+<nav class="tabs" aria-label="Main">
+  {% for href, label, ic in [("/", "Today", "chat"), ("/training", "Training", "run"), ("/nutrition", "Nutrition", "apple"), ("/health", "Health", "heart"), ("/more", "More", "more")] %}
+  <a href="{{ href }}" {% if active == href or (href == "/more" and active in ["/memory", "/journal", "/settings", "/more"]) %}aria-current="page"{% endif %}>{{ icon(ic) }}{{ _(label) }}</a>
+  {% endfor %}
+</nav>
+{% block modal %}{% endblock %}
+{% endblock %}
+<div id="toast" role="status" hidden></div>
+<script>
+  function toast(t) { const el = document.getElementById("toast"); el.textContent = t; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 5000); }
+  function toggleTheme() {
+    const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = t; try { localStorage.setItem("theme", t); } catch (e) {}
+  }
+  document.addEventListener("htmx:responseError", (e) => toast(e.detail.xhr.status === 401 ? {{ _("Your session ended. Sign in again.") | tojson }} : (e.detail.xhr.responseText || {{ _("Something went wrong. Try again.") | tojson }}).slice(0, 200)));
+  document.addEventListener("htmx:sendError", () => toast({{ _("No connection. Try again.") | tojson }}));
+  // resizable side panes (desktop): drag the 6 px handle, width is remembered
+  document.querySelectorAll(".resizer").forEach((h) => {
+    h.addEventListener("pointerdown", (e) => {
+      const v = h.dataset.var, key = h.dataset.key, min = +h.dataset.min, max = +h.dataset.max, dir = +h.dataset.dir;
+      const start = e.clientX, cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v)) || (dir > 0 ? 232 : 420);
+      h.classList.add("dragging"); h.setPointerCapture(e.pointerId);
+      const move = (ev) => { const w = Math.max(min, Math.min(max, cur + dir * (ev.clientX - start)));
+        document.documentElement.style.setProperty(v, w + "px"); try { localStorage.setItem(key, Math.round(w)); } catch (err) {} };
+      const up = () => { h.classList.remove("dragging"); h.removeEventListener("pointermove", move); };
+      h.addEventListener("pointermove", move); h.addEventListener("pointerup", up, { once: true });
+    });
+    h.addEventListener("dblclick", () => { document.documentElement.style.removeProperty(h.dataset.var); try { localStorage.removeItem(h.dataset.key); } catch (e) {} });
+  });
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+</script>
+</body>
+</html>

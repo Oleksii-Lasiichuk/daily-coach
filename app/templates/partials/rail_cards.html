@@ -1,0 +1,91 @@
+{% from "_icons.html" import icon with context %}
+<div class="card">
+  <div class="row between"><span class="label">{{ day | fdate("day") }}</span>
+    <button class="btn sm ghost" hx-post="/today/assess" hx-swap="none" title="{{ _('Reads last night\'s sleep, HRV and resting HR, and what you logged today; decides the day type and suggests a session.') }}">{{ icon("refresh") }}{{ _("Check again") if assessment else _("Check my day") }}</button></div>
+  {% if assessment %}
+    <p class="daytype {{ assessment.day_type }}" style="margin-top:2px">{{ _(DAY_NAMES[assessment.day_type] ~ " day") }}</p>
+    <p class="small" style="color:var(--ink-2);margin-top:2px">{{ assessment.inputs.summary or (assessment.reasons[0].text if assessment.reasons else "") }}</p>
+    {% if assessment.reasons %}
+    <details class="why"><summary>{{ _("Why?") }} <span class="faint">· {{ assessment.reasons | length }} {{ _("reasons") }}</span></summary>
+      <ul class="list small">{% for r in assessment.reasons %}<li><span class="grow">{{ r.text }}</span>{% if r.evidence %}<span class="badge">{{ r.evidence }}</span>{% endif %}</li>{% endfor %}</ul>
+      <p class="tiny muted">{{ _("Checked at") }} {{ assessment.created_at | local_time(user.time_zone) }}. {{ _("Recovery · Easy · Normal · Push: how hard today's training can be.") }}</p>
+    </details>
+    {% endif %}
+  {% else %}
+    <p class="daytype" style="margin-top:2px">{{ _("How are you today?") }}</p>
+    <p class="small muted">{{ _("Tell the coach how you slept and feel, or press “Check my day”: it reads your watch data and logs, then suggests a session.") }}</p>
+  {% endif %}
+  {% if snapshot %}{% set t, b = snapshot.today, snapshot.baseline_7d %}
+  <div class="tiles">
+    <div class="metric" title="{{ _('Time asleep last night. “usual” is your average of the 7 nights before.') }}"><span class="k">{{ _("Sleep") }}</span><span class="v">{{ t.sleep_h if t.sleep_h is not none else "–" }}<small> {{ _("h") }}</small></span><span class="u">{{ _("usual") }} {{ b.sleep_h or "–" }}</span></div>
+    <div class="metric" title="{{ _('Heart rate variability overnight, ms. Higher than usual = recovered.') }}"><span class="k">HRV</span><span class="v">{{ t.hrv | int if t.hrv else "–" }}<small> {{ _("ms") }}</small></span><span class="u">{{ _("usual") }} {{ b.hrv | int if b.hrv else "–" }}</span></div>
+    <div class="metric" title="{{ _('Resting heart rate, bpm. Lower than usual = recovered.') }}"><span class="k">{{ _("Resting HR") }}</span><span class="v">{{ t.resting_hr or "–" }}<small> {{ _("bpm") }}</small></span><span class="u">{{ _("usual") }} {{ b.resting_hr | int if b.resting_hr else "–" }}</span></div>
+    <div class="metric" title="{{ _('Form = fitness − fatigue (intervals.icu). Below 0: tired from training.') }}"><span class="k">{{ _("Form") }}</span><span class="v">{{ t.form if t.form is not none else "–" }}</span>
+      <span class="u">{% if t.form is none %}–{% elif t.form < -30 %}{{ _("overreaching") }}{% elif t.form < -10 %}{{ _("building") }}{% elif t.form <= 5 %}{{ _("balanced") }}{% else %}{{ _("fresh") }}{% endif %}</span></div>
+  </div>
+  <details class="explain"><summary>{{ icon("info") }} {{ _("What these numbers mean") }}</summary>
+    <ul class="small">
+      <li><b>{{ _("usual") }}</b> — {{ _("your average of the 7 days before today, so you compare with yourself, not with others.") }}</li>
+      <li><b>HRV</b> — {{ _("heart rate variability overnight. Higher than usual means recovered; 10% or more below usual means stress, illness, alcohol or hard training.") }}</li>
+      <li><b>{{ _("Resting HR") }}</b> — {{ _("lower is better; 5+ bpm above usual often means fatigue or getting ill.") }}</li>
+      <li><b>{{ _("Form") }}</b> — {{ _("fitness (load of the last 6 weeks) minus fatigue (load of the last week), from intervals.icu. −10 to −30: you're building fitness; below −30: too much; above +5: fresh, good before a race.") }}</li>
+    </ul></details>
+  {% elif not connected %}<p class="small" style="margin-top:8px"><a href="/settings#intervals">{{ _("Connect intervals.icu") }}</a> {{ _("to see sleep and HRV.") }}</p>
+  {% elif wellness_error %}<p class="notice error small" style="margin-top:8px">{{ wellness_error }}</p>{% endif %}
+  {% if weather %}<p class="small muted" style="margin-top:8px">{{ icon("cloud") }} {{ weather.place }}: {{ weather.t_min | round | int }}–{{ weather.t_max | round | int }}°C{% if weather.rain_mm %} · {{ _("rain") }} {{ weather.rain_mm }} mm{% endif %}{% if weather.air %} · {{ _("air") }} {{ _(weather.air) }}{% endif %}</p>{% endif %}
+  {% if rail_error %}<p class="notice error small" style="margin-top:8px">{{ rail_error }}</p>{% endif %}
+</div>
+
+{% if race %}
+<div class="card row" style="gap:12px;padding:12px 14px">
+  <span class="countdown"><b>{{ race.days }}</b><span class="tiny">{{ _("days") }}</span></span>
+  <span class="grow small"><span class="label">{{ _("Next race") }}</span><br>{{ race.text }}{% if race.target and race.target not in race.text %} · {{ _("target") }} {{ race.target }}{% endif %}</span>
+</div>
+{% endif %}
+
+{% for p in proposals %}{% include "partials/session_card.html" %}{% endfor %}
+{% if not proposals %}
+<div class="card">
+  <span class="label">{{ _("Session") }}</span>
+  {% for g in planned %}<p style="margin-top:4px"><span class="tiny muted">{{ _("Your plan") }}{% if g.data.source == "intervals" %} · intervals.icu{% endif %}:</span> {{ g.data.description }}</p>{% endfor %}
+  {% if not planned %}<p class="small muted" style="margin-top:4px">{{ _("Nothing planned. Ask “What should I do today?”, or send a screenshot of your training plan.") }}</p>{% endif %}
+</div>
+{% endif %}
+
+<div class="card habits-card">
+  <div class="row between"><span class="label">{{ _("Habits today") }}</span>{% if habits %}<span class="tiny muted">{{ habits | selectattr("done") | list | length }}/{{ habits | length }}</span>{% endif %}</div>
+  {% if habits %}
+  <ul class="checks">{% for h in habits %}
+    <li><label><input type="checkbox" {{ "checked" if h.done }} hx-post="/habits/{{ h.id }}/toggle" hx-swap="none"><span>{{ h.name }}</span></label></li>
+  {% endfor %}</ul>
+  {% else %}<p class="small muted" style="margin-top:4px">{{ _("Small things you want to do every day. Tap one to add it:") }}</p>
+  <div class="chips small-chips">{% for n in ["Stretching 10 min", "2 L of water", "Medication", "In bed by 23:00", "Strength 15 min"] %}
+    <button type="button" hx-post="/habits" hx-vals='{"name": {{ _(n) | tojson }}}' hx-swap="none">+ {{ _(n) }}</button>{% endfor %}</div>
+  {% endif %}
+  <details style="margin-top:6px"><summary class="tiny muted" style="cursor:pointer">{{ _("Edit habits") }}</summary>
+    <form hx-post="/habits" hx-swap="none" class="row" style="gap:6px;margin-top:6px;flex-wrap:nowrap"><input name="name" placeholder="{{ _('New habit') }}" aria-label="{{ _('New habit') }}" style="height:34px"><button class="btn sm">{{ _("Add") }}</button></form>
+    {% for h in habits %}<div class="row between tiny" style="margin-top:4px"><span>{{ h.name }}</span><button class="link danger" hx-post="/habits/{{ h.id }}/remove" hx-swap="none">{{ _("Remove") }}</button></div>{% endfor %}
+  </details>
+</div>
+
+<div class="card">
+  <div class="row between"><span class="label">{{ _("Fuel today") }}</span><a class="small" href="/nutrition">{{ _("Details") }}</a></div>
+  <p style="margin-top:2px"><b>{{ totals.kcal | int }}</b> <span class="muted">/ {{ targets.kcal }} kcal</span>{% if water_l %} <span class="muted small">· {{ _("water") }} {{ water_l }} L</span>{% endif %}</p>
+  <div class="bar" style="margin-top:6px"><i style="width:{{ [100, (100 * totals.kcal / targets.kcal) | int] | min }}%" class="{{ 'over' if totals.kcal > targets.kcal * 1.1 }}"></i></div>
+  <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px">
+    {% for k, lab in [("protein_g", "Protein"), ("carbs_g", "Carbs"), ("fat_g", "Fat")] %}
+    <div><div class="row between tiny"><span class="muted">{{ _(lab) }}</span><span>{{ totals[k] | int }}/{{ targets[k] }} g</span></div>
+      <div class="bar" style="margin-top:4px;height:4px"><i class="ink" style="width:{{ [100, (100 * totals[k] / targets[k]) | int] | min }}%"></i></div></div>
+    {% endfor %}
+  </div>
+  {% if totals.caffeine_mg > 300 or totals.sugar_g > 50 %}<p class="tiny" style="color:var(--warn);margin-top:8px">{% if totals.caffeine_mg > 300 %}{{ _("Caffeine") }} {{ totals.caffeine_mg | int }} mg. {% endif %}{% if totals.sugar_g > 50 %}{{ _("Sugar") }} {{ totals.sugar_g | int }} g.{% endif %}</p>{% endif %}
+  <div style="margin-top:10px">
+    {% if suggestion %}<p class="small"><span class="muted">{{ _("Next") }} {{ _(suggestion.meal) }}:</span> {{ suggestion.text }}</p>{% endif %}
+    <button class="btn sm ghost" style="margin-top:4px;padding-left:0" hx-post="/nutrition/suggest" hx-swap="none" title="{{ _('Builds a meal from foods you often eat that fills what is missing today.') }}">{{ icon("zap") }}{{ _("Another idea") if suggestion else _("Suggest my next meal") }}</button>
+  </div>
+</div>
+
+{% if insight %}
+<div class="card"><span class="label">{{ _("Insight") }} · {{ insight.date }}</span><p class="small" style="margin-top:4px;color:var(--ink-2)">{{ insight.text }}</p>
+  <p class="tiny faint" style="margin-top:4px">{{ _("Written each night from your last 30 days.") }}</p></div>
+{% endif %}

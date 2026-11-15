@@ -1,0 +1,26 @@
+{% from "_icons.html" import icon with context %}
+<div id="files">
+  {% for e in errors or [] %}<p class="notice error small" style="margin-bottom:8px">{{ e }}</p>{% endfor %}
+  <form hx-post="/files/upload" hx-target="#files" hx-swap="outerHTML" hx-encoding="multipart/form-data" hx-trigger="change">
+    <label class="card" style="display:flex;gap:12px;align-items:center;border-style:dashed;cursor:pointer;margin:0;color:var(--ink-2)">
+      <span class="icon" style="background:var(--sunk)">{{ icon("plus") }}</span><span><b>{{ _("Add files") }}</b><br><span class="tiny muted">.txt · .md · .json — {{ _("up to 25 MB each") }}</span></span>
+      <input type="file" name="files" accept=".txt,.md,.markdown,.json,text/plain,text/markdown,application/json" multiple class="sr">
+    </label>
+  </form>
+  {% if files %}<table class="tbl small" style="margin-top:10px">{% for f in files %}{% include "partials/file_row.html" %}{% endfor %}</table>{% endif %}
+  {% if proposed %}
+  <form id="review" method="post" action="/facts/review" style="margin-top:14px">
+    <input type="hidden" name="next_url" value="{{ next_url or '/memory' }}">
+    <div class="row between"><h2>{{ _("Found") }} {{ proposed | length }} · {{ _("keep what's right") }}</h2>
+      <span class="tiny"><button type="button" class="link" onclick="this.form.querySelectorAll('[name=keep]').forEach(c=>c.checked=true)">{{ _("all") }}</button> · <button type="button" class="link" onclick="this.form.querySelectorAll('[name=keep]').forEach(c=>c.checked=false)">{{ _("none") }}</button></span></div>
+    <ul class="list" style="margin-top:6px">
+      {% for f in proposed %}
+      <li><input type="checkbox" name="keep" value="{{ f.id }}" checked id="k{{ f.id }}" style="margin-top:3px">
+        <label for="k{{ f.id }}" class="grow" style="margin:0;color:var(--ink);font-size:14px;cursor:pointer">{{ f.text }}
+          <span class="tiny muted" style="display:block">{{ f.category }} · “{{ (f.quote or '')[:140] }}” · {{ f.filename }}</span></label></li>
+      {% endfor %}
+    </ul>
+    {% if not setup %}<button class="btn sm primary" style="margin-top:10px">{{ _("Keep selected") }}</button>{% endif %}
+  </form>
+  {% endif %}
+</div>

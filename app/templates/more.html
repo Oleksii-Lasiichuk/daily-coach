@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ _("More") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <h1>{{ _("More") }}</h1>
+  <div class="stack" style="margin-top:14px">
+    {% for href, label, ic, sub in [("/journal", "Journal", "calendar", "Your days, the week in numbers"), ("/memory", "Memory", "brain", "Instructions, preferences, files"), ("/settings", "Settings", "settings", "You, reminders, language, intervals.icu")] %}
+    <a class="card row" href="{{ href }}" style="text-decoration:none;gap:14px">{{ icon(ic) }}<span class="grow"><b>{{ _(label) }}</b>{% if href == "/memory" and inbox_count %} <span class="badge warn">{{ inbox_count }} {{ _("to review") }}</span>{% endif %}<br><span class="small muted">{{ _(sub) }}</span></span></a>
+    {% endfor %}
+    <form method="post" action="/settings/lang" style="margin:0"><input type="hidden" name="lang" value="{{ 'en' if lang == 'uk' else 'uk' }}"><input type="hidden" name="next" value="/more">
+      <button class="card row" style="text-align:left;gap:14px;font:inherit;color:inherit;cursor:pointer;width:100%">{{ icon("globe") }}<span><b>{{ "English" if lang == "uk" else "Українська" }}</b></span></button></form>
+    <button class="card row" style="text-align:left;gap:14px;font:inherit;color:inherit;cursor:pointer" onclick="toggleTheme()">{{ icon("moon") }}<span><b>{{ _("Light / dark") }}</b></span></button>
+  </div>
+</div>
+{% endblock %}

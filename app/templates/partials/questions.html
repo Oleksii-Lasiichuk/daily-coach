@@ -1,0 +1,8 @@
+<form id="answers" method="post" action="/welcome/5" class="stack">
+  {% if error %}<p class="notice error small">{{ error }}</p>{% endif %}
+  {% if not questions and not error %}<p class="small">{{ _("Nothing is missing.") }}</p>{% endif %}
+  {% for q in questions %}
+  <div><label for="a_{{ q.slot }}" style="color:var(--ink);font-size:14.5px">{{ q.text }}</label>
+    <input type="hidden" name="q_{{ q.slot }}" value="{{ q.text }}"><input id="a_{{ q.slot }}" name="a_{{ q.slot }}" autocomplete="off"></div>
+  {% endfor %}
+</form>

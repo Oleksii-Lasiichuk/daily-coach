@@ -1,0 +1,35 @@
+{% from "_icons.html" import icon with context %}
+{% set w = p.workout %}
+<div class="card session-card" style="padding:12px 14px">
+  <div class="row between"><span class="label">{{ _("Session") if p.day == day else p.day | fdate("dm") }}</span>
+    <span class="badge {{ 'good' if p.status == 'applied' else 'accent' if p.status == 'proposed' else '' }}">{{ _({"applied": "On watch", "proposed": "Suggested", "undone": "Removed", "dismissed": "Dismissed"}[p.status]) }}</span></div>
+  {% if w.instead_of %}<p class="tiny muted" style="margin-top:4px">{{ _("Your plan") }}: <s>{{ w.instead_of }}</s> → {{ _("coach") }}:</p>{% endif %}
+  <p style="font-weight:500;margin-top:2px">{{ w.name }}</p>
+  {% if w.action != "rest" %}
+  <p class="small muted">{{ w.sport }} · {{ w.minutes | round | int }} {{ _("min") }}</p>
+  <table class="tbl small" style="margin-top:6px">
+    {% for b in w.blocks %}{% for s in b.steps %}
+    <tr><td class="muted" style="width:68px">{% if b.repeats > 1 and loop.first %}{{ b.repeats }}× {% endif %}{% if s.duration_min %}{{ s.duration_min | round(1) | string | replace(".0", "") }} {{ _("min") }}{% else %}{{ s.distance_m }} m{% endif %}</td>
+      <td>{{ _({"warmup": "Warm up", "work": "Hard", "recovery": "Easy", "cooldown": "Cool down", "steady": "Steady"}[s.kind]) }}{% if s.target != "none" and (s.zone_low or s.zone_high) %} · <abbr title="{{ _('Zone 1 very easy … zone 5 maximal. Your zones are on the Health page.') }}">Z{{ s.zone_low or s.zone_high }}{% if s.zone_high and s.zone_low and s.zone_high != s.zone_low %}–{{ s.zone_high }}{% endif %}</abbr> {{ _("HR") if s.target == "HR" else _("pace") }}{% endif %}</td></tr>
+    {% endfor %}{% endfor %}
+  </table>
+  {% endif %}
+  <p class="small" style="margin-top:8px;color:var(--ink-2)">{{ p.rationale }}</p>
+  {% set fuel = session_fuel(w, user.id) %}
+  {% if fuel and p.status != "dismissed" %}
+  <details class="why"><summary>{{ _("Fuel for this session") }}</summary>
+    <table class="tbl small">{% for k, lab in [("before", "Before"), ("during", "During"), ("after", "After")] %}<tr><td class="muted" style="width:64px">{{ _(lab) }}</td><td>{{ _(fuel[k]).format(**fuel.n) }}</td></tr>{% endfor %}</table>
+  </details>
+  {% endif %}
+  {% if card_error %}<p class="notice error small" style="margin-top:8px">{{ card_error }}</p>{% endif %}
+  {% if w.action != "rest" %}
+  <div class="row" style="margin-top:10px">
+    {% if p.status == "applied" %}
+      <button class="btn sm" hx-post="/proposals/{{ p.id }}/undo" hx-target="closest .session-card" hx-swap="outerHTML">{{ icon("undo") }}{{ _("Remove from watch") }}</button>
+    {% elif p.status in ["proposed", "undone"] %}
+      <button class="btn sm primary" hx-post="/proposals/{{ p.id }}/apply" hx-target="closest .session-card" hx-swap="outerHTML" title="{{ _('Puts it on your intervals.icu calendar; Garmin gets it on the next sync.') }}">{{ icon("check") }}{{ _("Send to watch") }}</button>
+      <button class="btn sm ghost" hx-post="/proposals/{{ p.id }}/dismiss" hx-target="closest .session-card" hx-swap="outerHTML">{{ _("Dismiss") }}</button>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

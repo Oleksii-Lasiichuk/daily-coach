@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Memory") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <div class="pagehead"><h1>{{ _("Memory") }}</h1><span class="small muted">{{ _("What the coach remembers about you besides training and health. It updates this from your chats and files; you can correct anything.") }}</span></div>
+  <p class="notice small" style="margin-bottom:14px">{{ _("Goals, races and gear are on") }} <a href="/training">{{ _("Training") }}</a>; {{ _("conditions, injuries and medication on") }} <a href="/health">{{ _("Health") }}</a>; {{ _("reminders in") }} <a href="/settings#reminders">{{ _("Settings") }}</a>.</p>
+  <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+    <div class="stack">
+      <div class="card"><h2>{{ _("Instructions for the coach") }}</h2>
+        <form method="post" action="/memory/instructions">
+          <textarea name="text" rows="5" placeholder="{{ _('Preparing for my first Ironman in 2028. Be direct, use numbers. I train before work, 6:30–7:30.') }}">{{ instructions }}</textarea>
+          <div class="row between" style="margin-top:8px"><span class="tiny muted">{{ _("Always in the coach's context, like a project prompt.") }}</span><button class="btn sm">{{ _("Save") }}</button></div>
+        </form>
+      </div>
+      <div class="card" id="prefs"><h2>{{ _("Food and training preferences") }}</h2>
+        <form method="post" action="/memory/diet" class="row" style="gap:8px;margin-bottom:6px;flex-wrap:nowrap;align-items:flex-end">
+          <div class="grow"><label for="diet">{{ _("How you eat") }}</label><select id="diet" name="diet">{% for d in diets %}<option value="{{ d }}" {{ "selected" if diet == d }}>{{ _(d) }}</option>{% endfor %}</select></div>
+          <button class="btn sm">{{ _("Save") }}</button></form>
+        {% with items=prefs_items, cats=["preference"], next="/memory#prefs", placeholder="No pork; no running on Mondays", empty="" %}{% include "partials/items.html" %}{% endwith %}
+      </div>
+      <div class="card"><h2>{{ _("Life and notes") }}</h2>
+        {% with items=life_items, cats=["life", "note"], next="/memory", placeholder="New job from December, long commute", empty="Work, family, schedule — anything that shapes your training." %}{% include "partials/items.html" %}{% endwith %}
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card" id="files"><h2>{{ _("Your files") }}</h2>
+        <p class="small muted" style="margin-bottom:10px">{{ _("Notes and exports: .txt, .md, .json. The coach reads them, proposes facts with the line they came from (you keep what's right), and looks things up in them when it answers.") }}</p>
+        <details class="small" style="margin-bottom:10px"><summary style="cursor:pointer">{{ _("How to export your ChatGPT history") }}</summary>
+          <ol style="padding-left:18px;margin-top:6px"><li>{{ _("ChatGPT → Settings → Data controls → Export data.") }}</li><li>{{ _("Open the email, download the .zip and unzip it.") }}</li><li>{{ _("Upload conversations.json here. Big exports keep only chats about sport, health and food.") }}</li></ol></details>
+        {% include "partials/files.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

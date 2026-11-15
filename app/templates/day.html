@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ day | fdate("dm") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page" style="max-width:860px">
+  <p class="small muted"><a href="/journal?month={{ day.strftime('%Y-%m') }}">{{ _("Journal") }}</a> · {{ day | fdate("full") }}</p>
+  {% if error %}<p class="notice error small" style="margin-top:10px">{{ _("The AI couldn't finish. Try again.") }}</p>{% endif %}
+  <div class="card" style="margin-top:10px">
+    <div class="row between">
+      {% if assessment %}<p class="daytype {{ assessment.day_type }}">{{ _(DAY_NAMES[assessment.day_type] ~ " day") }}</p>{% else %}<p class="daytype">{{ _("Not assessed yet") }}</p>{% endif %}
+      {% if not is_future %}<form method="post" action="/day/{{ day.isoformat() }}/assess"><button class="btn sm" title="{{ _('Reads that day\'s watch data and logs and decides the day type.') }}">{{ icon("refresh") }}{{ _("Assess again") if assessment else _("Assess this day") }}</button></form>{% endif %}
+    </div>
+    {% if assessment %}<p class="small" style="color:var(--ink-2)">{{ assessment.inputs.summary or "" }}</p>
+      <ul class="list small" style="margin-top:6px">{% for r in assessment.reasons %}<li><span class="grow">{{ r.text }}</span><span class="badge">{{ r.evidence }}</span></li>{% endfor %}</ul>{% endif %}
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="card"><h2>{{ _("Log") }}</h2><p class="small muted">{{ totals.kcal | int }} kcal · {{ _("P") }} {{ totals.protein_g | int }} · {{ _("C") }} {{ totals.carbs_g | int }} · {{ _("F") }} {{ totals.fat_g | int }}</p>
+      {% if logs %}<ul class="list small" style="margin-top:6px">{% for lg in logs %}{% with next="/day/" ~ day.isoformat() %}{% include "partials/log_row.html" %}{% endwith %}{% endfor %}</ul>
+      {% else %}<p class="small muted">{{ _("Nothing logged.") }}</p>{% endif %}
+      {% if not is_future %}
+      <form method="post" action="/day/{{ day.isoformat() }}/add" class="stack" style="margin-top:12px">
+        <label for="add">{{ _("Add to this day") }}</label>
+        <textarea id="add" name="text" rows="2" placeholder="{{ _('Pizza for dinner, 2 beers; knee 2/10') }}"></textarea>
+        <div><button class="btn sm primary">{{ icon("plus") }}{{ _("Add") }}</button> <span class="tiny muted">{{ _("Read like a chat message, but always dated this day.") }}</span></div>
+      </form>{% endif %}
+    </div>
+    <div class="card"><h2>{{ _("Session") }}</h2>
+      {% if proposal %}<p>{{ proposal.workout.name }} <span class="badge">{{ _({"applied": "On watch", "proposed": "Suggested", "undone": "Removed"}.get(proposal.status, proposal.status)) }}</span></p><p class="small muted" style="margin-top:4px">{{ proposal.rationale }}</p>
+      {% else %}<p class="small muted">{{ _("No session recorded.") }}</p>{% endif %}</div>
+  </div>
+  {% if messages %}<div class="card" style="margin-top:12px"><h2>{{ _("Conversation") }}</h2><div class="thread" style="padding:8px 0;max-width:none">{% for m in messages %}{% include "partials/msg.html" %}{% endfor %}</div></div>{% endif %}
+</div>
+{% endblock %}

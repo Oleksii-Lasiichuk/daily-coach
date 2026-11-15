@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Daily Coach{% endblock %}
+{% block body %}
+<main style="min-height:100dvh;display:grid;place-items:center;padding:24px 16px">
+  <div style="width:100%;max-width:420px">
+    <div class="brand" style="padding:0 0 28px"><span class="mark">{{ icon("activity") }}</span>Daily Coach</div>
+    <h1 style="font-size:28px;line-height:1.2">Your coach for training, food and health.</h1>
+    <p class="muted" style="margin-top:10px">Tell it about your day in Ukrainian or English — by text, voice or photo. It reads your Garmin data through intervals.icu, keeps your log, and adjusts your training.</p>
+    <button id="google" class="btn ink" type="button" style="width:100%;height:48px;margin-top:28px">Continue with Google</button>
+    <p id="status" class="notice small" role="status" hidden style="margin-top:12px"></p>
+    <p class="tiny muted" style="margin-top:12px">Private. Only invited Google accounts can sign in.</p>
+  </div>
+</main>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, inMemoryPersistence }
+    from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+  const config = {{ firebase | tojson }};
+  {% if auth_domain %}config.authDomain = {{ auth_domain | tojson }};{% endif %}
+  const auth = getAuth(initializeApp(config));
+  const button = document.getElementById("google"), status = document.getElementById("status");
+  const show = (text, error) => { status.textContent = text; status.hidden = false; status.classList.toggle("error", !!error); };
+  button.addEventListener("click", async () => {
+    button.setAttribute("aria-busy", "true"); show("Signing in…");
+    try {
+      await setPersistence(auth, inMemoryPersistence);
+      const provider = new GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken(); await signOut(auth);
+      const r = await fetch("/auth/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id_token: idToken }) });
+      if (r.ok) { location.href = "/"; return; }
+      show(r.status === 403 ? "This Google account isn't invited." : "Sign-in failed. Try again.", true);
+    } catch (e) {
+      const msg = { "auth/popup-closed-by-user": "The sign-in window was closed.", "auth/popup-blocked": "Your browser blocked the sign-in window. Allow pop-ups and try again." }[e.code];
+      show(msg || "Sign-in failed (" + (e.code || e.message) + ").", true);
+    }
+    button.removeAttribute("aria-busy");
+  });
+</script>
+{% endblock %}

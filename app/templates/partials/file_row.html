@@ -1,0 +1,11 @@
+{% from "_icons.html" import icon with context %}
+<tr id="file-{{ f.id }}" {% if f.status == "reading" %}hx-post="/files/{{ f.id }}/step" hx-trigger="load delay:200ms" hx-swap="outerHTML"{% endif %}>
+  <td>{{ f.filename }}
+    {% if f.status == "reading" %}{% set pct = ((f.n_processed / f.n_chunks) * 100) | int if f.n_chunks else 0 %}
+      <div class="tiny muted">{{ _("Reading") }} {{ pct }}% · {{ f.n_chunks }} {{ _("parts") }}</div><div class="bar" style="margin-top:4px;height:4px"><i style="width:{{ pct }}%"></i></div>
+    {% elif f.status == "error" %}<div class="tiny" style="color:var(--bad)">{{ f.error }}</div>
+    {% else %}<div class="tiny muted">{{ f.n_facts or 0 }} {{ _("facts kept") }}{% if f.n_proposed %} · {{ f.n_proposed }} {{ _("to review") }}{% endif %}</div>{% endif %}
+  </td>
+  <td class="num muted">{{ (f.bytes / 1024) | round | int }} KB</td>
+  <td class="num" style="width:36px">{% if f.status != "reading" %}<button class="icon" style="width:28px;height:28px" title="{{ _('Delete file') }}" hx-post="/files/{{ f.id }}/delete" hx-target="#files" hx-swap="outerHTML" hx-confirm="{{ _('Delete this file and the facts found in it?') }}">{{ icon("x") }}</button>{% endif %}</td>
+</tr>

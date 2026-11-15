@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Settings") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <div class="pagehead"><h1>{{ _("Settings") }}</h1>
+    <form method="post" action="/auth/logout"><button class="btn sm ghost">{{ icon("logout") }}{{ _("Sign out") }}</button></form></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="card" id="you"><h2>{{ _("You") }}</h2>
+        <p class="small muted">{{ user.display_name or "" }} · {{ user.email }}</p>
+        {% if saved %}<p class="notice small" style="margin-top:8px">{{ _("Saved.") }}</p>{% endif %}
+        {% if error == "city" %}<p class="notice error small" style="margin-top:8px">{{ _("Couldn't find that city. Try the English name, e.g. Lviv.") }}</p>{% endif %}
+        <form method="post" action="/profile/basics" class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));margin-top:10px;gap:10px">
+          {% for k, lab in [("weight_kg", "Weight, kg"), ("height_cm", "Height, cm"), ("birth_year", "Birth year"), ("sleep_target_h", "Sleep target, h")] %}
+          <div><label for="{{ k }}">{{ _(lab) }}</label><input id="{{ k }}" name="{{ k }}" value="{{ prof.get(k, '') }}" inputmode="decimal"></div>
+          {% endfor %}
+          <div style="grid-column:1/-1"><button class="btn sm">{{ _("Save") }}</button></div>
+        </form>
+        <form method="post" action="/settings/place" class="stack" style="margin-top:14px">
+          <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+            <div><label for="tz">{{ _("Time zone") }}</label>
+              <div class="row" style="gap:6px;flex-wrap:nowrap"><select id="tz" name="time_zone">{% for z in zones %}<option {{ "selected" if z == user.time_zone }}>{{ z }}</option>{% endfor %}</select>
+              <button type="button" class="btn sm ghost" title="{{ _('Use this device\'s time zone') }}" onclick="const z=Intl.DateTimeFormat().resolvedOptions().timeZone;const s=document.getElementById('tz');if([...s.options].some(o=>o.value===z))s.value=z">{{ icon("refresh") }}</button></div></div>
+            <div><label for="city">{{ _("City, for weather and air") }}</label><input id="city" name="city" value="{{ (prof.location or {}).get('name', '') }}" placeholder="Lviv"></div>
+          </div>
+          <div><label for="ps">{{ _("Do you follow a training plan?") }}</label><select id="ps" name="plan_source">
+            {% for k, lab in plan_sources %}<option value="{{ k }}" {{ "selected" if prof.get("plan_source") == k }}>{{ _(lab) }}</option>{% endfor %}</select></div>
+          <p class="hint">{{ _("Only the city's coordinates go to Open-Meteo, a free weather service. Day boundaries and reminders use your time zone.") }}</p>
+          <div><button class="btn sm">{{ _("Save") }}</button></div>
+        </form>
+        <form method="post" action="/settings/lang" class="row" style="gap:8px;margin-top:14px;align-items:flex-end;flex-wrap:nowrap">
+          <input type="hidden" name="next" value="/settings">
+          <div class="grow"><label for="lang">{{ _("App language") }}</label><select id="lang" name="lang">{% for k, lab in langs.items() %}<option value="{{ k }}" {{ "selected" if lang == k }}>{{ lab }}</option>{% endfor %}</select></div>
+          <button class="btn sm">{{ _("Save") }}</button></form>
+        <p class="hint">{{ _("Pages and buttons only. The coach answers in the language you write in; your data stays as you wrote it.") }}</p>
+      </div>
+      <div class="card" id="intervals"><h2>intervals.icu</h2>
+        <p class="small muted" style="margin-bottom:10px">{{ _("Where your Garmin data comes from and where sessions go to reach your watch.") }}</p>
+        {% include "partials/intervals.html" %}</div>
+    </div>
+    <div class="stack">
+      <div class="card" id="reminders"><h2>{{ _("Reminders") }}</h2>
+        <div class="notice ios-hint" id="ios-hint" hidden><b>{{ _("On iPhone: add the app to your Home Screen first.") }}</b><br>{{ _("In Safari tap Share → Add to Home Screen, open Daily Coach from the Home Screen, then come back here and turn notifications on. iPhone only allows notifications for installed apps.") }}</div>
+        <div class="row between" style="margin:10px 0">
+          <span class="small">{{ _("Notifications on this device") }}</span>
+          <button type="button" class="btn sm primary" id="push-btn" onclick="enablePush()">{{ icon("bell") }}{{ _("Notifications on") if subs else _("Turn on notifications") }}</button></div>
+        <form method="post" action="/profile/nudges">
+          <label class="switch" style="margin-bottom:10px"><input type="checkbox" name="enabled" value="1" {{ "checked" if p.nudges_on }}><i></i>{{ _("Daily nudges") }}</label>
+          <table class="tbl small">{% for k, lab in nudges %}<tr><td>{{ _(lab) }}</td><td class="num" style="width:120px"><input type="time" name="{{ k }}" value="{{ p.nudges.get(k, '') }}" aria-label="{{ _(lab) }}" style="height:34px"></td></tr>{% endfor %}</table>
+          <p class="hint">{{ _("The morning and evening ones have answer buttons (slept badly / OK / great) on Android and desktop. Leave a time empty to skip it.") }}</p>
+          <button class="btn sm" style="margin-top:8px">{{ _("Save times") }}</button>
+        </form>
+        <h2 style="margin-top:16px">{{ _("Medication and other reminders") }}</h2>
+        {% if reminders %}<ul class="list small">{% for r in reminders %}
+          <li><span class="badge {{ 'accent' if r.kind == 'medication' }}">{{ r.times | join(", ") }}</span><span class="grow">{{ r.text }}{% if r.until %} <span class="muted">· {{ _("until") }} {{ r.until | fdate("dm") }}</span>{% endif %}</span>
+            <button class="link small danger" hx-post="/reminders/{{ r.id }}/delete" hx-target="closest li" hx-swap="outerHTML">{{ _("Stop") }}</button></li>
+        {% endfor %}</ul>{% else %}<p class="small muted">{{ _("Tell the coach “remind me to take … at 8:00 and 20:00 until Sunday”, or add one here.") }}</p>{% endif %}
+        <details class="add" style="margin-top:8px"><summary class="small">{{ icon("plus") }} {{ _("Add a reminder") }}</summary>
+          <form method="post" action="/settings/reminders" class="stack" style="margin-top:8px">
+            <input name="text" placeholder="{{ _('Magnesium') }}" required aria-label="{{ _('Reminder') }}">
+            <div class="row" style="gap:8px;flex-wrap:nowrap"><input name="times" placeholder="08:00, 20:00" required aria-label="{{ _('Times') }}"><input name="until" type="date" aria-label="{{ _('Until') }}" style="width:auto"><button class="btn sm">{{ _("Add") }}</button></div>
+          </form></details>
+      </div>
+      <details class="card adv" id="advanced"><summary><h2 style="display:inline">{{ _("Advanced") }}</h2> <span class="small muted">· {{ _("AI models, your own key, cost") }}</span></summary>
+        <form method="post" action="/profile/models" class="row" style="gap:10px;align-items:flex-end;margin-top:12px">
+          <div class="grow"><label for="md">{{ _("Everyday model") }}</label><select id="md" name="model_default">{% for m, lab in models.items() %}<option value="{{ m }}" {{ "selected" if p.model_default == m }}>{{ lab }}</option>{% endfor %}</select></div>
+          <div class="grow"><label for="mdeep">{{ _("“Think harder” model") }}</label><select id="mdeep" name="model_deep">{% for m, lab in models.items() %}<option value="{{ m }}" {{ "selected" if p.model_deep == m }}>{{ lab }}</option>{% endfor %}</select></div>
+          <button class="btn sm">{{ _("Save") }}</button>
+        </form>
+        <p class="tiny muted" style="margin-top:8px">{{ _("A message costs about $0.005–0.02 with Gemini 3.8 Flash; Claude Sonnet 5.5 costs about 4× more.") }}</p>
+        <p class="small" style="margin-top:12px">{{ _("This month") }}: <b>${{ "%.2f" | format(month_cost) }}</b>{% if not own_key %} <span class="muted">{{ _("of") }} ${{ cap | int }}</span>{% endif %}</p>
+        <form method="post" action="/profile/key" class="row" style="gap:8px;margin-top:10px;align-items:flex-end">
+          <div class="grow"><label for="okey">{{ _("Your own OpenRouter key (optional)") }}</label>
+            <input id="okey" name="api_key" type="password" placeholder="{{ '••••' ~ own_key.last4 if own_key else 'sk-or-…' }}" autocomplete="off"></div>
+          <button class="btn sm">{{ _("Replace") if own_key else _("Use my key") }}</button>
+        </form>
+        <p class="hint">{{ _("With your own key, your messages are billed to your OpenRouter account and there's no monthly cap. Leave empty and save to remove it.") }}</p>
+        <form method="post" action="/welcome/restart" style="margin-top:14px"><button class="btn sm">{{ _("Run setup again") }}</button></form>
+      </details>
+      {% if is_admin %}
+      <details class="card adv"><summary><h2 style="display:inline">{{ _("Admin") }}</h2> <span class="small muted">· {{ _("hosting limits, only you see this") }}</span></summary>
+        <table class="tbl small" style="margin-top:10px">
+          {% for name, lim, link in limits %}
+          <tr><td style="width:36%"><b>{{ name }}</b></td><td>{{ lim }}
+            {% if loop.first and credit %}<div class="tiny muted">{{ _("App key") }}: ${{ "%.2f" | format(credit.usage or 0) }}{% if credit.limit %} / ${{ credit.limit }} · ${{ "%.2f" | format(credit.limit_remaining or 0) }} {{ _("left") }}{% endif %}</div>{% endif %}
+            {% if "Neon" in name %}<div class="tiny muted">{{ _("Database now") }}: {{ db_mb }} MB / 1,024 MB</div>{% endif %}
+            {% if link.startswith("http") %}<div class="tiny"><a href="{{ link }}" target="_blank" rel="noopener">{{ _("Open console") }}</a></div>{% endif %}</td></tr>
+          {% endfor %}
+        </table>
+      </details>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+  (() => { const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+    if (ios && !standalone) document.getElementById("ios-hint").hidden = false; })();
+  async function enablePush() {
+    const key = {{ vapid | tojson }};
+    if (!key || !("serviceWorker" in navigator) || !("PushManager" in window)) { toast({{ _("Notifications aren't available here. On iPhone, open the app from the Home Screen.") | tojson }}); return; }
+    const perm = await Notification.requestPermission(); if (perm !== "granted") { toast({{ _("Notifications are blocked in the browser settings.") | tojson }}); return; }
+    const reg = await navigator.serviceWorker.ready;
+    const raw = atob(key.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - key.length % 4) % 4));
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: Uint8Array.from(raw, c => c.charCodeAt(0)) });
+    const r = await fetch("/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sub) });
+    if (r.ok) { document.getElementById("push-btn").textContent = {{ _("Notifications on") | tojson }}; toast({{ _("Notifications are on. A test one is on its way.") | tojson }}); } else toast({{ _("Couldn't turn on notifications.") | tojson }});
+  }
+</script>
+{% endblock %}

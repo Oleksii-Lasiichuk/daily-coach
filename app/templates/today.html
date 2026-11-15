@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Today") }} · Daily Coach{% endblock %}
+{% set modes = [("auto", "Auto", "Picks the topic from your message. Best for most things."),
+                ("training", "Training", "Sessions, load, recovery and the week plan."),
+                ("nutrition", "Nutrition", "Food, targets, gaps and what to eat next."),
+                ("health", "Health", "Trends, conditions, medication and lab results.")] %}
+{% block main %}
+<div class="chat">
+  <div class="strip" id="strip-body">{% include "partials/rail_cards.html" %}</div>
+  <div class="thread" id="thread" aria-live="polite">
+    {% if not messages %}
+    <div class="empty-chat">
+      <h1>{{ _("Tell me about your day") }}</h1>
+      <p class="muted" style="margin-top:6px">{{ _("Write, speak or send a photo — in Ukrainian or English. I log food, sleep, pain and training, check how recovered you are, and adjust today's session.") }}</p>
+      {% if day0 %}
+      <p class="label" style="margin-top:18px">{{ _("Try a first log — tap to put it in the box, then edit and send") }}</p>
+      <div class="examples">
+        {% for ex in ["Oatmeal with a banana and two teas for breakfast", "Slept 6 hours, legs feel heavy",
+                      "My left knee hurts 3/10 after yesterday's run", "My plan today is 6×800 m intervals. Can I do it?",
+                      "Bought Salomon Speedcross 6 trail shoes"] %}
+        <button type="button" onclick="fillText(this.textContent)">{{ _(ex) }}</button>
+        {% endfor %}
+      </div>
+      <p class="small muted" style="margin-top:10px">{{ icon("camera") }} {{ _("A photo of your plate or a screenshot of your training plan works too.") }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% for m in messages %}{% include "partials/msg.html" %}{% endfor %}
+  </div>
+  <div class="composer">
+    <div class="quick" role="group" aria-label="{{ _('Quick log') }}">
+      <span class="label">{{ _("Quick log") }}</span>
+      {% for key, ic, lab, tip in [("water", "droplet", "Water", "250 ml"), ("coffee", "coffee", "Coffee", "1 cup · 95 mg caffeine"),
+                                   ("tea", "leaf", "Tea", "1 cup · 45 mg caffeine"), ("beer", "beer", "Beer", "0.5 L · 215 kcal")] %}
+      <button type="button" hx-post="/quick/{{ key }}" hx-target="#thread" hx-swap="beforeend" title="{{ _(lab) }}: {{ _(tip) }}">{{ icon(ic) }}<span>{{ _(lab) }}</span></button>
+      {% endfor %}
+    </div>
+    <form id="composer" class="box" hx-post="/chat" hx-target="#thread" hx-swap="beforeend" hx-encoding="multipart/form-data"
+          hx-on::before-request="beforeSend(event)" hx-on::after-request="afterSend()">
+      <input type="hidden" name="mode" id="mode" value="auto">
+      <div class="attachments" id="attachments" hidden></div>
+      <textarea name="text" rows="1" placeholder="{{ _('Message the coach…') }}" aria-label="{{ _('Message') }}"
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,200)+'px'"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!isTouch){event.preventDefault();this.form.requestSubmit()}"></textarea>
+      <div class="boxbar">
+        <div class="menu-wrap">
+          <button type="button" class="modebtn" id="modebtn" aria-haspopup="true" aria-expanded="false" aria-controls="modemenu" onclick="toggleMenu()">
+            <span id="deep-ic" hidden>{{ icon("brain") }}</span><span id="modelabel">{{ _("Auto") }}</span>{{ icon("chevron") }}</button>
+          <div class="menu" id="modemenu" role="menu" hidden>
+            <p class="label" style="padding:6px 10px 2px">{{ _("Focus") }}</p>
+            {% for m, lab, desc in modes %}
+            <button type="button" role="menuitemradio" aria-checked="{{ 'true' if loop.first else 'false' }}" data-mode="{{ m }}" data-label="{{ _(lab) }}" onclick="setMode(this)">
+              <span class="grow"><b>{{ _(lab) }}</b><span class="d">{{ _(desc) }}</span></span>{{ icon("check") }}</button>
+            {% endfor %}
+            <hr>
+            <label class="menu-switch"><span class="grow"><b>{{ icon("brain") }} {{ _("Think harder") }}</b>
+              <span class="d">{{ _("A stronger, slower model (Claude Sonnet 5.5) for hard questions. About 4× the cost.") }}</span></span>
+              <span class="switch"><input type="checkbox" name="deep" value="1" id="deep" onchange="showDeep()"><i></i></span></label>
+          </div>
+        </div>
+        <span class="grow"></span>
+        <label class="icon" title="{{ _('Add a photo (meal, training plan screenshot)') }}" style="margin:0">{{ icon("camera") }}
+          <input type="file" accept="image/*" multiple class="sr" onchange="addImages(this)"><span class="sr">{{ _("Add photo") }}</span></label>
+        <button type="button" class="icon" id="mic" title="{{ _('Record a voice message') }}" aria-label="{{ _('Record a voice message') }}">{{ icon("mic") }}</button>
+        <button type="submit" class="icon fill" aria-label="{{ _('Send') }}">{{ icon("send") }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+<template id="thinking-tpl"><div class="msg coach pending"><div class="who"><span class="mark">{{ icon("activity") }}</span>{{ _("Coach") }}</div>
+  <div class="thinking"><span class="dots"><i></i><i></i><i></i></span><span>{{ _("Working") }} · <span class="secs">0</span> {{ _("s") }}</span>
+    <span class="tiny faint">{{ _("Logging and planning can take 10–30 s") }}</span></div></div></template>
+{% endblock %}
+{% block rail %}<div id="rail-body" style="display:contents">{% include "partials/rail_cards.html" %}</div>{% endblock %}
+{% block body %}{{ super() }}
+<script>
+  const isTouch = matchMedia("(pointer: coarse)").matches;
+  const thread = document.getElementById("thread"), main = document.getElementById("main");
+  const form = document.getElementById("composer"), box = form.querySelector("textarea");
+  let images = [];
+  const scrollDown = () => { (innerWidth < 900 ? window : main).scrollTo({ top: 1e9, behavior: "smooth" }); };
+  scrollDown();
+  const ask = new URLSearchParams(location.search).get("ask");
+  if (ask) { history.replaceState(null, "", "/"); setTimeout(() => sendText(ask), 300); }
+  function toggleMenu(force) {
+    const m = document.getElementById("modemenu"), b = document.getElementById("modebtn");
+    const open = force === undefined ? m.hidden : force; m.hidden = !open; b.setAttribute("aria-expanded", open);
+  }
+  document.addEventListener("click", (e) => { if (!e.target.closest(".menu-wrap")) toggleMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") toggleMenu(false); });
+  function setMode(b) {
+    document.querySelectorAll("#modemenu [data-mode]").forEach(x => x.setAttribute("aria-checked", "false"));
+    b.setAttribute("aria-checked", "true"); document.getElementById("mode").value = b.dataset.mode;
+    document.getElementById("modelabel").textContent = b.dataset.label; toggleMenu(false);
+  }
+  function showDeep() { document.getElementById("deep-ic").hidden = !document.getElementById("deep").checked; }
+  function fillText(t) { box.value = t; box.dispatchEvent(new Event("input")); box.focus(); }
+  function sendText(t) { box.value = t; form.requestSubmit(); }
+  async function shrink(file) {  // phone photos are big: resize to 1280 px JPEG before sending
+    const img = await createImageBitmap(file); const s = Math.min(1, 1280 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = img.width * s; c.height = img.height * s;
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return await new Promise(r => c.toBlob(r, "image/jpeg", 0.82));
+  }
+  async function addImages(input) {
+    for (const f of [...input.files].slice(0, 4 - images.length)) { try { images.push(await shrink(f)); } catch (e) { toast({{ _("Couldn't read that image.") | tojson }}); } }
+    input.value = ""; const a = document.getElementById("attachments"); a.hidden = !images.length;
+    a.innerHTML = images.map(b => `<img src="${URL.createObjectURL(b)}" alt="">`).join("");
+  }
+  form.addEventListener("htmx:configRequest", (e) => { images.forEach((b, i) => e.detail.formData.append("images", b, `photo${i}.jpg`)); });
+  let timer;
+  function beforeSend(e) {
+    const text = box.value.trim(); if (!text && !images.length) { e.preventDefault(); return; }
+    document.querySelector(".empty-chat")?.remove();
+    const d = document.createElement("div"); d.className = "msg you";
+    images.forEach(b => { const im = document.createElement("img"); im.src = URL.createObjectURL(b); im.alt = ""; d.appendChild(im); });
+    d.appendChild(document.createTextNode(text)); thread.appendChild(d);
+    thread.appendChild(document.getElementById("thinking-tpl").content.cloneNode(true));
+    const t0 = Date.now(); timer = setInterval(() => { const s = document.querySelector(".msg.pending .secs"); if (s) s.textContent = Math.round((Date.now() - t0) / 1000); }, 1000);
+    setTimeout(() => { box.value = ""; box.style.height = "auto"; }, 0); scrollDown();
+  }
+  function afterSend() { clearInterval(timer); document.querySelectorAll(".msg.pending").forEach(x => x.remove());
+    images = []; const a = document.getElementById("attachments"); a.hidden = true; a.innerHTML = ""; scrollDown(); }
+  document.body.addEventListener("htmx:afterSwap", (e) => { if (e.detail.target.id === "thread") scrollDown(); });
+  // Voice: record, then the AI transcribes (UA/EN mixed).
+  (() => {
+    const mic = document.getElementById("mic"), micIcon = mic.innerHTML, stopIcon = `{{ icon("stop") }}`;
+    let rec = null, chunks = [];
+    mic.onclick = async () => {
+      if (rec) { rec.stop(); return; }
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { toast({{ _("Voice isn't supported in this browser.") | tojson }}); return; }
+      let stream; try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { toast({{ _("Allow the microphone to record.") | tojson }}); return; }
+      const type = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+      rec = new MediaRecorder(stream, { mimeType: type }); chunks = [];
+      rec.ondataavailable = (e) => chunks.push(e.data);
+      rec.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop()); mic.classList.remove("rec"); mic.innerHTML = micIcon; rec = null;
+        const fd = new FormData(); fd.append("audio", new Blob(chunks, { type }), type === "audio/webm" ? "voice.webm" : "voice.mp4");
+        const ph = box.placeholder; box.placeholder = {{ _("Transcribing…") | tojson }};
+        const r = await fetch("/transcribe", { method: "POST", body: fd });
+        box.placeholder = ph;
+        if (r.ok) { const t = (await r.text()).trim(); box.value = (box.value ? box.value + " " : "") + t; box.dispatchEvent(new Event("input")); box.focus(); }
+        else toast({{ _("Couldn't transcribe. Try again or type.") | tojson }});
+      };
+      rec.start(); mic.classList.add("rec"); mic.innerHTML = stopIcon;
+    };
+  })();
+</script>
+{% endblock %}
