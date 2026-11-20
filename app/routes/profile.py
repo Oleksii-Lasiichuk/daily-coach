@@ -84,13 +84,25 @@ def settings_page(request: Request, user: store.User = Depends(current_user)):
         plan_sources=PLAN_SOURCES, secret=store.get_secret(user.id, "intervals"),
         summary=intervals.athlete_summary(profile_vals), saved=request.query_params.get("saved"),
         error=request.query_params.get("error"), vapid=get_settings().vapid_public_key,
-        **_calendar_vars(user)))
+        **_calendar_vars(user), **location_context(user, profile_vals.get("location"))))
 
 
 def _calendar_vars(user: store.User) -> dict:
     """B2: the Calendar card's status (link, last read, titles toggle)."""
     from app.routes.calendar import calendar_context
     return {k: v for k, v in calendar_context(user).items() if k.startswith("cal_")}
+
+
+def location_context(user: store.User, loc: dict | None) -> dict:
+    """Settings → Location: the place, how old it is, and the place's time zone if it differs."""
+    from datetime import UTC, datetime
+    age_h, tz = None, None
+    if loc and loc.get("at"):
+        age_h = int((datetime.now(UTC) - datetime.fromisoformat(loc["at"])).total_seconds() // 3600)
+    if loc and "lat" in loc:
+        tz = weather.forecast(loc["lat"], loc["lon"]).get("tz")
+    return {"times": store.day_times(user.id), "loc": loc or {}, "loc_age_h": age_h,
+            "loc_tz": tz if tz and tz != user.time_zone and tz in ZONES else None}
 
 
 @router.post("/settings/lang")
@@ -260,3 +272,59 @@ def use_sample(request: Request, user: store.User = Depends(current_user)):
 def disconnect(request: Request, user: store.User = Depends(current_user)):
     store.delete_secret(user.id, "intervals")
     return templates.TemplateResponse(request, "partials/intervals.html", intervals_context(user))
+
+
+# --- B1: location from the phone, auto-update toggle, day times ---------------------------
+
+@router.post("/location")
+def set_location(lat: str = Form(""), lon: str = Form(""), auto: str = Form(""),
+                 user: store.User = Depends(current_user)):
+    """Current place from the browser's geolocation. Only rounded coordinates (~1 km) are kept,
+    one place, overwritten (no history). auto=1: the silent update on app open, which is skipped
+    when the person turned it off or the place is less than 6 hours old."""
+    from datetime import UTC, datetime, timedelta
+
+    from fastapi.responses import JSONResponse
+    try:
+        la, lo = float(lat), float(lon)
+    except ValueError:
+        return JSONResponse({"error": "bad coordinates"}, status_code=400)
+    if not (-90 <= la <= 90 and -180 <= lo <= 180):
+        return JSONResponse({"error": "bad coordinates"}, status_code=400)
+    now = datetime.now(UTC)
+    if auto:
+        old = (store.get_profile(user.id).get("location") or {}).get("value") or {}
+        at = old.get("at")
+        fresh = at and now - datetime.fromisoformat(at) < timedelta(hours=6)
+        if not store.day_times(user.id)["location_auto"] or (old.get("source") == "gps" and fresh):
+            return JSONResponse({"skipped": True})
+    la, lo = weather.rounded(la, lo)
+    place = {"name": weather.reverse_name(la, lo, store.user_lang(user.id)), "lat": la,
+             "lon": lo, "source": "gps", "at": now.isoformat(timespec="seconds")}
+    store.set_profile_field(user.id, "location", place, "user", actor="user")
+    return JSONResponse({"name": place["name"]})
+
+
+@router.post("/settings/location-auto")
+def set_location_auto(on: str = Form(""), user: store.User = Depends(current_user)):
+    prefs(user.id)
+    with connection() as c:
+        c.execute("update user_prefs set location_auto = %s, updated_at = now() "
+                  "where user_id = %s", (bool(on), user.id))
+    return RedirectResponse("/settings?saved=location#location", status_code=303)
+
+
+@router.post("/settings/training-time")
+def set_day_times(usual_training_time: str = Form(""), wake_time: str = Form(""),
+                  bedtime: str = Form(""), user: store.User = Depends(current_user)):
+    import re
+    vals = {"usual_training_time": usual_training_time, "wake_time": wake_time,
+            "bedtime": bedtime}
+    clean = {k: v.strip()[:5] for k, v in vals.items()
+             if re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", v.strip()[:5])}
+    if clean:
+        prefs(user.id)
+        with connection() as c:
+            c.execute("update user_prefs set " + ", ".join(f"{k} = %s" for k in clean) +
+                      ", updated_at = now() where user_id = %s", (*clean.values(), user.id))
+    return RedirectResponse("/settings?saved=location#location", status_code=303)

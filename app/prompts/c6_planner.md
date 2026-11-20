@@ -38,6 +38,12 @@ injuries, conditions, medication) and cite them in evidence as "file: <name>".
 `weather` (if present) is the forecast for the athlete's city: above ~27 °C plan easier or
 shorter and say "early or indoors"; air quality "poor" or worse → indoor or easy; heavy rain,
 strong wind or frost → mention it and prefer a safe option. Cite it in evidence ("weather: 31 °C").
+`weather.advice` is computed in code for the session hours (`weather.session_hours`): follow
+`advice.flags`. **Hard rule:** if `indoors_aqi` or `storm` is in the flags, an outdoor sport
+may only have zones 1–3 (an easy session); for intervals switch to an indoor sport from
+`athlete_sports` (e.g. WeightTraining). Say why, citing the flag in evidence
+("weather: air very poor at 18:00"). This overrides the planned session.
+Use `advice.facts` (pace slowdown, clothing) in the rationale instead of guessing.
 
 `past_days` is a day-by-day digest of the last two weeks (what was logged, day type, session).
 Use it for patterns ("after 4 drinks your HRV dropped for two days") and to avoid repeating hard

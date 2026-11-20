@@ -128,7 +128,7 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
     if files:
         plan_inputs["from_user_files"] = files
     from app import weather
-    w_day = weather.for_day(profile.get("location"), day)
+    w_day = weather.for_planner(weather.for_user(user.id, day, sports[0] if sports else None))
     if w_day:
         plan_inputs["weather"] = w_day
     windows = _day_windows(user, day, profile)
@@ -136,11 +136,12 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
         plan_inputs["day_windows"] = windows
         done["longest_free_min"] = windows["longest_free_min"]
         plan_inputs["usual_training_time"] = windows.pop("usual_training_time", None)
+    wx_flags = (w_day or {}).get("advice", {}).get("flags", [])
     feedback = None
     for _attempt in range(2):
         w = planner.plan(plan_inputs, feedback=feedback, user_id=user.id)
         feedback = validate(w, day_type, sports, red_flag=red_flag, injury_or_illness=injury,
-                            day_windows=windows)
+                            day_windows=windows, weather_flags=wx_flags)
         if not feedback:
             break
     if feedback:

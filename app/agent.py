@@ -139,6 +139,7 @@ def context_block(user: store.User, now: datetime) -> dict:
         **_calendar_context(user, day),
         "labs": labs.context_lines(user.id, day) or "no lab results",
         **money_context(user, day),
+        "weather_today": _weather_facts(user.id, day),
     }
 
 
@@ -155,6 +156,14 @@ def money_context(user: store.User, day: date) -> dict:
     from app import money_stats
     flags = money_stats.context_flags(user, day)
     return {"money_flags": flags} if flags else {}
+
+
+
+def _weather_facts(user_id: str, day) -> list[str] | str:
+    """B1: today's C12 facts (what to wear, flags), so the coach answers from facts."""
+    from app import weather
+    s = weather.for_user(user_id, day)
+    return (s or {}).get("advice", {}).get("facts") or "no weather (no location set)"
 
 
 # --- tools -------------------------------------------------------------------------------

@@ -25,7 +25,7 @@ templates.env.globals["sport_name"] = lambda s: NAMES.get(s, s)
 # What the person can choose to track at sign-up (food and water are always on).
 TRACKS = [("training", "watch", "Training from my watch",
            "Garmin and others, through intervals.icu"),
-          ("weather", "cloud", "Weather for my city", "So runs fit the weather"),
+          ("weather", "cloud", "Weather where I am", "So runs fit the weather and the air"),
           ("reminders", "bell", "Reminders", "Meals, sleep, medication")]
 TRACKS.append(("calendar", "calendar", "My calendar", "So training fits my day"))  # B2
 TRACKS.append(("labs", "droplet", "Lab results", "Blood tests and their trends"))  # B3
@@ -86,7 +86,7 @@ def setup_cards(user: store.User, has_push: bool, profile: dict) -> list[str]:
     if not all(profile.get(k) for k in ("weight_kg", "height_cm", "birth_year")):
         cards.append("body")
     if "weather" in user.tracks and not profile.get("location"):
-        cards.append("city")
+        cards.append("location")
     if "reminders" in user.tracks and not has_push:
         cards.append("push")
     if "calendar" in user.tracks and not store.get_secret(user.id, "ical"):

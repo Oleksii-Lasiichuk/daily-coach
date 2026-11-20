@@ -31,11 +31,13 @@ def run(c):
     i = c["inputs"]
     injury = any(f.startswith(("injury:", "health:")) for f in i["facts"])
     w = planner.plan(i)
-    first = validate(w, i["day_type"], i["athlete_sports"], i["red_flag_today"], injury)
+    first = validate(w, i["day_type"], i["athlete_sports"], i["red_flag_today"], injury,
+                     weather_flags=(i.get("weather") or {}).get("advice", {}).get("flags"))
     final = first
     if first:
         w = planner.plan(i, feedback=first)
-        final = validate(w, i["day_type"], i["athlete_sports"], i["red_flag_today"], injury)
+        final = validate(w, i["day_type"], i["athlete_sports"], i["red_flag_today"], injury,
+                     weather_flags=(i.get("weather") or {}).get("advice", {}).get("flags"))
     proposal = w.model_dump() | {"minutes": total_minutes(w), "text": to_intervals_text(w)}
     g = judge("judge-workout", RUBRIC, {"situation": i, "expect": c["expect"],
                                          "proposal": proposal}, Grade)

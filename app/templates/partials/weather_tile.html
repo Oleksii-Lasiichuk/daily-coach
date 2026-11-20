@@ -1,0 +1,21 @@
+{# B1: weather at the session hour + C12 clothing and flags; tap → hourly strip. #}
+{% set AQ = {"good": "good", "fair": "good", "moderate": "warn", "poor": "warn", "very poor": "bad", "extremely poor": "bad"} %}
+<div class="wx" style="margin-top:10px">
+{% if wx.error %}
+  <p class="small muted">{{ icon("cloud") }} {{ _(wx.place or "") }}: {{ _("Weather unavailable") }}</p>
+{% else %}{% set a, d, adv = wx.at, wx.day, wx.advice %}
+  <details class="wx-more"><summary class="small">
+    <span>{{ icon("cloud") }} <b>{{ _(d.place) }}</b> · {{ _("at") }} {{ wx.start }}:
+      {% if a.feels is not none %}{{ _("feels") }} {{ a.feels | round | int }}°C{% endif %}{% if a.rain_pct is not none %} · {{ _("rain") }} {{ a.rain_pct }}%{% endif %}{% if a.wind_kmh is not none %} · {{ _("wind") }} {{ a.wind_kmh | round | int }} {{ _("km/h") }}{% endif %}
+      {% if a.air %}<span class="badge {{ AQ[a.air] }}">{{ _("air") }} {{ _(a.air) }}</span>{% endif %}</span>
+    <span class="tiny faint">☀ {{ d.sunrise }}–{{ d.sunset }}</span></summary>
+    <div class="wx-strip" role="list" aria-label="{{ _('Hourly forecast') }}">
+      {% for h in wx.strip %}<div class="wx-h{{ '' if h.day else ' night' }}{{ ' now' if h.hour == wx.start[:2] ~ ':00' }}" role="listitem"><span class="tiny faint">{{ h.hour }}</span><b>{{ h.feels | round | int if h.feels is not none else "–" }}°</b><span class="tiny">{{ h.rain_pct if h.rain_pct is not none else "–" }}%</span>{% if h.air %}<i class="dot {{ AQ[h.air] }}" title="{{ _('air') }} {{ _(h.air) }}"></i>{% endif %}</div>{% endfor %}
+    </div>
+  </details>
+  {% if adv.clothing %}<p class="small" style="margin-top:4px">{{ _("Wear") }}: {% for c in adv.clothing %}{{ _(c) }}{{ ", " if not loop.last }}{% endfor %}</p>{% endif %}
+  {% if adv.pace_slower_pct and adv.pace_slower_pct[1] > 0 and wx.minutes %}<p class="tiny muted">{{ _("Heat slows pace by about") }} {{ adv.pace_slower_pct[0] }}–{{ adv.pace_slower_pct[1] }}%</p>{% elif adv.heat_level == "extreme" %}<p class="tiny muted">{{ _("Too hot for hard running: easy or indoors.") }}</p>{% endif %}
+  {% if adv.flags %}<div class="chips" style="margin-top:6px">{% for f in adv.flags %}<span class="badge {{ 'bad' if f in ('indoors_aqi', 'storm', 'ice') else 'warn' }}">{{ _(WX_FLAGS[f]) }}</span>{% endfor %}</div>
+    {% if adv.best_hour and adv.best_hour != wx.start %}<p class="tiny muted" style="margin-top:4px">{{ _("Better time today") }}: {{ adv.best_hour }}</p>{% endif %}{% endif %}
+{% endif %}
+</div>

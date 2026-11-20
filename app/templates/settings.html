@@ -33,6 +33,25 @@
           <div><button class="btn sm primary">{{ _("Save") }}</button></div>
         </form>
       </div>
+      <div class="card" id="location"><h2>{{ _("Location") }}</h2>
+        {% if saved == "location" %}<p class="notice small" style="margin-top:8px">{{ _("Saved.") }}</p>{% endif %}
+        <p class="small" style="margin-top:6px">{% if loc.name %}{{ icon("cloud") }} {{ _("Near") }} <b>{{ _(loc.name) }}</b> · {% if loc.source == "gps" %}{{ _("from your phone") }}{% else %}{{ _("from the city field") }}{% endif %}{% if loc_age_h is not none %} · {% if loc_age_h < 1 %}{{ _("just now") }}{% else %}{{ loc_age_h }} {{ _("h ago") }}{% endif %}{% endif %}{% else %}<span class="muted">{{ _("No location yet. Use your phone's location or type a city above.") }}</span>{% endif %}</p>
+        {% include "partials/location_button.html" %}
+        {% if loc_tz %}<form method="post" action="/settings/place" class="row" style="margin-top:8px;gap:8px"><input type="hidden" name="time_zone" value="{{ loc_tz }}"><input type="hidden" name="city" value="{{ loc.name if loc.source == 'city' else '' }}">
+          <span class="small">{{ _("Your time zone looks like") }} <b>{{ loc_tz }}</b>.</span><button class="btn sm ghost">{{ _("Switch") }}</button></form>{% endif %}
+        <form method="post" action="/settings/location-auto" style="margin-top:10px">
+          <label class="row" style="gap:8px;margin:0"><input type="checkbox" name="on" value="1" {{ "checked" if times.location_auto }} onchange="this.form.requestSubmit()"> <span class="small">{{ _("Update when I open the app") }}</span></label>
+          <noscript><button class="btn sm ghost">{{ _("Save") }}</button></noscript></form>
+        <form method="post" action="/settings/training-time" style="margin-top:12px">
+          <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px">
+            {% for k, lab in [("usual_training_time", "Usual training time"), ("wake_time", "Wake time"), ("bedtime", "Bedtime")] %}
+            <div><label for="{{ k }}">{{ _(lab) }}</label><input id="{{ k }}" name="{{ k }}" type="time" value="{{ times[k] }}"></div>
+            {% endfor %}
+          </div>
+          <p class="hint">{{ _("The weather on Today is for your usual training time. Only the area (about 1 km) is kept, never a track.") }}</p>
+          <div><button class="btn sm primary">{{ _("Save") }}</button></div>
+        </form>
+      </div>
       <div class="card" id="intervals"><h2>intervals.icu</h2>
         <p class="small muted" style="margin-bottom:10px">{{ _("Where your Garmin data comes from and where sessions go to reach your watch.") }}</p>
         {% include "partials/intervals.html" %}</div>
@@ -106,6 +125,7 @@
       {% endif %}
     </div>
   </div>
+  <p class="tiny faint" style="margin-top:16px">{{ _("Weather data by Open-Meteo.com (CC BY 4.0), air quality by CAMS, place names © OpenStreetMap contributors.") }}</p>
 </div>
 <script>
   (() => { const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;

@@ -499,3 +499,12 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
 .money-tx .num.good { color: var(--good); }
 .money-tx .num { order: 2; } .money-pick { order: 1; }
 .money-pick[open] { order: 3; flex-basis: 100%; }
+/* B1 weather tile: session-hour line, hourly strip (scrolls sideways on phones) */
+.wx-more > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: space-between; color: var(--muted); }
+.wx-more > summary::-webkit-details-marker { display: none; }
+.wx-strip { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 4px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+.wx-h { flex: 0 0 auto; min-width: 46px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; border-radius: 10px; background: var(--sunk); scroll-snap-align: start; }
+.wx-h.night { opacity: .65; }
+.wx-h.now { outline: 2px solid var(--accent); outline-offset: -2px; }
+.wx-h .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+.wx-h .dot.good { background: var(--good); } .wx-h .dot.warn { background: var(--warn); } .wx-h .dot.bad { background: var(--bad); }

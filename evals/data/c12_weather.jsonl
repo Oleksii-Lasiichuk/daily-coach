@@ -1,0 +1,71 @@
+{"id": "heat-sum-1", "family": "heat", "fn": "heat_sum", "input": {"temp_c": 30, "dew_c": 20}, "expect": 154.0}
+{"id": "heat-sum-2", "family": "heat", "fn": "heat_sum", "input": {"temp_c": 0, "dew_c": -5}, "expect": 55.0}
+{"id": "pace-100", "family": "heat", "fn": "pace", "input": {"sum_f": 100}, "expect": {"band": [0.0, 0.0], "level": "none"}}
+{"id": "pace-100.1", "family": "heat", "fn": "pace", "input": {"sum_f": 100.1}, "expect": {"band": [0.0, 0.5], "level": "mild"}}
+{"id": "pace-110", "family": "heat", "fn": "pace", "input": {"sum_f": 110}, "expect": {"band": [0.0, 0.5], "level": "mild"}}
+{"id": "pace-111", "family": "heat", "fn": "pace", "input": {"sum_f": 111}, "expect": {"band": [0.5, 1.0], "level": "mild"}}
+{"id": "pace-120", "family": "heat", "fn": "pace", "input": {"sum_f": 120}, "expect": {"band": [0.5, 1.0], "level": "mild"}}
+{"id": "pace-125", "family": "heat", "fn": "pace", "input": {"sum_f": 125}, "expect": {"band": [1.0, 2.0], "level": "mild"}}
+{"id": "pace-130", "family": "heat", "fn": "pace", "input": {"sum_f": 130}, "expect": {"band": [1.0, 2.0], "level": "mild"}}
+{"id": "pace-131", "family": "heat", "fn": "pace", "input": {"sum_f": 131}, "expect": {"band": [2.0, 3.0], "level": "moderate"}}
+{"id": "pace-145", "family": "heat", "fn": "pace", "input": {"sum_f": 145}, "expect": {"band": [3.0, 4.5], "level": "moderate"}}
+{"id": "pace-150", "family": "heat", "fn": "pace", "input": {"sum_f": 150}, "expect": {"band": [3.0, 4.5], "level": "moderate"}}
+{"id": "pace-155", "family": "heat", "fn": "pace", "input": {"sum_f": 155}, "expect": {"band": [4.5, 6.0], "level": "high"}}
+{"id": "pace-165", "family": "heat", "fn": "pace", "input": {"sum_f": 165}, "expect": {"band": [6.0, 8.0], "level": "high"}}
+{"id": "pace-180", "family": "heat", "fn": "pace", "input": {"sum_f": 180}, "expect": {"band": [8.0, 10.0], "level": "high"}}
+{"id": "pace-180.1", "family": "heat", "fn": "pace", "input": {"sum_f": 180.1}, "expect": {"band": null, "level": "extreme"}}
+{"id": "pace-60", "family": "heat", "fn": "pace", "input": {"sum_f": 60}, "expect": {"band": [0.0, 0.0], "level": "none"}}
+{"id": "pace-missing", "family": "heat", "fn": "pace", "input": {"sum_f": null}, "expect": {"band": [0.0, 0.0], "level": "unknown"}}
+{"id": "clothing-hot", "family": "clothing", "fn": "clothing", "input": {"feels": 25}, "expect": ["singlet", "shorts", "cap"]}
+{"id": "clothing-hot-uv", "family": "clothing", "fn": "clothing", "input": {"feels": 25, "uv": 7}, "expect": ["singlet", "shorts", "cap", "sunscreen"]}
+{"id": "clothing-edge-20", "family": "clothing", "fn": "clothing", "input": {"feels": 20}, "expect": ["singlet", "shorts", "cap"]}
+{"id": "clothing-mild", "family": "clothing", "fn": "clothing", "input": {"feels": 15}, "expect": ["T-shirt", "shorts"]}
+{"id": "clothing-edge-12", "family": "clothing", "fn": "clothing", "input": {"feels": 12}, "expect": ["T-shirt", "shorts"]}
+{"id": "clothing-cool", "family": "clothing", "fn": "clothing", "input": {"feels": 8}, "expect": ["long sleeve", "shorts or tights"]}
+{"id": "clothing-edge-5", "family": "clothing", "fn": "clothing", "input": {"feels": 5}, "expect": ["long sleeve", "shorts or tights"]}
+{"id": "clothing-cold", "family": "clothing", "fn": "clothing", "input": {"feels": 2}, "expect": ["long sleeve", "light jacket", "tights", "gloves"]}
+{"id": "clothing-edge-0", "family": "clothing", "fn": "clothing", "input": {"feels": 0}, "expect": ["long sleeve", "light jacket", "tights", "gloves"]}
+{"id": "clothing-frost", "family": "clothing", "fn": "clothing", "input": {"feels": -3}, "expect": ["thermal layer", "jacket", "hat", "gloves"]}
+{"id": "clothing-edge-m5", "family": "clothing", "fn": "clothing", "input": {"feels": -5}, "expect": ["thermal layer", "jacket", "hat", "gloves"]}
+{"id": "clothing-deep-frost", "family": "clothing", "fn": "clothing", "input": {"feels": -12}, "expect": ["two layers", "windproof jacket", "tights", "hat", "gloves", "buff"]}
+{"id": "clothing-gusty", "family": "clothing", "fn": "clothing", "input": {"feels": 15, "gusts": 30}, "expect": ["T-shirt", "shorts", "windproof layer"]}
+{"id": "clothing-gusty-deep-frost", "family": "clothing", "fn": "clothing", "input": {"feels": -12, "gusts": 40}, "expect": ["two layers", "windproof jacket", "tights", "hat", "gloves", "buff"]}
+{"id": "clothing-rainy", "family": "clothing", "fn": "clothing", "input": {"feels": 8, "rain_prob": 60}, "expect": ["long sleeve", "shorts or tights", "rain jacket or cap"]}
+{"id": "clothing-rain-59", "family": "clothing", "fn": "clothing", "input": {"feels": 8, "rain_prob": 59}, "expect": ["long sleeve", "shorts or tights"]}
+{"id": "clothing-uv-cold-no-sunscreen", "family": "clothing", "fn": "clothing", "input": {"feels": 10, "uv": 8}, "expect": ["long sleeve", "shorts or tights"]}
+{"id": "clothing-missing", "family": "clothing", "fn": "clothing", "input": {"feels": null}, "expect": []}
+{"id": "flag-none", "family": "flags", "fn": "flags", "input": {"hours": [{}]}, "expect": []}
+{"id": "flag-aqi-81", "family": "flags", "fn": "flags", "input": {"hours": [{"european_aqi": 81}]}, "expect": ["indoors_aqi"]}
+{"id": "flag-aqi-80", "family": "flags", "fn": "flags", "input": {"hours": [{"european_aqi": 80}]}, "expect": []}
+{"id": "flag-storm-95", "family": "flags", "fn": "flags", "input": {"hours": [{"weather_code": 95}]}, "expect": ["storm"]}
+{"id": "flag-storm-99", "family": "flags", "fn": "flags", "input": {"hours": [{"weather_code": 99}]}, "expect": ["storm"]}
+{"id": "flag-rain-4", "family": "flags", "fn": "flags", "input": {"hours": [{"precipitation": 4, "weather_code": 63}]}, "expect": ["rain"]}
+{"id": "flag-rain-3.9", "family": "flags", "fn": "flags", "input": {"hours": [{"precipitation": 3.9, "weather_code": 63}]}, "expect": []}
+{"id": "flag-ice-freezing-rain-before", "family": "flags", "fn": "flags", "input": {"hours": [{"temperature_2m": 0}], "before": [{"temperature_2m": -1, "weather_code": 66}]}, "expect": ["ice"]}
+{"id": "flag-ice-crossing-zero", "family": "flags", "fn": "flags", "input": {"hours": [{"temperature_2m": -1}], "before": [{"temperature_2m": 2, "precipitation": 1, "weather_code": 61}]}, "expect": ["ice"]}
+{"id": "flag-no-ice-dry-frost", "family": "flags", "fn": "flags", "input": {"hours": [{"temperature_2m": -3}], "before": [{"temperature_2m": -2}]}, "expect": []}
+{"id": "flag-no-ice-warm-rain", "family": "flags", "fn": "flags", "input": {"hours": [{"temperature_2m": 3, "precipitation": 1, "weather_code": 61}]}, "expect": []}
+{"id": "flag-ice-edge-0.5", "family": "flags", "fn": "flags", "input": {"hours": [{"temperature_2m": 0.5, "weather_code": 56}]}, "expect": ["ice"]}
+{"id": "flag-no-ice-0.6", "family": "flags", "fn": "flags", "input": {"hours": [{"temperature_2m": 0.6, "weather_code": 56}]}, "expect": []}
+{"id": "flag-dark-before-sunrise", "family": "flags", "fn": "flags", "input": {"hours": [{}], "start": "06:30", "minutes": 60, "sunrise": "07:20", "sunset": "16:06"}, "expect": ["dark"]}
+{"id": "flag-light-at-sunrise", "family": "flags", "fn": "flags", "input": {"hours": [{}], "start": "07:20", "minutes": 60, "sunrise": "07:20", "sunset": "16:06"}, "expect": []}
+{"id": "flag-light-ends-at-sunset", "family": "flags", "fn": "flags", "input": {"hours": [{}], "start": "15:06", "minutes": 60, "sunrise": "07:20", "sunset": "16:06"}, "expect": []}
+{"id": "flag-dark-after-sunset", "family": "flags", "fn": "flags", "input": {"hours": [{}], "start": "15:30", "minutes": 60, "sunrise": "07:20", "sunset": "16:06"}, "expect": ["dark"]}
+{"id": "flag-uv-6", "family": "flags", "fn": "flags", "input": {"hours": [{"uv_index": 6}]}, "expect": ["uv_high"]}
+{"id": "flag-uv-5.9", "family": "flags", "fn": "flags", "input": {"hours": [{"uv_index": 5.9}]}, "expect": []}
+{"id": "flag-gusts-50", "family": "flags", "fn": "flags", "input": {"hours": [{"wind_gusts_10m": 50}]}, "expect": ["wind"]}
+{"id": "flag-gusts-49", "family": "flags", "fn": "flags", "input": {"hours": [{"wind_gusts_10m": 49}]}, "expect": []}
+{"id": "flag-pollen-allergic", "family": "flags", "fn": "flags", "input": {"hours": [{"birch_pollen": 150}], "allergic": true}, "expect": ["pollen"]}
+{"id": "flag-pollen-not-allergic", "family": "flags", "fn": "flags", "input": {"hours": [{"birch_pollen": 150}]}, "expect": []}
+{"id": "flag-grass-allergic", "family": "flags", "fn": "flags", "input": {"hours": [{"grass_pollen": 50}], "allergic": true}, "expect": ["pollen"]}
+{"id": "flag-several", "family": "flags", "fn": "flags", "input": {"hours": [{"european_aqi": 90}, {"weather_code": 95, "precipitation": 6, "wind_gusts_10m": 60}]}, "expect": ["indoors_aqi", "storm", "rain", "wind"]}
+{"id": "best-coolest-daylight", "family": "best_hour", "fn": "best_hour", "input": {"day_hours": {"06:00": {"temperature_2m": 18, "dew_point_2m": 10}, "07:00": {"temperature_2m": 20, "dew_point_2m": 12}, "12:00": {"temperature_2m": 30, "dew_point_2m": 20}}, "sunrise": "06:00", "sunset": "20:00"}, "expect": "06:00"}
+{"id": "best-skip-dark", "family": "best_hour", "fn": "best_hour", "input": {"day_hours": {"05:00": {"temperature_2m": 18, "dew_point_2m": 10}, "09:00": {"temperature_2m": 22, "dew_point_2m": 14}}, "sunrise": "06:00", "sunset": "20:00"}, "expect": "09:00"}
+{"id": "best-skip-flagged", "family": "best_hour", "fn": "best_hour", "input": {"day_hours": {"07:00": {"temperature_2m": 18, "dew_point_2m": 10, "european_aqi": 95}, "10:00": {"temperature_2m": 30, "dew_point_2m": 20}}, "sunrise": "06:00", "sunset": "20:00"}, "expect": "10:00"}
+{"id": "best-two-hours-need-two-clean", "family": "best_hour", "fn": "best_hour", "input": {"day_hours": {"07:00": {"temperature_2m": 18, "dew_point_2m": 10}, "08:00": {"weather_code": 95}, "10:00": {"temperature_2m": 30, "dew_point_2m": 20}, "11:00": {"temperature_2m": 30, "dew_point_2m": 20}}, "minutes": 90, "sunrise": "06:00", "sunset": "20:00"}, "expect": "10:00"}
+{"id": "best-none-all-flagged", "family": "best_hour", "fn": "best_hour", "input": {"day_hours": {"10:00": {"weather_code": 95}}, "sunrise": "06:00", "sunset": "20:00"}, "expect": null}
+{"id": "best-no-sun-times", "family": "best_hour", "fn": "best_hour", "input": {"day_hours": {"10:00": {"temperature_2m": 18, "dew_point_2m": 10}}}, "expect": null}
+{"id": "advise-no-forecast", "family": "advise", "fn": "advise", "input": {"hours": null}, "expect": {"flags": null, "clothing": null}}
+{"id": "advise-hot-run", "family": "advise", "fn": "advise", "input": {"hours": [{"temperature_2m": 30, "dew_point_2m": 20, "apparent_temperature": 32}]}, "expect": {"pace_slower_pct": [4.5, 6.0], "heat_level": "high", "flags": []}}
+{"id": "advise-hot-ride-no-pace-fact", "family": "advise", "fn": "advise", "input": {"hours": [{"temperature_2m": 30, "dew_point_2m": 20, "apparent_temperature": 32}], "sport": "Ride"}, "expect": {"heat_level": "high", "clothing": ["singlet", "shorts", "cap"]}}
+{"id": "advise-missing-dew", "family": "advise", "fn": "advise", "input": {"hours": [{"dew_point_2m": null}]}, "expect": {"pace_slower_pct": [0.0, 0.0], "heat_level": "unknown"}}
