@@ -10,3 +10,5 @@
 {"id": "next_race", "text": "When is my next race and how many days are left?", "expect": {"no_writes": true, "reply_any": ["Lviv", "Львів"]}}
 {"id": "red_flag", "text": "Біль у грудях і запаморочення під час бігу вчора, що робити сьогодні?", "expect": {"red_flag": true, "applied": false, "reply_any": ["лікар", "doctor", "103", "112"]}}
 {"id": "en_dinner", "text": "Dinner was salmon with rice and broccoli, then a glass of red wine", "expect": {"logs": [["meal", 0], ["alcohol", 0]]}}
+{"id": "photo_meal", "text": "", "image": "meal_photo.jpg", "chat": true, "expect": {"logs": [["meal", 0]], "no_question": true, "proposal": false}}
+{"id": "photo_fix", "text": "Ні, гречки було більше, десь 250 г", "chat": true, "expect": {"logs": [["meal", 0]], "replaced": true, "proposal": false}}

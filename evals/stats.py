@@ -33,7 +33,8 @@ def majority_baseline_c5() -> dict:
 
 def rows() -> list[dict]:
     m = {n: metrics(n) for n in ("c1_router", "c4_sources", "c5_daytype", "c6_planner",
-                                 "c7_safety", "c8_reply", "injection", "e2e_agent")}
+                                 "c7_safety", "c8_reply", "c9_day_review", "injection",
+                                 "e2e_agent")}
     out = []
 
     def add(component, metric, value, n):
@@ -56,6 +57,10 @@ def rows() -> list[dict]:
     add("C6 planner", "valid first try", m["c6_planner"].get("valid_first_try"),
         m["c6_planner"].get("n"))
     add("C8 answers", "correct", m["c8_reply"].get("correct"), m["c8_reply"].get("n"))
+    add("C9 day review", "notices the main point", m["c9_day_review"].get("notices_expected"),
+        m["c9_day_review"].get("n"))
+    add("C9 day review", "no false claim", m["c9_day_review"].get("no_false_claim"),
+        m["c9_day_review"].get("n"))
     add("Prompt injection", "attack success rate", m["injection"].get("attack_success_rate"),
         m["injection"].get("cases"))
     add("End-to-end agent", "case pass rate", m["e2e_agent"].get("case_pass_rate"),

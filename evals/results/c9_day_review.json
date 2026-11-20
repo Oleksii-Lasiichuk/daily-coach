@@ -1,0 +1,227 @@
+{
+ "component": "c9_day_review",
+ "metrics": {
+  "n": 15,
+  "errors": 0,
+  "grounded": 1,
+  "language_ok": 1,
+  "notices_expected": 0.933,
+  "no_false_claim": 1,
+  "useful_mean_1_5": 3.6
+ },
+ "n_failures": 1,
+ "failures": [
+  {
+   "id": "d07",
+   "expect": "a good hard day: energy and carbs close to target",
+   "review": {
+    "good": "You were close to the target for carbohydrates with 500 of 490 g consumed.",
+    "short": "Your salt intake was 6 g against a 5 g limit, which can impact hydration recovery after your long ride.",
+    "tip": "For tomorrow, swap the salt-heavy seasoning in your pasta with chicken for fresh herbs or lemon juice to keep your sodium levels within the target."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": false,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "Carbs (500 of 490 g) and the salt overage (6 g vs 5 g) are stated correctly, and the ride is referenced accurately. It does not mention that energy (3150 vs 3100 kcal) was on target or frame it as a good hard day, so the expected point is only partly made. The tip assumes salty seasoning on the pasta, which is not in the log, and it skips the protein, fiber, and sugar overages."
+  }
+ ],
+ "all": [
+  {
+   "review": {
+    "good": "You were close to the target for carbohydrates with 380 of 375 g.",
+    "short": "Your protein intake was low at 95 of 135 g, which is 40 g under the target needed for muscle recovery.",
+    "tip": "For tomorrow, swap the rice in your dinner for a lean protein source like chicken or fish to help reach your protein goal."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "The review clearly flags protein at 95 of 135 g, 40 g under target, and its numbers match the data. Carbs at 380 of 375 g are correctly called close to target. The tip to swap dinner rice for a lean protein is specific and actionable, though it does not mention the protein-poor breakfast or the protein shortfall across meals."
+  },
+  {
+   "review": {
+    "good": "Ви спожили кількість цукру, близьку до цільового показника 30 з 50 г.",
+    "short": "Ви спожили лише 210 з 490 г вуглеводів та 1900 з 3100 ккал, що значно обмежує відновлення після вашого 95-хвилинного бігу.",
+    "tip": "Завтра перед тренуванням додайте до гречки з куркою більшу порцію вуглеводів, щоб забезпечити організм енергією для інтенсивного навантаження."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "The review names the main point: carbs (210 of 490 g) and kcal (1900 of 3100) were far under target before a 95-minute run, and it links this to recovery. All cited numbers match the data and no target is wrongly claimed as met. The tip is actionable but gives no carb amount, and the sugar comment is filler. It also omits the 1300 kcal burned by the run, which is the key reason the deficit matters."
+  },
+  {
+   "review": {
+    "good": "You were close to the protein target with 140 of 135 g.",
+    "short": "Your fiber intake was low at 12 of 30 g, which is important for digestion and long-term health.",
+    "tip": "For tomorrow, swap the fries from your burger meal for a large side of steamed broccoli or a salad to increase your fiber intake."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "The review clearly flags fiber at 12 of 30 g, the expected point. All cited numbers match the data (protein 140 of 135 g, fiber 12 of 30 g). The tip is specific and actionable, though swapping fries for broccoli or salad is a fairly modest change for closing an 18 g fiber gap."
+  },
+  {
+   "review": {
+    "good": "Ви спожили білок близько до цілі 130 зі 135 грамів.",
+    "short": "Споживання цукру 95 грамів значно перевищує ліміт у 50 грамів, що може спричинити різкі коливання енергії.",
+    "tip": "Завтра замініть тістечко і колу на фрукти або йогурт, щоб зменшити кількість доданого цукру."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "Review correctly reports protein 130 vs 135 and sugar 95 vs 50 limit; tip names cake and cola as sugar sources and gives an actionable swap. It does not state the near-double (190%) magnitude explicitly."
+  },
+  {
+   "review": {
+    "good": "You stayed within the limit for sugar at 20 of 50 g.",
+    "short": "The log may be incomplete, but you are significantly under your protein target at 20 of 135 g and your calorie target at 520 of 2700 kcal, which is insufficient for recovery.",
+    "tip": "For tomorrow, aim to increase your protein intake by adding eggs or Greek yogurt to your breakfast alongside your coffee and croissant."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "Notes the log may be incomplete with only one meal logged, and all cited numbers (sugar 20/50 g, protein 20/135 g, kcal 520/2700) match the data. The tip to add protein at breakfast is specific and actionable, though it skips the carb and fiber shortfalls."
+  },
+  {
+   "review": {
+    "good": "Ви спожили 2300 ккал, що близько до цілі 2200 ккал.",
+    "short": "Ви вжили 60 г алкоголю при ліміті 20 г, що заважає якісному відновленню.",
+    "tip": "Завтра замініть алкоголь на воду, щоб краще гідратуватися після сьогоднішнього дня."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "The review clearly flags alcohol 60 g against the 20 g limit on a recovery day, and its numbers (2300 kcal vs 2200, 60 g vs 20 g) are correct. It is actionable but narrow: it ignores protein 110 of 135 g, fiber 22 of 30 g, salt 6 g over the 5 g limit, and low water 0.8 L, so the athlete gets only one of the top issues."
+  },
+  {
+   "review": {
+    "good": "You were close to the target for carbohydrates with 500 of 490 g consumed.",
+    "short": "Your salt intake was 6 g against a 5 g limit, which can impact hydration recovery after your long ride.",
+    "tip": "For tomorrow, swap the salt-heavy seasoning in your pasta with chicken for fresh herbs or lemon juice to keep your sodium levels within the target."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": false,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "Carbs (500 of 490 g) and the salt overage (6 g vs 5 g) are stated correctly, and the ride is referenced accurately. It does not mention that energy (3150 vs 3100 kcal) was on target or frame it as a good hard day, so the expected point is only partly made. The tip assumes salty seasoning on the pasta, which is not in the log, and it skips the protein, fiber, and sugar overages."
+  },
+  {
+   "review": {
+    "good": "Ви спожили 140 г білка, що близько до цільового показника 135 г.",
+    "short": "Ви спожили 140 г жирів при цілі 75 г та 9 г солі при ліміті 5 г, що значно перевищує норму для звичайного дня.",
+    "tip": "На завтра замініть чипси та пиво на порцію сирників зі сметаною, щоб зменшити кількість насичених жирів та солі."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "Огляд правильно називає перевищення жирів (140 г при цілі 75 г) і солі (9 г при ліміті 5 г), тож ключова думка про перевищення жиру помічена. Цифри відповідають даним, а білок 140 г справді близько до цілі 135 г. Порада корисна частково: сирники зі сметаною теж жирні та калорійні, тож заміна чипсів і пива на них не зменшить жири, а лише змінить джерело. Не згадано перевищення калорій (3600 при цілі 2700) та пізнє вживання їжі о 22:30."
+  },
+  {
+   "review": {
+    "good": "You were close to the protein target with 132 of 135 g.",
+    "short": "The day was balanced.",
+    "tip": "For tomorrow, continue with your current meal structure as it successfully met all your nutritional targets."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "The review captures that the day was balanced and close to all targets, and the protein figure of 132 of 135 g is correct. The tip to keep the meal structure is generic, though, and it skips the useful details: carbs and fiber ran slightly high, and sugar and salt were well within their limits."
+  },
+  {
+   "review": {
+    "good": "Ви спожили 2500 ккал, що близько до цілі у 2700 ккал.",
+    "short": "Поки що сьогодні ви спожили 330 г вуглеводів при цілі 375 г, що важливо для підтримки енергії.",
+    "tip": "Для вечері додайте порцію рису до риби з овочами, щоб наблизитися до цільового рівня вуглеводів."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "Review correctly frames intake as so far today (330 g carbs vs 375 g target, 2500 kcal) and gives a tip for the rest of the day, which matches the expected point. It never explicitly says the day is not over, relying on 'поки що'. The tip is partly flawed: dinner (fish with vegetables) is already logged at 19:00 and the day is still open after a 21:00 snack, so 'add rice to dinner' is less actionable than suggesting a carb-rich addition for the remaining hours. No numeric errors found."
+  },
+  {
+   "review": {
+    "good": "You were close to the target for protein with 140 of 135 g.",
+    "short": "You had no real breakfast with your first meal at 12:00, and carbs were 420 of 490 g, which limits recovery after your 70 minute run.",
+    "tip": "For tomorrow, swap some of the fat in your diet for more rice or pasta to ensure you have enough fuel before your run."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "The review clearly makes the expected point: the short sentence names the missing breakfast and the 12:00 first meal on a hard training day. All its numbers are correct (protein 140 of 135 g, carbs 420 of 490 g, 70-minute run). The tip is actionable, but it does not explicitly recommend a breakfast and it is somewhat generic, so it stops short of 5."
+  },
+  {
+   "review": {
+    "good": "Ви спожили калорій близько до цілі (2350 з 2400 ккал).",
+    "short": "Ви спожили замало білка (70 з 135 г) та жирів (60 з 75 г), що важливо для відновлення м'язів.",
+    "tip": "Завтра додайте порцію курячого філе або сиру до макаронів з томатним соусом, щоб збільшити кількість білка."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "Review clearly states protein 70 of 135 g and fat 60 of 75 g, and kcal near target (2350 of 2400), all matching the data. Tip about adding chicken or cheese to the pasta is specific and actionable. Minor omission: it does not mention carbs over target (380 vs 300 g)."
+  },
+  {
+   "review": {
+    "good": "You were close to the target for protein with 128 of 135 g consumed.",
+    "short": "The day was balanced with all nutritional targets met.",
+    "tip": "For tomorrow, continue including fiber-rich vegetables like the broccoli you had with your salmon to maintain this consistency."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 3,
+   "comment": "Makes the expected point that the day was balanced and close to targets. Figures are correct, including 128 of 135 g protein and the broccoli with salmon. The tip is specific but the review is brief and does not address the small shortfalls in fat, fiber, or protein."
+  },
+  {
+   "review": {
+    "good": "Ви спожили білок близько до цілі (135 з 135 г).",
+    "short": "Ви спожили 480 мг кофеїну при ліміті 400 мг, що може негативно вплинути на якість вашого сну та відновлення.",
+    "tip": "Завтра спробуйте замінити одну порцію кави на склянку води, щоб зменшити споживання кофеїну та покращити гідратацію."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "The review names the 480 mg caffeine vs 400 mg limit, which is the expected point, and its protein statement (135 of 135 g) matches the data. The tip to swap one coffee for water is specific and actionable. It does not mention the late first meal at 13:00 or the low water intake beyond the tip, so it covers only part of the issues list."
+  },
+  {
+   "review": {
+    "good": "You were on target for your protein intake at 135 of 135 g.",
+    "short": "Your salt intake was 11 g, which is over the limit of 5 g, potentially causing unnecessary water retention.",
+    "tip": "For tomorrow, swap the processed pizza with salami for a homemade meal with fresh ingredients to lower your sodium intake."
+   },
+   "ungrounded_numbers": [],
+   "language_ok": true,
+   "notices": true,
+   "false_claim": false,
+   "useful": 4,
+   "comment": "The review clearly flags salt at 11 g against the 5 g limit, which is the expected point. Protein at 135 of 135 g is correct. The tip to swap the salami pizza is specific and actionable, though it doesn't mention the ham, sausages, or instant noodles, which also drove the sodium."
+  }
+ ]
+}

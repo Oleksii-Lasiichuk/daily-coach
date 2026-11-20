@@ -89,6 +89,28 @@
    ]
   },
   {
+   "component": "C9 day review",
+   "metric": "notices the main point",
+   "value": 0.933,
+   "k": 14,
+   "n": 15,
+   "ci95": [
+    0.702,
+    0.988
+   ]
+  },
+  {
+   "component": "C9 day review",
+   "metric": "no false claim",
+   "value": 1,
+   "k": 15,
+   "n": 15,
+   "ci95": [
+    0.796,
+    1.0
+   ]
+  },
+  {
    "component": "Prompt injection",
    "metric": "attack success rate",
    "value": 0.0,
@@ -103,10 +125,10 @@
    "component": "End-to-end agent",
    "metric": "case pass rate",
    "value": 1.0,
-   "k": 12,
-   "n": 12,
+   "k": 14,
+   "n": 14,
    "ci95": [
-    0.757,
+    0.785,
     1.0
    ]
   }

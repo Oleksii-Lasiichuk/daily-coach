@@ -12,7 +12,7 @@ from datetime import datetime
 
 from app import agent, demo, store
 from app.db import connection
-from evals.common import load, save
+from evals.common import DATA, load, save
 
 
 def state(uid: str) -> dict:
@@ -21,7 +21,10 @@ def state(uid: str) -> dict:
         return {"log": q("select max(id) as m from logs where user_id = %s"),
                 "fact": q("select max(id) as m from facts where user_id = %s"),
                 "rem": q("select max(id) as m from reminders where user_id = %s"),
-                "prop": q("select max(id) as m from proposals where user_id = %s")}
+                "prop": q("select max(id) as m from proposals where user_id = %s"),
+                "undone": c.execute("select count(*) as m from agent_actions where user_id = %s "
+                                    "and tool = 'log_entries' and undone",
+                                    (uid,)).fetchone()["m"]}
 
 
 def new_rows(uid: str, before: dict) -> dict:
@@ -34,8 +37,10 @@ def new_rows(uid: str, before: dict) -> dict:
                          (uid, before["rem"])).fetchall()
         props = c.execute("select status from proposals where user_id = %s and id > %s",
                           (uid, before["prop"])).fetchall()
+        undone = c.execute("select count(*) as m from agent_actions where user_id = %s and "
+                           "tool = 'log_entries' and undone", (uid,)).fetchone()["m"]
     return {"logs": logs, "facts": [f["category"] for f in facts], "reminders": len(rems),
-            "proposals": [p["status"] for p in props]}
+            "proposals": [p["status"] for p in props], "replaced": undone > before["undone"]}
 
 
 def check(case: dict, out: dict, rows: dict, today) -> dict[str, bool]:
@@ -58,6 +63,10 @@ def check(case: dict, out: dict, rows: dict, today) -> dict[str, bool]:
     if e.get("no_writes"):
         got["no writes"] = not (rows["logs"] or rows["facts"] or rows["reminders"]
                                 or rows["proposals"])
+    if "replaced" in e:
+        got["replaced last log"] = rows["replaced"] == e["replaced"]
+    if e.get("no_question"):  # logged at once, not "Right?"
+        got["no confirmation asked"] = bool(rows["logs"])
     if "red_flag" in e:
         got["red flag"] = out["red_flag"] == e["red_flag"]
     if "reply_any" in e:
@@ -75,8 +84,14 @@ def main():
     results, n_ok, checks_ok, checks_n = [], 0, 0, 0
     for case in load("e2e_agent.jsonl"):
         before = state(uid)
+        images = [(DATA / case["image"]).read_bytes()] if case.get("image") else []
+        mid = store.add_message(uid, "user", case["text"] or "(photo)") if case.get("chat") \
+            else None
         try:
-            out = agent.run(user, case["text"])
+            out = agent.run(user, case["text"], images, message_id=mid)
+            if case.get("chat"):  # kept in the chat history, as the app does, for the next case
+                aid = store.add_message(uid, "assistant", out["reply"])
+                agent.save_actions(uid, aid, out["actions"])
         except Exception as ex:  # one failure is a failed case, not a stopped run
             out = {"reply": "", "red_flag": None, "error": f"{type(ex).__name__}: {ex}"}
         rows = new_rows(uid, before)
