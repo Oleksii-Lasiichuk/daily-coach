@@ -85,3 +85,39 @@ The rules come from treating every model output and every file as untrusted:
   encrypted). Setup step 1 asks for it. Guests without Garmin can choose **sample watch data**:
   their account is connected to the simulated athlete, so nothing reaches a real watch. Tests:
   `tests/test_open_signup.py`. Risk left: guests' rows and files use our Neon storage.
+
+
+## v7 changes (2026-11-20, plan 10)
+
+- **Everyone uses the app's key, with a cap per person.** New sign-ups can use the AI at once
+  with a $1 monthly cap. Each new sign-up sends a web push to the admins. **/admin** (only
+  `ADMIN_EMAILS`, 404 for everyone else) lists people with this month's cost. There the admin
+  sets the cap, pauses AI access, or moves a person to a second app key
+  (`OPENROUTER_API_KEY_FAMILY`, optional). On the OpenRouter dashboard, family spending then
+  shows apart. Tests: `tests/test_v7.py`, `tests/test_open_signup.py`.
+- **One-screen sign-up.** Name, main sport, main goal and "what do you want to track"
+  (training from the watch, weather for a city, reminders; food is always on). No keys are
+  asked. intervals.icu is no longer required: every page works without it (tested). After
+  sign-up, setup cards on Today come one at a time, with Later. They cover: connect the watch
+  (a sheet with 5 numbered steps for intervals.icu and Garmin), height and weight, the city,
+  reminders (one button), and a few questions from the coach (C0, optional).
+- **EN/UA on every page, before sign-in too.** The toggle on the sign-in page stores the choice
+  in the session cookie (Firebase Hosting forwards only `__session`). Without a choice, the
+  browser's language is used. Python error messages, push texts and the action lines under
+  replies are translated too.
+- **Speed.** Pool connections are autocommit (one round trip per query instead of three). The
+  "is the connection alive" check runs only after 20 s idle. Today renders without the side
+  panel, which loads right after (`GET /rail`), and its watch numbers come from the synced
+  table instead of a live intervals.icu call. Syncs never run inside a page request (a
+  background thread or the 15-minute cron tick). `Server-Timing` on every response shows DB
+  checkouts and time.
+- **Free hosting, replies that still finish** (`scripts/deploy`). The service scales to zero
+  and gets CPU only during requests (Cloud Run free tier), with at most one instance and
+  startup CPU boost. A chat reply runs in a background thread. With request-based CPU that
+  thread would freeze once the person leaves the app, so while it runs the instance keeps one
+  request to its own URL open (`POST /cron/hold/{id}`, secret header, `SELF_URL` set at
+  deploy). Cloud Run then keeps the CPU and the instance until the reply is saved. One
+  instance makes sure the hold lands on the instance doing the work. Paid alternatives were
+  rejected: a warm instance (≈ $10/month) or always-on CPU (≈ $45/month). The 15-minute
+  Cloud Scheduler tick keeps the instance warm most of the day, so cold starts are rare.
+  Neon stays on the free plan (≈ 1 s to wake after 5 idle minutes).

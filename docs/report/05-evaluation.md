@@ -31,7 +31,37 @@ CRISP-DM phase 5.
 - **Tracing:** each eval case is traced in Langfuse (environment `eval`, tag `eval`), so any
   failure can be opened and inspected.
 
-## Current results (v6, 2026-11-15)
+## v7 additions (2026-11-20, plan 10)
+
+v7 makes the app usable for family members (see `docs/plans/10-v7-life-os.md`). New and changed
+measurements:
+
+| What | Cases | Metric | Result | Notes |
+|---|---|---|---|---|
+| **C9 Day review (new)** | 15 synthetic days (`evals/make_c9_days.py`), 8 EN / 7 UA | numbers grounded (code) · right language (code) · names the day's main point · no false claim · usefulness 1–5 (judge: Claude Haiku) | **1.00** · 1.00 · **0.93** · **1.00** · 3.6 | main point 14/15 (95% CI 0.70–0.99); no false claim 15/15 (0.80–1.00) |
+| End-to-end agent | 14 turns (2 new: a meal photo, then a correction) | case pass rate · nothing sent without a tap | **1.00** (14/14) · yes | the photo is logged at once ("Записав: гречка ~150 г…"); "no, 250 g" replaces the entry instead of adding a second one |
+| Page speed (A2) | 7 pages × 2–3 loads, demo athlete | server time from `Server-Timing` | Today 2.4–2.6 s → **0.18–0.29 s** (+ side panel 0.5–0.7 s after the page); Training 2.6–2.8 → 0.64 s; Health 2.4 → 0.82 s; Nutrition 1.9–2.1 → 0.5–0.7 s | measured from a laptop to Neon in Frankfurt (~35 ms per round trip), so prod (Cloud Run in Belgium, ~8 ms) is faster still |
+| Chat survives leaving the page (A1) | test + browser | reply saved and shown after Today → Nutrition → Today | **yes** | `tests/test_v7.py` also checks that another page loads while a turn runs |
+| Translations (A4) | every `_()`, `t()`, error message and label list | keys without Ukrainian | **0** | `scripts/i18n_check.py`, run as a test; a rendered-page scan in UA finds only user data and site names |
+
+**C9: what changed between runs.** The first prompt let the model compare numbers itself.
+Run 1: main point noticed 0.60, no false claim 0.60, usefulness 3.1. Its false claims were
+comparisons ("you met your protein target" at 120 of 135 g), and it missed alcohol, caffeine
+and meal timing. The fix follows the project rule *code for numbers, LLM for language*:
+`day_review.analyse` computes each target's status (on target = within ±10%), the limits, and
+a ranked list of issues (alcohol, caffeine, macro gaps weighted by day type, no breakfast on a
+hard day, late eating, low water). The model only puts the worst issue into words. Run 2: 0.93
+· 0.93 · 3.5. Then a wording rule ("close to the target", never "perfectly") and energy-aware
+tips gave run 3: 0.93 · 1.00 · 3.6.
+
+Two eval changes between runs, made deliberately: the judge now sees the same `analysis` as the
+model (before, it called the 20 g alcohol limit "invented"). Five cases also had 2–4 expected
+points cut to the main one, because a three-sentence review cannot hold four. Usefulness stays
+under the 4.0 target. The judge's comments say the tips are correct but generic ("add more
+buckwheat"). The next step is a small food table so the tip can say how much of which food
+closes the gap.
+
+
 
 One row per component, final run. `k/n` and the 95% Wilson interval come from
 `uv run python -m evals.stats` (`evals/results/intervals.json`). With 10 to 60 cases the

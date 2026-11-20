@@ -128,3 +128,28 @@ because the answer is a calculation, and a calculation shouldn't be made up:
 
 The last two are prompt-injection defences: a file can't rewrite the coach's instructions,
 and its text is marked as data.
+
+
+## v7 (2026-11-20): family-ready (plan 10)
+
+- **Chat turns run in the background.** Before, `POST /chat` ran the agent inside the request,
+  in an `async` handler, so for 5–30 s the whole server process was blocked: opening another
+  page hung or failed. Now the request saves the message and a `chat_turns` row, starts the
+  agent in a small thread pool and returns a "Coach is replying…" bubble that asks
+  `GET /chat/turns/{id}` every 1.5 s. Today shows a running turn again after you come back. A
+  turn older than 3 minutes is marked failed. Alternative: streaming (SSE). It lost because it
+  does not survive leaving the page.
+- **Photo meals are logged at once** (no "Right?"). The reply lists what was logged and says
+  how to correct it. A correction calls `log_entries` with `replaces_last: true`, which undoes
+  the previous entry first, so nothing is counted twice.
+- **C9 Day review (new LLM component).** Purpose: explain one day's eating on the Nutrition
+  page. Input: that day's totals, targets for its day type, meals with times, drinks, training,
+  plus `analysis` computed in code (status per target, limits, issues ranked worst first).
+  Output: `DayReview {good, short, tip}` (Pydantic), in the UI language. Model: Gemini 3.1
+  Flash-Lite. It is cached per day and language until the day's numbers change (`day_reviews`,
+  keyed by a hash of the input). The comparisons moved to code after the first eval run (see
+  05).
+- **Per-person AI access.** `llm.check_budget` reads `users.ai_access` and the monthly cap:
+  the per-person `monthly_cap_usd`, else $20 for the invite list and admins, else $1 for
+  newcomers. The app key comes from `users.key_pool` (`main` or an optional `family` key). A
+  person's own key still wins.

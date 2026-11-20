@@ -14,13 +14,15 @@ food, drinks, pain, mood, what your plan says), and it:
 - finds patterns in your own log (computed in code), tracks pain per body part, habits, shoe
   km and the countdown to your race.
 
-**Try it:** https://coach.lasiichuk.com. Sign in with any Google account; as a guest you add
-your own [OpenRouter key](https://openrouter.ai/settings/keys) (the AI runs on it, about
-$0.005–0.02 a message) and can pick sample watch data if you don't use intervals.icu.
+**Try it:** https://coach.lasiichuk.com. Sign in with any Google account. New accounts use the
+app's AI key with a small monthly cap (the admin is notified and can raise it); you can also add
+your own [OpenRouter key](https://openrouter.ai/settings/keys) in Settings → Advanced.
 
-**Flow:** sign in with Google → a 5-step setup (connect intervals.icu · about you · goals ·
-your files · a few questions) → **Today** (chat with quick log, the day card with "Why?", the
-session with "Send to watch", habits, fuel). The interface is in English or Ukrainian.
+**Flow:** sign in with Google (EN/UA toggle on the sign-in page) → one screen: name, main
+sport, main goal, what to track → **Today** (chat with quick log, the day card with "Why?", the
+session with "Send to watch", habits, fuel). Setup cards on Today then explain, one at a time,
+how to connect the watch (intervals.icu → Garmin), add height and weight, a city and reminders.
+Every page is in English or Ukrainian.
 
 UCU NLP course, Assignment 1. **Report: [`docs/report/README.md`](docs/report/README.md)**
 (phase files in [`docs/report/`](docs/report/)), the plans in
@@ -55,6 +57,7 @@ message / voice / photo ─┬─ C7 safety gate (parallel)
 | C6 | Workout planner + code validator | Gemini 3.8 Flash |
 | C7 | Safety gate | Gemini 3.1 Flash-Lite |
 | C8 | The coach's answers | Gemini 3.8 Flash |
+| C9 | Day review on the Nutrition page (good · short · tip; comparisons in code) | Gemini 3.1 Flash-Lite |
 
 **Pages** (each kind of item has one home where you edit it):
 
@@ -62,11 +65,12 @@ message / voice / photo ─┬─ C7 safety gate (parallel)
 |---|---|
 | Today | Chat with quick log (water, coffee, tea, beer) and a focus menu (Auto, Training, Nutrition, Health, Think harder); side panel: day type with reasons, labelled watch numbers, race countdown, session with fuel advice, habits, fuel, insight |
 | Training | The week: your plan, coach suggestions, done; goals, races and gear (editable, shoe km) |
-| Nutrition | Energy and macros against targets, what stands out, nutrients (vitamins folded), foods you eat most; fix any meal (×½, ×2, kcal, text) |
+| Nutrition | One day with ‹ date › (swipe on a phone): energy and macros against that day's targets, meals by breakfast/lunch/dinner/snacks, drinks and training, nutrients, the coach's review (C9); 7- and 30-day trends; fix any meal (×½, ×2, kcal, text) |
 | Health | A year of HRV, resting HR, sleep, weight (with goal), fitness and fatigue, each explained; pain trend; patterns from your log; conditions, medication and lab results (editable) |
 | Journal | The week in numbers vs last week; calendar; each day can be assessed, corrected and added to |
 | Memory | Instructions to the coach, food and training preferences, life notes, your files and the review inbox |
 | Settings | You, time zone, city (weather), language, your plan, all reminders, intervals.icu; Advanced: models, own key, cost |
+| People (/admin) | Admins only: who signed up, this month's AI cost, cap, pause, which app key |
 
 Light and dark themes.
 
@@ -79,11 +83,10 @@ syncs intervals.icu hourly, sends reminders, a Sunday week summary and a nightly
 The app is deployed at **https://coach.lasiichuk.com**.
 
 1. Sign in with any Google account.
-2. Setup step 1: paste your own [OpenRouter key](https://openrouter.ai/settings/keys) (the AI
-   runs on it, about $0.005–0.02 a message), then connect intervals.icu, or press
-   **Use sample watch data** if you don't have Garmin or intervals.icu.
-3. Steps 2 to 5: about you, goals, optional files (e.g. a ChatGPT export), a few questions.
-4. Today: tell the coach about your day, e.g.
+2. One screen: your name, main sport, main goal and what you want to track. No keys.
+3. Today: follow the setup cards (connect the watch through intervals.icu, or pick
+   **sample watch data** in Settings if you don't use Garmin), then tell the coach about your
+   day, e.g.
    `Вчора 2 пива, спав 5 годин, зранку важка голова. На сьогодні 6 по 800. Що робити?`
 
 ## Run locally (development)
@@ -110,8 +113,12 @@ uv run python -m app.migrate
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
-Open http://localhost:8000. People in `ALLOWED_EMAILS` use the app's OpenRouter key; with
-`OPEN_SIGNUP=true` anyone else can sign in and adds their own key.
+Open http://localhost:8000. People in `ALLOWED_EMAILS` get a $20 monthly cap on the app's
+OpenRouter key. With `OPEN_SIGNUP=true` anyone else can sign in too, with a $1 starter cap. Each
+new sign-up pushes a notification to `ADMIN_EMAILS`, who set caps on `/admin`.
+
+Translations: `uv run python scripts/i18n_check.py` lists UI text without a Ukrainian
+translation (also run as a test).
 
 ## Tests and evals
 
