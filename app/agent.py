@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 
 from psycopg.types.json import Jsonb
 
-from app import history, intervals, llm, nutrition_stats, sources, store
+from app import history, i18n, intervals, llm, nutrition_stats, sources, store
 from app.db import connection
 from app.pipeline import common, extract, safety
 from app.pipeline.turn import TurnResult, assess_and_plan, athlete_sports, save_logs
@@ -37,9 +37,13 @@ def _fn(name: str, description: str, properties: dict, required: list[str]) -> d
 
 TOOLS = [
     _fn("log_entries", "Log what happened: meals, drinks, alcohol, sleep, mood, pain, symptoms, "
-        "medication taken, training done. Pass the relevant text (the athlete's words, or a "
-        "food photo description the athlete has confirmed).",
-        {"text": {"type": "string"}}, ["text"]),
+        "medication taken, training done. Pass the relevant text (the athlete's words, or what "
+        "you see on a food photo with grams). replaces_last=true when the athlete corrects what "
+        "you logged in your previous reply (\"no, it was 200 g\"): the old entries are removed "
+        "and the corrected ones logged instead.",
+        {"text": {"type": "string"},
+         "replaces_last": {"type": "boolean", "description": "Correction of the last log"}},
+        ["text"]),
     _fn("save_item", "Save a lasting fact about the athlete (goal, race, gear, condition, "
         "medication course, preference, life context, lab result).",
         {"category": {"type": "string", "enum": CATEGORIES},
@@ -132,13 +136,19 @@ class Turn:
         self.now = datetime.now(ZoneInfo(user.time_zone))
         self.actions: list[dict] = []
         self.proposals: list[int] = []
+        self.lang = store.user_lang(user.id)
+
+    def t(self, text: str, **values) -> str:
+        """The action lines under a reply are UI text: in the user's language."""
+        return i18n.t(text, self.lang).format(**values)
 
     def act(self, tool: str, summary: str, undo: dict | None) -> None:
         self.actions.append({"tool": tool, "summary": summary, "undo": undo})
 
     # each tool returns a short JSON-able result for the model
-    def log_entries(self, text: str) -> Any:
+    def log_entries(self, text: str, replaces_last: bool = False) -> Any:
         ex = extract.extract(text, self.now, self.user.id)
+        replaced = self._undo_last_log() if replaces_last else None
         before = {lg["id"] for lg in store.logs_between(self.user.id, self.now.date() - timedelta(
             days=7), self.now.date())}
         result = TurnResult(reply="", trace_id=None)
@@ -150,14 +160,24 @@ class Turn:
         kcal = sum(e.get("kcal", 0) for e in result.logged)
         if new_ids:
             what = ", ".join(e["what"][:40] for e in result.logged[:3])
-            self.act("log_entries", f"Logged {len(new_ids)} · {what}"
-                     + (f" · {round(kcal)} kcal" if kcal else ""), {"op": "delete_logs",
-                                                                     "ids": new_ids})
+            summary = self.t("Logged {n}", n=len(new_ids)) + f" · {what}" + (
+                f" · {round(kcal)} " + self.t("kcal") if kcal else "")
+            self.act("log_entries", summary, {"op": "delete_logs", "ids": new_ids})
         # Lasting facts are only suggested; the coach decides with save_item (no duplicates).
         out = {"logged": result.logged, "possible_items": done.get("possible_items", [])}
+        if replaced:
+            out["replaced"] = replaced
         if done.get("rejected"):
             out["not_logged_unrealistic"] = done["rejected"]
         return out
+
+    def _undo_last_log(self) -> str | None:
+        """Removes the entries of the most recent log_entries action of the last 2 hours."""
+        with connection() as c:
+            a = c.execute("select id, summary from agent_actions where user_id = %s and tool = "
+                          "'log_entries' and not undone and created_at > now() - interval "
+                          "'2 hours' order by id desc limit 1", (self.user.id,)).fetchone()
+        return a["summary"] if a and undo(self.user.id, a["id"]) else None
 
     def save_item(self, category: str, text: str, term: str = "long", until: str | None = None,
                   details: dict | None = None) -> Any:
@@ -177,13 +197,14 @@ class Turn:
                  "long", _date(until), Jsonb(details or {}), self.message_id)).fetchone()["id"]
         label = {"gear": "Gear", "race": "Race", "goal": "Goal", "medication": "Medication",
                  "injury": "Injury", "health": "Health"}.get(category, category.capitalize())
-        self.act("save_item", f"{label}: {text}" + (f" (until {until})" if until else ""),
+        self.act("save_item", f"{self.t(label)}: {text}" + (
+            f" ({self.t('until')} {until})" if until else ""),
                  {"op": "delete_fact", "id": fid})
         return {"saved_id": fid}
 
     def end_item(self, item_id: int) -> Any:
         if store.update_fact(self.user.id, int(item_id), status="resolved"):
-            self.act("end_item", f"Marked as ended: item {item_id}",
+            self.act("end_item", self.t("Marked as ended: item {id}", id=item_id),
                      {"op": "restore_fact", "id": int(item_id)})
             return {"status": "ended"}
         return {"error": "no such item"}
@@ -196,7 +217,7 @@ class Turn:
         old = store.get_profile(self.user.id).get(key)
         value = str(value)[:200]
         store.set_profile_field(self.user.id, key, value, "ai", actor="ai")
-        self.act("update_profile", f"Profile: {key.replace('_', ' ')} = {value}",
+        self.act("update_profile", f"{self.t('Profile')}: {key.replace('_', ' ')} = {value}",
                  {"op": "profile", "key": key, "value": old["value"] if old else None})
         return {"status": "saved"}
 
@@ -210,8 +231,9 @@ class Turn:
                             "(%s, %s, %s, %s, %s) returning id",
                             (self.user.id, kind if kind in ("medication", "custom") else "custom",
                              text[:200], clean, _date(until))).fetchone()["id"]
-        self.act("set_reminder", f"Reminder: {text} at {', '.join(clean)}"
-                 + (f" until {until}" if until else ""), {"op": "delete_reminder", "id": rid})
+        self.act("set_reminder", f"{self.t('Reminder')}: {text}, {', '.join(clean)}"
+                 + (f" ({self.t('until')} {until})" if until else ""),
+                 {"op": "delete_reminder", "id": rid})
         return {"reminder_id": rid}
 
     def set_planned_workouts(self, workouts: list[dict]) -> Any:
@@ -227,7 +249,7 @@ class Turn:
                                      {"description": w.get("description", "")[:200],
                                       "activity_type": w.get("sport")}, None, self.message_id))
         if ids:
-            self.act("set_planned_workouts", f"Your plan saved for {len(ids)} days",
+            self.act("set_planned_workouts", self.t("Your plan saved for {n} days", n=len(ids)),
                      {"op": "delete_logs", "ids": ids})
         return {"saved_days": len(ids)}
 
@@ -252,8 +274,8 @@ class Turn:
             out.append({"day": str(d), **done.get("workout", {})})
         if self.proposals:
             n = len(self.proposals)
-            self.act("plan_sessions", f"Proposed {n} session{'s' if n > 1 else ''}. Review the "
-                     "card", {"op": "dismiss_proposals", "ids": self.proposals})
+            self.act("plan_sessions", self.t("Proposed sessions: {n}. Review the card", n=n),
+                     {"op": "dismiss_proposals", "ids": self.proposals})
         return out
 
     def nutrition_summary(self, days: int = 1) -> Any:

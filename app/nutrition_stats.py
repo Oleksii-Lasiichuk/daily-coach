@@ -196,3 +196,71 @@ def scale_nutrition(data: dict, factor: float) -> dict:
         if k in n:
             n[k] = round(n[k] * factor)
     return data | {"nutrition": n}
+
+
+# --- one day, Garmin-style (Nutrition page, day view) ------------------------------------
+
+MEAL_PARTS = [("Breakfast", 4, 11), ("Lunch", 11, 16), ("Dinner", 16, 22)]
+
+
+def meal_part(lg: dict, tz) -> str:
+    """Breakfast / Lunch / Dinner by the local time it was eaten; drinks apart; else Snacks."""
+    if lg["kind"] in ("drink", "alcohol"):
+        return "Drinks"
+    if not lg.get("occurred_at"):
+        return "Snacks"
+    h = lg["occurred_at"].astimezone(tz).hour
+    return next((name for name, a, b in MEAL_PARTS if a <= h < b), "Snacks")
+
+
+def day_view(user: store.User, day: date, today: date) -> dict:
+    """Everything the day page shows, computed in code; `review_input` feeds C9."""
+    from zoneinfo import ZoneInfo
+
+    from app import health
+    tz = ZoneInfo(user.time_zone)
+    logs = [lg for lg in store.logs_between(user.id, day, day)
+            if lg["data"].get("nutrition") or lg["kind"] in ("meal", "drink", "alcohol")]
+    totals = day_totals(logs)
+    a = store.get_assessment(user.id, day)
+    session_min = max([p["workout"].get("minutes") or 0 for p in store.proposals_for_day(
+        user.id, day) if p["status"] != "undone"], default=0)
+    tgt = targets(user.id, a["day_type"] if a else None, session_min)
+    training = health.activities(user.id, day, day)
+    over = day < today  # a finished day: "low" is a real gap, not "not eaten yet"
+    rows = []
+    for k in NUTRIENTS:
+        target, val = tgt.get(k), totals.get(k, 0)
+        pct = round(100 * val / target) if target else None
+        limit = k in LIMITS or k == "sat_fat_g"
+        flag = "over" if limit and target and val > target else (
+            "low" if over and not limit and pct is not None and pct < 70 and logs else "")
+        rows.append({"key": k, "label": LABELS[k], "value": val, "unit": UNITS[k],
+                     "target": target, "pct": pct, "kind": "limit" if limit else "goal",
+                     "flag": flag})
+    parts: dict[str, list] = {}
+    for lg in logs:
+        parts.setdefault(meal_part(lg, tz), []).append(lg)
+    order = [p for p, *_ in MEAL_PARTS] + ["Snacks", "Drinks"]
+    meals = [{"time": lg["occurred_at"].astimezone(tz).strftime("%H:%M")
+              if lg.get("occurred_at") else None, "what": lg["data"].get("description", ""),
+              **{k: round(meal_totals(lg["data"]).get(k) or 0)
+                 for k in ("kcal", "protein_g", "carbs_g")}} for lg in logs]
+    drinks = {"water_l": water_l(logs), "caffeine_mg": round(totals.get("caffeine_mg", 0)),
+              "alcohol_g": round(totals.get("alcohol_g", 0))}
+    burned = round(sum(t.get("kcal") or 0 for t in training))
+    review_input = {
+        "day": day.isoformat(), "lang": store.user_lang(user.id), "day_is_over": over,
+        "day_type": a["day_type"] if a else None,
+        "targets": {k: tgt[k] for k in ("kcal", "protein_g", "carbs_g", "fat_g", "fiber_g",
+                                        "sugar_g", "salt_g")},
+        "eaten": {k: round(totals.get(k, 0)) for k in ("kcal", "protein_g", "carbs_g", "fat_g",
+                                                       "fiber_g", "sugar_g", "salt_g")},
+        "meals_logged": len(logs), "meals": meals, "drinks": drinks,
+        "training": [{"type": t.get("type"), "minutes": t.get("minutes"), "km": t.get("km"),
+                      "kcal": t.get("kcal")} for t in training]}
+    return {"day": day, "logs": logs, "totals": totals, "targets": tgt, "rows": rows,
+            "byk": {r["key"]: r for r in rows}, "day_type": a["day_type"] if a else None,
+            "parts": [(p, parts[p], day_totals(parts[p])) for p in order if p in parts],
+            "drinks": drinks, "training": training, "burned": burned,
+            "review_input": review_input}

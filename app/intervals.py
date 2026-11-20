@@ -62,7 +62,7 @@ def _request(conn: Conn, method: str, path: str, **kwargs) -> httpx.Response:
             raise IntervalsError("intervals.icu could not find that athlete or item.")
         if r.status_code >= 400:
             log.warning("intervals %s %s -> %s", method, path, r.status_code)
-            raise IntervalsError(f"intervals.icu returned an error ({r.status_code}). Try again.")
+            raise IntervalsError("intervals.icu returned an error. Try again.")
         return r
     raise IntervalsError("intervals.icu is busy. Try again in a minute.")
 

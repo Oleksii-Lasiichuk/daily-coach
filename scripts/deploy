@@ -22,16 +22,29 @@ LF_PUBLIC="${LANGFUSE_PUBLIC_KEY_PROD:-$(prod_value LANGFUSE_PUBLIC_KEY)}"
 # Cloud Run reads secrets as its runtime service account.
 NUMBER=$($GC projects describe $PROJECT --format='value(projectNumber)')
 SA="$NUMBER-compute@developer.gserviceaccount.com"
-for s in database-url openrouter-api-key app-encryption-key langfuse-secret-key vapid-private-key cron-secret; do
+SECRETS="DATABASE_URL=database-url:latest,OPENROUTER_API_KEY=openrouter-api-key:latest,APP_ENCRYPTION_KEY=app-encryption-key:latest,LANGFUSE_SECRET_KEY=langfuse-secret-key:latest,VAPID_PRIVATE_KEY=vapid-private-key:latest,CRON_SECRET=cron-secret:latest"
+NAMES="database-url openrouter-api-key app-encryption-key langfuse-secret-key vapid-private-key cron-secret"
+# Optional second app key for family members (chosen per person on /admin).
+if $GC secrets describe openrouter-api-key-family >/dev/null 2>&1; then
+  SECRETS="$SECRETS,OPENROUTER_API_KEY_FAMILY=openrouter-api-key-family:latest"
+  NAMES="$NAMES openrouter-api-key-family"
+fi
+for s in $NAMES; do
   $GC secrets add-iam-policy-binding "$s" --member="serviceAccount:$SA" \
     --role=roles/secretmanager.secretAccessor --condition=None >/dev/null
 done
 
 # Comma-separated values need gcloud's alternative delimiter syntax (^;^).
+# Free tier: scale to zero, CPU only during requests. A chat reply runs in a background thread;
+# while it runs the instance keeps one request to its own URL open (POST /cron/hold/{id}), so it
+# keeps CPU and isn't shut down. That needs SELF_URL and a single instance (max 1), so the hold
+# lands on the same instance. The 15-minute Cloud Scheduler tick keeps it warm most of the day.
+SELF_URL=$($GC run services describe coach --region $REGION --format='value(status.url)')
 $GC run deploy coach --source . --region $REGION --allow-unauthenticated \
-  --min-instances 0 --max-instances 2 --memory 512Mi --cpu 1 --concurrency 20 --timeout 120 \
-  --set-secrets "DATABASE_URL=database-url:latest,OPENROUTER_API_KEY=openrouter-api-key:latest,APP_ENCRYPTION_KEY=app-encryption-key:latest,LANGFUSE_SECRET_KEY=langfuse-secret-key:latest,VAPID_PRIVATE_KEY=vapid-private-key:latest,CRON_SECRET=cron-secret:latest" \
-  --set-env-vars "^;^ENV=prod;OPEN_SIGNUP=${OPEN_SIGNUP:-true};APP_ORIGIN=$ORIGINS;ALLOWED_EMAILS=$(env_value ALLOWED_EMAILS);ADMIN_EMAILS=$(env_value ADMIN_EMAILS);LANGFUSE_PUBLIC_KEY=$LF_PUBLIC;LANGFUSE_BASE_URL=https://cloud.langfuse.com;LANGFUSE_TRACING_ENVIRONMENT=production;FIREBASE_PROJECT_ID=$PROJECT;FIREBASE_WEB_API_KEY=$(env_value FIREBASE_WEB_API_KEY);FIREBASE_AUTH_DOMAIN=$(env_value FIREBASE_AUTH_DOMAIN);FIREBASE_APP_ID=$(env_value FIREBASE_APP_ID);VAPID_PUBLIC_KEY=$(env_value VAPID_PUBLIC_KEY)"
+  --min-instances 0 --max-instances 1 --cpu-throttling --cpu-boost --memory 512Mi --cpu 1 \
+  --concurrency 20 --timeout 200 \
+  --set-secrets "$SECRETS" \
+  --set-env-vars "^;^ENV=prod;OPEN_SIGNUP=${OPEN_SIGNUP:-true};APP_ORIGIN=$ORIGINS;ALLOWED_EMAILS=$(env_value ALLOWED_EMAILS);ADMIN_EMAILS=$(env_value ADMIN_EMAILS);LANGFUSE_PUBLIC_KEY=$LF_PUBLIC;LANGFUSE_BASE_URL=https://cloud.langfuse.com;LANGFUSE_TRACING_ENVIRONMENT=production;FIREBASE_PROJECT_ID=$PROJECT;FIREBASE_WEB_API_KEY=$(env_value FIREBASE_WEB_API_KEY);FIREBASE_AUTH_DOMAIN=$(env_value FIREBASE_AUTH_DOMAIN);FIREBASE_APP_ID=$(env_value FIREBASE_APP_ID);VAPID_PUBLIC_KEY=$(env_value VAPID_PUBLIC_KEY);SELF_URL=$SELF_URL"
 
 firebase deploy --only hosting --project $PROJECT
 echo "Done: https://$PROJECT.web.app"

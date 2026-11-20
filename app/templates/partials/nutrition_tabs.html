@@ -1,0 +1,1 @@
+<div class="seg">{% for d, lab in [(1, "Day"), (7, "7 days"), (30, "30 days")] %}<a href="/nutrition{{ '?days=' ~ d if d > 1 else '' }}" {% if (days or 1) == d %}aria-current="true"{% endif %}>{{ _(lab) }}</a>{% endfor %}</div>

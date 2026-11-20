@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 from pywebpush import WebPushException, webpush
 
-from app import health, history, intervals, llm, nutrition_stats, store
+from app import health, history, i18n, intervals, llm, nutrition_stats, store
 from app.config import get_settings
 from app.db import connection
 from app.pipeline import common
@@ -63,6 +63,9 @@ def send(user_id: str, title: str, body: str, url: str = "/", q: str | None = No
     s = get_settings()
     if not s.vapid_private_key:
         return 0
+    lang = store.user_lang(user_id)  # fixed texts in the user's language; others stay as given
+    title, body = i18n.t(title, lang), i18n.t(body, lang)
+    actions = [a | {"title": i18n.t(a["title"], lang)} for a in actions or []]
     sent = 0
     with connection() as c:
         subs = c.execute("select * from push_subscriptions where user_id = %s",
@@ -83,6 +86,17 @@ def send(user_id: str, title: str, body: str, url: str = "/", q: str | None = No
             else:
                 log.warning("push failed: %s", e)
     return sent
+
+
+def notify_admins(title: str, body: str, url: str = "/admin") -> int:
+    """Web push to every admin's devices (ADMIN_EMAILS), e.g. on a new sign-up."""
+    admins = get_settings().admin_email_set
+    if not admins:
+        return 0
+    with connection() as c:
+        ids = [str(r["id"]) for r in c.execute("select id from users where lower(email) = any(%s)",
+                                               (list(admins),)).fetchall()]
+    return sum(send(uid, title, body, url) for uid in ids)
 
 
 def _due(now_local: datetime, hhmm: str) -> bool:
@@ -122,9 +136,13 @@ def tick() -> dict:
                     stats["reminders"] += send(uid, "Reminder", r["text"])
         if now.weekday() == 6 and _due(now, "19:00") and _mark(uid, "weekly", now):
             w = history.week_review(uid, now.date())["this"]
-            body = (f"{w['sessions']} sessions, {w['km']} km, {w['hours']} h"
-                    + (f" · sleep {w['sleep_h']} h" if w["sleep_h"] else "")
-                    + (f" · alcohol on {w['alcohol_days']} days" if w["alcohol_days"] else ""))
+            lang = store.user_lang(uid)
+            body = (i18n.t("{n} sessions, {km} km, {h} h", lang).format(
+                n=w["sessions"], km=w["km"], h=w["hours"])
+                + (" · " + i18n.t("sleep {h} h", lang).format(h=w["sleep_h"])
+                   if w["sleep_h"] else "")
+                + (" · " + i18n.t("alcohol on {n} days", lang).format(n=w["alcohol_days"])
+                   if w["alcohol_days"] else ""))
             stats["weekly"] += send(uid, "Your week", body, url="/journal")
         if _due(now, "04:00") and _mark(uid, "insight", now):
             stats["insights"] += daily_insight(uid, now)

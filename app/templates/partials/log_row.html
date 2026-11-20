@@ -3,6 +3,6 @@
 <li class="click-row" hx-get="/logs/{{ lg.id }}/sheet?next={{ next | urlencode }}" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0">
   <span class="muted" style="width:46px;flex:none">{{ lg.occurred_at | local_time(user.time_zone) if lg.occurred_at else "—" }}</span>
   <div class="grow"><span>{{ lg.data.description }}</span>{% if lg.data.pain_score is defined and lg.data.pain_score is not none and (lg.data.pain_score ~ "/10") not in lg.data.description %} · {{ lg.data.pain_score }}/10{% endif %}
-    {% if n and n["items"] %}<div class="tiny muted">{% for it in n["items"] %}{{ it.name }}{% if it.grams %} {{ it.grams | round | int }} g{% endif %}{{ ", " if not loop.last }}{% endfor %}{% if lg.data.edited %} · {{ _("edited") }}{% endif %}</div>{% endif %}</div>
-  <span class="num" style="white-space:nowrap">{% if kc %}{{ kc | int }} kcal{% endif %}</span>
+    {% if n and n.get("items") %}<div class="tiny muted">{% for it in n.get("items") %}{{ it.name }}{% if it.grams %} {{ it.grams | round | int }} {{ _("g") }}{% endif %}{{ ", " if not loop.last }}{% endfor %}{% if lg.data.edited %} · {{ _("edited") }}{% endif %}</div>{% endif %}</div>
+  <span class="num" style="white-space:nowrap">{% if kc %}{{ kc | int }} {{ _("kcal") }}{% endif %}</span>
 </li>

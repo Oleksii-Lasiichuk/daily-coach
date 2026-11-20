@@ -27,8 +27,10 @@ def days_between(user_id: str, first: date, last: date) -> dict[date, dict]:
                    from proposals where user_id = %s and day between %s and %s
                      and status in ('applied', 'proposed')
                    order by day, (status = 'applied') desc, id desc""", (user_id, first, last)):
-            out.setdefault(p["day"], {"logs": []})["session"] = (
-                p["name"] + (" (applied)" if p["status"] == "applied" else " (suggested)"))
+            day = out.setdefault(p["day"], {"logs": []})
+            day["session"] = p["name"] + (" (applied)" if p["status"] == "applied"
+                                          else " (suggested)")  # for the coach's prompt
+            day["session_name"], day["session_status"] = p["name"], p["status"]
     return out
 
 
@@ -66,7 +68,9 @@ def day_chips(d: dict) -> dict:
         if data.get("pain_score") is not None:
             pain = max(pain or 0, float(data["pain_score"]))
     return {"type": d.get("type"), "kcal": round(kcal), "sleep": sleep, "drinks": drinks,
-            "pain": pain, "session": d.get("session"), "n": len(d.get("logs", []))}
+            "pain": pain, "session": d.get("session_name"),
+            "session_status": "sent to watch" if d.get("session_status") == "applied" else
+            "suggested", "n": len(d.get("logs", []))}
 
 
 def recent_digests(user_id: str, today: date, days: int = 14) -> list[str]:

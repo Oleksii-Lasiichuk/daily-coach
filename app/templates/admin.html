@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ _("People") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <div class="pagehead"><h1>{{ _("People") }}</h1><span class="small muted">{{ people | length }} {{ _("accounts") }}</span></div>
+  <p class="small muted">{{ _("Everyone uses the app's OpenRouter key up to their monthly cap. New people start at") }} ${{ "%.0f" | format(starter) }}; {{ _("people on the invite list at") }} ${{ "%.0f" | format(member_cap) }}. {{ _("You get a notification on each new sign-up.") }}</p>
+  <div class="stack" style="margin-top:16px">
+    {% for p in people %}
+    <form class="card" id="u-{{ p.id }}" method="post" action="/admin/users/{{ p.id }}">
+      <div class="row between" style="align-items:flex-start">
+        <div style="min-width:0">
+          <b>{{ p.display_name or p.email }}</b>{% if p.member %} <span class="badge good">{{ _("invited") }}</span>{% endif %}{% if p.own_key %} <span class="badge">{{ _("own key") }}</span>{% endif %}{% if p.ai_access == "blocked" %} <span class="badge bad">{{ _("paused") }}</span>{% endif %}
+          <div class="small muted" style="overflow-wrap:anywhere">{{ p.email }}</div>
+          <div class="tiny muted">{{ _("Joined") }} {{ p.created_at | local_time(user.time_zone, "%d.%m.%Y") }}{% if p.last_seen %} · {{ _("last message") }} {{ p.last_seen | local_time(user.time_zone, "%d.%m %H:%M") }}{% endif %}{% if p.setup_step < 6 %} · {{ _("setup not finished") }}{% endif %}</div>
+        </div>
+        <div style="text-align:right;white-space:nowrap"><span class="label">{{ _("This month") }}</span><br><b>${{ "%.2f" | format(p.cost) }}</b> <span class="small muted">/ ${{ "%.2f" | format(p.cap) }}</span>
+          {% if not p.own_key and p.cost >= p.cap %}<br><span class="badge warn">{{ _("cap reached") }}</span>{% endif %}</div>
+      </div>
+      <div class="row" style="gap:10px;margin-top:12px;align-items:flex-end">
+        <div><label for="a-{{ p.id }}">{{ _("AI") }}</label><select id="a-{{ p.id }}" name="access">
+          <option value="allowed" {{ "selected" if p.ai_access == "allowed" }}>{{ _("On the app's key") }}</option>
+          <option value="blocked" {{ "selected" if p.ai_access == "blocked" }}>{{ _("Paused (own key only)") }}</option></select></div>
+        <div><label for="c-{{ p.id }}">{{ _("Monthly cap, $") }}</label><input id="c-{{ p.id }}" name="cap" inputmode="decimal" style="width:90px" value="{{ '%.2f' | format(p.monthly_cap_usd) if p.monthly_cap_usd is not none else '' }}" placeholder="{{ '%.2f' | format(p.cap) }}"></div>
+        {% if has_family_key %}<div><label for="k-{{ p.id }}">{{ _("Key") }}</label><select id="k-{{ p.id }}" name="key_pool">
+          <option value="main" {{ "selected" if p.key_pool == "main" }}>{{ _("Main") }}</option>
+          <option value="family" {{ "selected" if p.key_pool == "family" }}>{{ _("Family") }}</option></select></div>{% endif %}
+        <button class="btn sm">{{ _("Save") }}</button>{% if saved == p.id %}<span class="small muted">{{ _("Saved") }}</span>{% endif %}
+      </div>
+    </form>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

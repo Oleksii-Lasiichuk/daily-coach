@@ -1,16 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Sign in · Daily Coach{% endblock %}
+{% block title %}{{ _("Sign in") }} · Daily Coach{% endblock %}
 {% block body %}
 <main style="min-height:100dvh;display:grid;place-items:center;padding:24px 16px">
   <div style="width:100%;max-width:420px">
-    <div class="brand" style="padding:0 0 28px"><span class="mark">{{ icon("activity") }}</span>Daily Coach</div>
-    <h1 style="font-size:28px;line-height:1.2">Your coach for training, food and health.</h1>
-    <p class="muted" style="margin-top:10px">Tell it about your day in Ukrainian or English, by text, voice or photo. It reads your Garmin data through intervals.icu, keeps your log, and adjusts your training.</p>
-    <button id="google" class="btn ink" type="button" style="width:100%;height:48px;margin-top:28px">Continue with Google</button>
+    <div class="row between" style="padding:0 0 28px"><div class="brand" style="padding:0"><span class="mark">{{ icon("activity") }}</span>Daily Coach</div>{% include "partials/lang_toggle.html" %}</div>
+    <h1 style="font-size:28px;line-height:1.2">{{ _("Your coach for training, food and health.") }}</h1>
+    <p class="muted" style="margin-top:10px">{{ _("Tell it about your day in Ukrainian or English, by text, voice or photo. It keeps your food and sleep log, reads your watch if you connect it, and adjusts your training.") }}</p>
+    <button id="google" class="btn ink" type="button" style="width:100%;height:52px;margin-top:28px;font-size:16px">{{ _("Continue with Google") }}</button>
     <p id="status" class="notice small" role="status" hidden style="margin-top:12px"></p>
-    {% if open_signup %}<p class="tiny muted" style="margin-top:12px">Any Google account can sign in. Guests add their own OpenRouter key, so AI use is billed to them. Your data is visible only to you.</p>
-    {% else %}<p class="tiny muted" style="margin-top:12px">Private. Only invited Google accounts can sign in.</p>{% endif %}
-
+    {% if open_signup %}<p class="tiny muted" style="margin-top:12px">{{ _("Free to start. Your data is visible only to you.") }}</p>
+    {% else %}<p class="tiny muted" style="margin-top:12px">{{ _("Private. Only invited Google accounts can sign in.") }}</p>{% endif %}
   </div>
 </main>
 <script type="module">
@@ -23,7 +22,7 @@
   const button = document.getElementById("google"), status = document.getElementById("status");
   const show = (text, error) => { status.textContent = text; status.hidden = false; status.classList.toggle("error", !!error); };
   button.addEventListener("click", async () => {
-    button.setAttribute("aria-busy", "true"); show("Signing in…");
+    button.setAttribute("aria-busy", "true"); show({{ _("Signing in…") | tojson }});
     try {
       await setPersistence(auth, inMemoryPersistence);
       const provider = new GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
@@ -31,10 +30,10 @@
       const idToken = await result.user.getIdToken(); await signOut(auth);
       const r = await fetch("/auth/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id_token: idToken }) });
       if (r.ok) { location.href = "/"; return; }
-      show(r.status === 403 ? "This Google account isn't invited." : "Sign-in failed. Try again.", true);
+      show(r.status === 403 ? {{ _("This Google account isn't invited.") | tojson }} : {{ _("Sign-in failed. Try again.") | tojson }}, true);
     } catch (e) {
-      const msg = { "auth/popup-closed-by-user": "The sign-in window was closed.", "auth/popup-blocked": "Your browser blocked the sign-in window. Allow pop-ups and try again." }[e.code];
-      show(msg || "Sign-in failed (" + (e.code || e.message) + ").", true);
+      const msg = { "auth/popup-closed-by-user": {{ _("The sign-in window was closed.") | tojson }}, "auth/popup-blocked": {{ _("Your browser blocked the sign-in window. Allow pop-ups and try again.") | tojson }} }[e.code];
+      show(msg || {{ _("Sign-in failed. Try again.") | tojson }} + " (" + (e.code || e.message) + ")", true);
     }
     button.removeAttribute("aria-busy");
   });

@@ -1,5 +1,6 @@
-"""Open sign-up: any verified Google account can sign in as a guest, but guests never spend the
-app's OpenRouter key and can't finish setup without their own. Members are unchanged."""
+"""Open sign-up: any verified Google account can sign in. Newcomers use the app's OpenRouter key
+with a small starter cap; a blocked person never reaches the model without their own key.
+Members (ALLOWED_EMAILS) get the bigger cap."""
 
 import uuid
 
@@ -8,7 +9,6 @@ import pytest
 from app import auth, crypto, llm, store
 from app.config import get_settings
 from app.db import connection
-from tests.conftest import login
 
 
 @pytest.fixture
@@ -33,8 +33,9 @@ def test_unverified_email_still_refused_when_open(open_signup, monkeypatch, clie
     assert client.post("/auth/session", json={"id_token": "t"}).status_code == 403
 
 
-def test_guest_without_key_never_reaches_the_model(open_signup, users, monkeypatch):
+def test_blocked_without_key_never_reaches_the_model(open_signup, users, monkeypatch):
     guest = users()
+    store.set_ai_access(guest.id, access="blocked", cap=None, key_pool="main")
     called = []
     monkeypatch.setattr(llm._client.chat.completions, "create", lambda **k: called.append(k))
     with pytest.raises(llm.BudgetExceeded):
@@ -44,20 +45,14 @@ def test_guest_without_key_never_reaches_the_model(open_signup, users, monkeypat
     llm.check_budget(guest.id)  # with their own key: allowed
 
 
-def test_member_uses_app_key_when_open(open_signup, users, monkeypatch):
-    member = users()
+def test_newcomer_gets_starter_cap_member_gets_more(open_signup, users, monkeypatch):
+    guest, member = users(), users()
     monkeypatch.setattr(get_settings(), "allowed_emails", member.email)
-    llm.check_budget(member.id)  # no exception
-
-
-def test_guest_setup_needs_key_and_sample_data_works(open_signup, client, users):
-    guest = users()
-    login(client, guest)
-    r = client.post("/intervals/sample")
-    assert r.status_code == 200 and "Sample watch data" in r.text
-    assert store.get_secret(guest.id, "intervals")["external_id"] == "demo"
-    client.post("/welcome/1", follow_redirects=False)
-    assert store.get_user(guest.id).setup_step == 1  # blocked: no own key yet
-    store.save_secret(guest.id, "openrouter", crypto.encrypt("sk-or-test"), "test", None)
-    client.post("/welcome/1", follow_redirects=False)
-    assert store.get_user(guest.id).setup_step == 2
+    assert llm.cap_for(guest.id) == llm.STARTER_CAP_USD
+    assert llm.cap_for(member.id) == llm.MEMBER_CAP_USD
+    llm.check_budget(guest.id)  # allowed at once, no own key needed
+    monkeypatch.setattr(store, "month_cost", lambda user_id: llm.STARTER_CAP_USD)
+    with pytest.raises(llm.BudgetExceeded):
+        llm.check_budget(guest.id)
+    store.set_ai_access(guest.id, access="allowed", cap=5, key_pool="family")
+    llm.check_budget(guest.id)  # the admin raised the cap

@@ -3,11 +3,11 @@
 <h2 id="sheet-title" class="sheet-title">{{ lg.data.description }}</h2>
 <p class="tiny muted">{{ lg.day | fdate("day") }}{% if lg.occurred_at %} · {{ lg.occurred_at | local_time(user.time_zone) }}{% endif %}{% if lg.data.edited %} · {{ _("edited") }}{% endif %}</p>
 {% if n %}
-<p style="margin-top:12px"><span class="bignum">{{ (t.kcal or n.kcal or 0) | int }}</span> <span class="muted">kcal</span>
-  <span class="small muted" style="margin-left:8px">{{ _("P") }} {{ (t.protein_g or 0) | int }} · {{ _("C") }} {{ (t.carbs_g or 0) | int }} · {{ _("F") }} {{ (t.fat_g or 0) | int }} g</span></p>
-{% if n["items"] %}
-<table class="tbl small" style="margin-top:8px"><tr><th>{{ _("Food") }}</th><th class="num">g</th><th class="num">kcal</th><th class="num">{{ _("P") }}</th><th class="num">{{ _("C") }}</th><th class="num">{{ _("F") }}</th></tr>
-  {% for it in n["items"] %}<tr><td>{{ it.name }}</td><td class="num">{{ (it.grams or 0) | round | int }}</td><td class="num">{{ (it.kcal or 0) | round | int }}</td><td class="num">{{ (it.protein_g or 0) | round | int }}</td><td class="num">{{ (it.carbs_g or 0) | round | int }}</td><td class="num">{{ (it.fat_g or 0) | round | int }}</td></tr>{% endfor %}
+<p style="margin-top:12px"><span class="bignum">{{ (t.kcal or n.kcal or 0) | int }}</span> <span class="muted">{{ _("kcal") }}</span>
+  <span class="small muted" style="margin-left:8px">{{ _("P") }} {{ (t.protein_g or 0) | int }} · {{ _("C") }} {{ (t.carbs_g or 0) | int }} · {{ _("F") }} {{ (t.fat_g or 0) | int }} {{ _("g") }}</span></p>
+{% if n.get("items") %}
+<table class="tbl small" style="margin-top:8px"><tr><th>{{ _("Food") }}</th><th class="num">{{ _("g") }}</th><th class="num">{{ _("kcal") }}</th><th class="num">{{ _("P") }}</th><th class="num">{{ _("C") }}</th><th class="num">{{ _("F") }}</th></tr>
+  {% for it in n.get("items") %}<tr><td>{{ it.name }}</td><td class="num">{{ (it.grams or 0) | round | int }}</td><td class="num">{{ (it.kcal or 0) | round | int }}</td><td class="num">{{ (it.protein_g or 0) | round | int }}</td><td class="num">{{ (it.carbs_g or 0) | round | int }}</td><td class="num">{{ (it.fat_g or 0) | round | int }}</td></tr>{% endfor %}
 </table>{% endif %}
 {% if t %}<details style="margin-top:8px"><summary class="small" style="cursor:pointer">{{ _("All nutrients") }}</summary>
   <table class="tbl small" style="margin-top:6px">{% for k, v in t.items() if k not in ("kcal", "protein_g", "carbs_g", "fat_g") and v %}<tr><td>{{ _(labels.get(k, k)) }}</td><td class="num">{{ v | round(1) | string | replace(".0", "") }} {{ units.get(k, "") }}</td></tr>{% endfor %}</table></details>{% endif %}

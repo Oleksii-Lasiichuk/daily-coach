@@ -1,6 +1,7 @@
 """FastAPI app: middleware, routers, error handling."""
 
 import logging
+import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -15,7 +16,7 @@ from app import db
 from app.auth import SESSION_MAX_AGE, NotAuthenticated, not_authenticated_response, origin_ok
 from app.config import get_settings
 from app.crypto import derived_key
-from app.routes import auth, data_pages, files, knowledge, pages, profile, push, welcome
+from app.routes import admin, auth, data_pages, files, knowledge, pages, profile, push, welcome
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("app")
@@ -37,14 +38,22 @@ async def request_guard(request: Request, call_next):
     request.state.request_id = uuid.uuid4().hex[:12]
     if not origin_ok(request):
         return PlainTextResponse("Bad origin", status_code=403)
+    acc, t0 = [0, 0.0], time.perf_counter()
+    token = db.timing.set(acc)
     try:
-        return await call_next(request)
+        response = await call_next(request)
+        response.headers["Server-Timing"] = (
+            f"db;desc=\"{acc[0]} checkouts\";dur={acc[1] * 1000:.0f}, "
+            f"total;dur={(time.perf_counter() - t0) * 1000:.0f}")
+        return response
     except Exception:
         log.exception("request %s failed: %s %s", request.state.request_id, request.method,
                       request.url.path)
         return PlainTextResponse(
             f"Something went wrong on our side (ref {request.state.request_id}). Try again.",
             status_code=500)
+    finally:
+        db.timing.reset(token)
 
 
 # Added after the guard so it runs first and the session is available everywhere.
@@ -72,6 +81,12 @@ app.include_router(profile.router)
 app.include_router(welcome.router)
 app.include_router(files.router)
 app.include_router(push.router)
+app.include_router(admin.router)
+
+
+@app.exception_handler(admin.NotFound)
+async def handle_not_found(_request: Request, _exc: admin.NotFound) -> Response:
+    return PlainTextResponse("Not found", status_code=404)
 
 
 @app.get("/status", response_class=PlainTextResponse)

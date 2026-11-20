@@ -14,10 +14,10 @@ class Settings(BaseSettings):
 
     env: Literal["dev", "prod"] = "dev"
     app_origin: str  # comma-separated if the app is reachable on several domains
-    # Members: these emails use the app's OpenRouter key (with a monthly cap). Comma-separated.
+    # Members: these emails get the bigger monthly cap on the app's OpenRouter key. Comma-separated.
     allowed_emails: str = ""
-    # OPEN_SIGNUP=true: any verified Google account can sign in as a guest. Guests must add
-    # their own OpenRouter key before the AI runs, so they never spend the app's key.
+    # OPEN_SIGNUP=true: any verified Google account can sign in. They use the app's key with a
+    # small starter cap; the admin gets a push on each sign-up and sets caps on /admin.
     open_signup: bool = False
 
     # Neon: pooled URL for the app, direct (unpooled) URL for migrations.
@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     app_encryption_key: str
     openrouter_api_key: str
+    openrouter_api_key_family: str = ""  # optional second app key, chosen per person on /admin
 
     # Optional: without keys, tracing is off and the app still works.
     langfuse_public_key: str = ""
@@ -43,6 +44,9 @@ class Settings(BaseSettings):
     vapid_public_key: str = ""
     vapid_private_key: str = ""
     cron_secret: str = ""
+    # The Cloud Run URL of this service (set by scripts/deploy). While a chat reply runs, the
+    # instance keeps one request to itself open, so Cloud Run gives it CPU (free tier).
+    self_url: str = ""
     # Who sees the hosting consoles and the app's own AI credit in Settings (comma-separated).
     admin_emails: str = ""
 

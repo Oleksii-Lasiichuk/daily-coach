@@ -67,6 +67,43 @@ def sync(user_id: str, today: date, days: int = 365) -> int:
     return len(wellness) + len(acts)
 
 
+def day_snapshot(user_id: str, day: date) -> dict | None:
+    """Today's watch numbers and the 7-day baseline from our own synced table (no network), in
+    the shape of intervals.day_snapshot. None before the first sync."""
+    with connection() as c:
+        rows = c.execute("select day, data from wellness_daily where user_id = %s and day "
+                         "between %s and %s", (user_id, day - timedelta(days=7), day)).fetchall()
+    if not rows:
+        return None
+    by_day = {r["day"]: r["data"] for r in rows}
+    t, prior = by_day.get(day, {}), [d for k, d in by_day.items() if k < day]
+
+    def avg(key):
+        vals = [float(d[key]) for d in prior if d.get(key) is not None]
+        return round(mean(vals), 1) if vals else None
+
+    sleep = t.get("sleep_h")  # stored in seconds, as intervals.icu sends it
+    today = {"hrv": t.get("hrv"), "resting_hr": t.get("resting_hr"),
+             "sleep_h": round(sleep / 3600, 1) if sleep else None,
+             "sleep_score": t.get("sleep_score"),
+             "ctl_fitness": round(t["fitness"], 1) if t.get("fitness") is not None else None,
+             "atl_fatigue": round(t["fatigue"], 1) if t.get("fatigue") is not None else None}
+    if today["ctl_fitness"] is not None and today["atl_fatigue"] is not None:
+        today["form"] = round(today["ctl_fitness"] - today["atl_fatigue"], 1)
+    else:
+        today["form"] = None
+    base_sleep = avg("sleep_h")
+    return {"date": day.isoformat(), "today": today,
+            "baseline_7d": {"hrv": avg("hrv"), "resting_hr": avg("resting_hr"),
+                            "sleep_h": round(base_sleep / 3600, 1) if base_sleep else None}}
+
+
+def sync_soon(user_id: str, now: datetime) -> None:
+    """maybe_sync in a background thread, so a page never waits for intervals.icu."""
+    import threading
+    threading.Thread(target=maybe_sync, args=(user_id, now), daemon=True).start()
+
+
 def maybe_sync(user_id: str, now: datetime) -> bool:
     """At most once an hour per user (pages and the 15-minute tick call this)."""
     if store.get_secret(user_id, "intervals") is None:

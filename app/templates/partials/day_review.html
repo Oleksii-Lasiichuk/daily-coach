@@ -1,0 +1,10 @@
+{# C9: the coach's review of one day. #}
+{% if rv %}
+<ul class="list small">
+  <li><span class="badge good">{{ _("good") }}</span><span>{{ rv.good }}</span></li>
+  <li><span class="badge warn">{{ _("short") }}</span><span>{{ rv.short }}</span></li>
+  <li><span class="badge accent">{{ _("tomorrow") }}</span><span>{{ rv.tip }}</span></li>
+</ul>
+<p class="tiny faint" style="margin-top:6px">{{ _("Written by the AI from the numbers on this page. Not medical advice.") }}</p>
+{% elif error %}<p class="small muted">{{ _(error) }}</p>
+{% else %}<p class="small muted">{{ _("Log a meal and the coach reviews the day here.") }}</p>{% endif %}

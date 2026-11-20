@@ -1,8 +1,10 @@
-<form id="answers" method="post" action="/welcome/5" class="stack">
-  {% if error %}<p class="notice error small">{{ error }}</p>{% endif %}
+<h2 id="sheet-title">{{ _("A few questions from the coach") }}</h2>
+<form id="answers" method="post" action="/setup/answers" class="stack" style="margin-top:10px">
+  {% if error %}<p class="notice error small">{{ _(error) }}</p>{% endif %}
   {% if not questions and not error %}<p class="small">{{ _("Nothing is missing.") }}</p>{% endif %}
   {% for q in questions %}
   <div><label for="a_{{ q.slot }}" style="color:var(--ink);font-size:14.5px">{{ q.text }}</label>
     <input type="hidden" name="q_{{ q.slot }}" value="{{ q.text }}"><input id="a_{{ q.slot }}" name="a_{{ q.slot }}" autocomplete="off"></div>
   {% endfor %}
+  {% if questions %}<button class="btn ink">{{ _("Save answers") }}</button>{% endif %}
 </form>

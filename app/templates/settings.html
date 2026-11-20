@@ -22,7 +22,7 @@
             <div><label for="tz">{{ _("Time zone") }}</label>
               <div class="row" style="gap:6px;flex-wrap:nowrap"><select id="tz" name="time_zone">{% for z in zones %}<option {{ "selected" if z == user.time_zone }}>{{ z }}</option>{% endfor %}</select>
               <button type="button" class="btn sm ghost" title="{{ _('Use this device\'s time zone') }}" onclick="const z=Intl.DateTimeFormat().resolvedOptions().timeZone;const s=document.getElementById('tz');if([...s.options].some(o=>o.value===z))s.value=z">{{ icon("refresh") }}</button></div></div>
-            <div><label for="city">{{ _("City, for weather and air") }}</label><input id="city" name="city" value="{{ (prof.location or {}).get('name', '') }}" placeholder="Lviv"></div>
+            <div><label for="city">{{ _("City, for weather and air") }}</label><input id="city" name="city" value="{{ (prof.location or {}).get('name', '') }}" placeholder="{{ _('Kyiv') }}"></div>
           </div>
           <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
             <div><label for="ps">{{ _("Do you follow a training plan?") }}</label><select id="ps" name="plan_source">
@@ -42,7 +42,7 @@
         <div class="notice ios-hint" id="ios-hint" hidden><b>{{ _("On iPhone: add the app to your Home Screen first.") }}</b><br>{{ _("In Safari tap Share → Add to Home Screen, open Daily Coach from the Home Screen, then come back here and turn notifications on. iPhone only allows notifications for installed apps.") }}</div>
         <div class="row between" style="margin:10px 0">
           <span class="small">{{ _("Notifications on this device") }}</span>
-          <button type="button" class="btn sm primary" id="push-btn" onclick="enablePush()">{{ icon("bell") }}{{ _("Notifications on") if subs else _("Turn on notifications") }}</button></div>
+          <button type="button" class="btn sm primary" id="push-btn" onclick="enablePush().then(ok => { if (ok) this.lastChild.textContent = this.dataset.on; })" data-on="{{ _('Notifications on') }}">{{ icon("bell") }}{{ _("Notifications on") if subs else _("Turn on notifications") }}</button></div>
         <form method="post" action="/profile/nudges">
           <label class="switch" style="margin-bottom:10px"><input type="checkbox" name="enabled" value="1" {{ "checked" if p.nudges_on }}><i></i>{{ _("Daily nudges") }}</label>
           <table class="tbl small">{% for k, lab in nudges %}<tr><td>{{ _(lab) }}</td><td class="num" style="width:120px"><input type="time" name="{{ k }}" value="{{ p.nudges.get(k, '') }}" aria-label="{{ _(lab) }}" style="height:34px"></td></tr>{% endfor %}</table>
@@ -83,6 +83,7 @@
       </details>
       {% if is_admin %}
       <details class="card adv"><summary><h2 style="display:inline">{{ _("Admin") }}</h2> <span class="small muted">· {{ _("hosting limits, only you see this") }}</span></summary>
+        <p style="margin-top:10px"><a href="/admin">{{ _("People and AI caps") }} →</a></p>
         <table class="tbl small" style="margin-top:10px">
           {% for name, lim, link in limits %}
           <tr><td style="width:36%"><b>{{ name }}</b></td><td>{{ lim }}
@@ -99,15 +100,5 @@
 <script>
   (() => { const ios = /iPhone|iPad|iPod/.test(navigator.userAgent), standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
     if (ios && !standalone) document.getElementById("ios-hint").hidden = false; })();
-  async function enablePush() {
-    const key = {{ vapid | tojson }};
-    if (!key || !("serviceWorker" in navigator) || !("PushManager" in window)) { toast({{ _("Notifications aren't available here. On iPhone, open the app from the Home Screen.") | tojson }}); return; }
-    const perm = await Notification.requestPermission(); if (perm !== "granted") { toast({{ _("Notifications are blocked in the browser settings.") | tojson }}); return; }
-    const reg = await navigator.serviceWorker.ready;
-    const raw = atob(key.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - key.length % 4) % 4));
-    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: Uint8Array.from(raw, c => c.charCodeAt(0)) });
-    const r = await fetch("/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sub) });
-    if (r.ok) { document.getElementById("push-btn").textContent = {{ _("Notifications on") | tojson }}; toast({{ _("Notifications are on. A test one is on its way.") | tojson }}); } else toast({{ _("Couldn't turn on notifications.") | tojson }});
-  }
 </script>
 {% endblock %}

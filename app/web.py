@@ -14,6 +14,7 @@ from app import i18n
 from app.config import get_settings
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+templates.env.globals["vapid_key"] = get_settings().vapid_public_key
 templates.env.globals["firebase"] = {
     "apiKey": get_settings().firebase_web_api_key,
     "authDomain": get_settings().firebase_auth_domain,
@@ -131,10 +132,21 @@ templates.env.globals.update(hr_zones=hr_zones, zone_bpm=zone_bpm,
                              workout_profile=workout_profile)
 
 
-def ui(user) -> dict:
-    """What any template needs to render in the user's language."""
+def ui(user, request=None) -> dict:
+    """What any template needs to render in the user's language. Before sign-in the language
+    comes from the session (the toggle on the sign-in page) or the browser."""
     from app import store
-    return {"user": user, "lang": store.user_lang(user.id) if user else "en"}
+    return {"user": user, "lang": store.user_lang(user.id) if user else request_lang(request)}
+
+
+def request_lang(request) -> str:
+    if request is None:
+        return "en"
+    chosen = request.session.get("lang")
+    if chosen in i18n.LANGS:
+        return chosen
+    accept = request.headers.get("accept-language", "").lower()
+    return "uk" if accept.startswith(("uk", "ru")) or ",uk" in accept else "en"
 
 
 def is_admin(user) -> bool:

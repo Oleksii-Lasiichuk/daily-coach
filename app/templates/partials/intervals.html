@@ -8,7 +8,7 @@
       <button class="link tiny danger">{{ _("Disconnect") }}</button>
     </form>
   {% else %}
-    {% if error %}<p class="notice error small" style="margin-bottom:10px">{{ error }}</p>{% endif %}
+    {% if error %}<p class="notice error small" style="margin-bottom:10px">{{ _(error) }}</p>{% endif %}
     <form hx-post="/intervals/connect" hx-target="#intervals" hx-swap="outerHTML">
       <div class="row" style="gap:8px;align-items:flex-end">
         <div style="flex:1;min-width:120px"><label for="athlete_id">{{ _("Athlete ID") }}</label><input id="athlete_id" name="athlete_id" placeholder="i123456" value="{{ athlete_id or '' }}" autocomplete="off" required></div>

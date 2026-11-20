@@ -37,7 +37,7 @@
     <table class="tbl small">{% for k, lab in [("before", "Before"), ("during", "During"), ("after", "After")] %}<tr><td class="muted" style="width:64px">{{ _(lab) }}</td><td>{{ _(fuel[k]).format(**fuel.n) }}</td></tr>{% endfor %}</table>
   </details>
   {% endif %}
-  {% if card_error %}<p class="notice error small" style="margin-top:8px">{{ card_error }}</p>{% endif %}
+  {% if card_error %}<p class="notice error small" style="margin-top:8px">{{ _(card_error) }}</p>{% endif %}
   {% if w.action != "rest" %}
   <div class="row" style="margin-top:12px">
     {% if p.status == "applied" %}

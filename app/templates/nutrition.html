@@ -10,7 +10,7 @@
 <div class="page">
   <div class="pagehead">
     <h1>{{ _("Nutrition") }}</h1>
-    <div class="seg">{% for d, lab in [(1, "Today"), (7, "7 days"), (30, "30 days")] %}<a href="?days={{ d }}" {% if days == d %}aria-current="true"{% endif %}>{{ _(lab) }}</a>{% endfor %}</div>
+    {% include "partials/nutrition_tabs.html" %}
   </div>
   {% if not s.days_with_meals %}
     <div class="card"><h2>{{ _("No meals logged today") if days == 1 else _("No meals logged in this period") }}</h2>
@@ -21,11 +21,11 @@
     <div class="card">
       <div class="row between"><h2>{{ _("Today") if days == 1 else _("Average per day") }}</h2><span class="tiny muted">{{ s.days_with_meals }} {{ _("days with meals") if days > 1 else "" }}</span></div>
       {% set e = byk.kcal %}
-      <p style="margin-top:2px"><span class="bignum">{{ e.value | int }}</span> <span class="muted">/ {{ e.target }} kcal</span>{% if days == 1 and water %} <span class="muted small">· {{ _("water") }} {{ water }} L</span>{% endif %}</p>
+      <p style="margin-top:2px"><span class="bignum">{{ e.value | int }}</span> <span class="muted">/ {{ e.target }} {{ _("kcal") }}</span>{% if days == 1 and water %} <span class="muted small">· {{ _("water") }} {{ water }} L</span>{% endif %}</p>
       <div class="bar" style="margin-top:6px"><i class="{{ 'over' if e.pct and e.pct > 110 }}" style="width:{{ [100, e.pct or 0] | min }}%"></i></div>
       <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px">
         {% for k in ["protein_g", "carbs_g", "fat_g"] %}{% set r = byk[k] %}
-        <div><div class="row between tiny"><span class="muted">{{ _(r.label) }}</span><span>{{ r.value | int }}/{{ r.target }} g</span></div>
+        <div><div class="row between tiny"><span class="muted">{{ _(r.label) }}</span><span>{{ r.value | int }}/{{ r.target }} {{ _("g") }}</span></div>
           <div class="bar" style="margin-top:4px;height:4px"><i class="ink" style="width:{{ [100, r.pct or 0] | min }}%"></i></div></div>
         {% endfor %}
       </div>
@@ -62,7 +62,7 @@
   <div class="card" style="margin-top:14px"><h2>{{ _("Meals") }}</h2>
     {% for d, ms in by_day.items() %}
       {% set t = totals(ms) %}
-      <div class="row between" style="margin-top:12px"><span class="label">{{ d | fdate("day") }}</span><span class="small muted">{{ t.kcal | int }} kcal · {{ _("P") }} {{ t.protein_g | int }} · {{ _("C") }} {{ t.carbs_g | int }} · {{ _("F") }} {{ t.fat_g | int }}</span></div>
+      <div class="row between" style="margin-top:12px"><span class="label">{{ d | fdate("day") }}</span><span class="small muted">{{ t.kcal | int }} {{ _("kcal") }} · {{ _("P") }} {{ t.protein_g | int }} · {{ _("C") }} {{ t.carbs_g | int }} · {{ _("F") }} {{ t.fat_g | int }}</span></div>
       <ul class="list small" style="margin-top:4px">
         {% for m in ms %}{% set n = m.data.nutrition %}{% with lg=m, next="/nutrition?days=" ~ days %}{% include "partials/log_row.html" %}{% endwith %}{% endfor %}
       </ul>

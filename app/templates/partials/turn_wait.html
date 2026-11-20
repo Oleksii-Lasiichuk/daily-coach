@@ -1,0 +1,8 @@
+{% from "_icons.html" import icon with context %}
+{# The coach is still answering: asks again every 1.5 s and is replaced by the reply. Survives
+   leaving the page: Today shows it again for a running turn. #}
+<div class="msg coach pending waiting" data-start="{{ turn.started_at.timestamp() | int }}"
+     hx-get="/chat/turns/{{ turn.id }}" hx-trigger="load delay:1500ms" hx-swap="outerHTML">
+  <div class="who"><span class="mark">{{ icon("activity") }}</span>{{ _("Coach") }}</div>
+  <div class="thinking"><span class="dots"><i></i><i></i><i></i></span><span>{{ _("Working") }} · <span class="secs">0</span> {{ _("s") }}</span>
+    <span class="tiny faint">{{ _("You can open other pages; the answer will be here.") }}</span></div></div>

@@ -4,13 +4,15 @@
 import base64
 import calendar
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import httpx
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import agent, health, history, intervals, llm, nutrition_stats, store, weather
+from app import agent, health, history, i18n, intervals, llm, nutrition_stats, store, weather
 from app.auth import current_user
 from app.db import connection
 from app.pipeline import common
@@ -52,12 +54,8 @@ def next_race(user_id: str, today: date) -> dict | None:
 def rail_context(user: store.User) -> dict:
     day = today_of(user)
     connected = store.get_secret(user.id, "intervals") is not None
-    snapshot, wellness_error = None, None
-    if connected:
-        try:
-            snapshot = intervals.day_snapshot(user.id, day)
-        except intervals.IntervalsError as e:
-            wellness_error = str(e)
+    # From our synced table, not a live intervals.icu call: the page never waits for it.
+    snapshot, wellness_error = (health.day_snapshot(user.id, day) if connected else None), None
     logs = store.logs_between(user.id, day, day)
     a = store.get_assessment(user.id, day)
     suggestion = profile_value(user.id, "meal_suggestion")
@@ -70,7 +68,9 @@ def rail_context(user: store.User) -> dict:
     with connection() as c:
         has_push = c.execute("select exists (select 1 from push_subscriptions where user_id = %s)"
                              " as p", (user.id,)).fetchone()["p"]
+    from app.routes.welcome import setup_cards
     return {
+        "setup": setup_cards(user, has_push, profile),
         "day": day, "connected": connected, "has_push": has_push, "snapshot": snapshot,
         "wellness_error": wellness_error,
         "assessment": a, "proposals": proposals,
@@ -105,31 +105,50 @@ def thread(user: store.User) -> list[dict]:
 def today(request: Request, user: store.User = Depends(current_user)):
     if user.setup_step < 6:
         return RedirectResponse("/welcome", status_code=303)
-    health.maybe_sync(user.id, datetime.now(ZoneInfo(user.time_zone)))
+    health.sync_soon(user.id, datetime.now(ZoneInfo(user.time_zone)))
     with connection() as c:
         day0 = c.execute("select not exists (select 1 from logs where user_id = %s) as d",
                          (user.id,)).fetchone()["d"]
-    ctx = shell(user, "/", has_rail=True, messages=thread(user), day0=day0,
-                **rail_context(user))
+    turn = store.running_turn(user.id)
+    # The side cards load right after the page (GET /rail), so the chat shows at once.
+    ctx = shell(user, "/", has_rail=True, messages=thread(user), day0=day0, rail_lazy=True,
+                turn=turn if turn and turn["status"] == "running" else None)
     return templates.TemplateResponse(request, "today.html", ctx)
 
 
+# Chat turns run in this pool, not in the request: the reply is saved even if the person opens
+# another page, and the page asks for it with GET /chat/turns/{id} (see partials/turn_wait.html).
+_turns = ThreadPoolExecutor(max_workers=8, thread_name_prefix="turn")  # a turn + its CPU hold
+
+
+@router.get("/rail", response_class=HTMLResponse)
+def rail(request: Request, user: store.User = Depends(current_user)):
+    ctx = shell(user, "/", **rail_context(user))
+    return templates.TemplateResponse(request, "partials/rail_refresh.html", ctx)
+
+
 @router.post("/chat", response_class=HTMLResponse)
-async def chat(request: Request, text: str = Form(""), mode: str = Form("auto"),
-               deep: str = Form(""), images: list[UploadFile] | None = None,
-               user: store.User = Depends(current_user)):
+def chat(request: Request, text: str = Form(""), mode: str = Form("auto"),
+         deep: str = Form(""), images: list[UploadFile] | None = None,
+         user: store.User = Depends(current_user)):
     text = text.strip()[:4000]
+    lang = store.user_lang(user.id)
     with connection() as c:  # a cap against runaway scripts or a stolen session
         recent = c.execute("select count(*) as n from chat_messages where user_id = %s and "
                            "role = 'user' and created_at > now() - interval '10 minutes'",
                            (user.id,)).fetchone()["n"]
     if recent >= RATE_PER_10_MIN:
-        ctx = shell(user, "/", reply_msgs=[], error="Too many messages in a short time. Wait a "
-                    "few minutes.", **rail_context(user))
+        ctx = shell(user, "/", reply_msgs=[], error=i18n.t(
+            "Too many messages in a short time. Wait a few minutes.", lang))
+        return templates.TemplateResponse(request, "partials/turn.html", ctx)
+    if store.running_turn(user.id):
+        ctx = shell(user, "/", reply_msgs=[], error=i18n.t(
+            "The coach is still answering your last message. Send this one when it's done.",
+            lang))
         return templates.TemplateResponse(request, "partials/turn.html", ctx)
     pics = []
     for f in images or []:
-        raw = await f.read(MAX_IMAGE_BYTES + 1)
+        raw = f.file.read(MAX_IMAGE_BYTES + 1)
         if raw and len(raw) <= MAX_IMAGE_BYTES:
             pics.append(raw)
     if not text and not pics:
@@ -140,27 +159,74 @@ async def chat(request: Request, text: str = Form(""), mode: str = Form("auto"),
         mid = c.execute("insert into chat_messages (user_id, role, content, attachments) values "
                         "(%s, 'user', %s, %s::jsonb) returning id",
                         (user.id, text or "(photo)", common.to_json(attachments))).fetchone()["id"]
+    tid = store.start_turn(user.id, mid)
+    _turns.submit(_run_turn, tid, user, text, pics, mode, bool(deep), mid, lang)
+    _turns.submit(_keep_cpu, tid)
+    turn = store.get_turn(user.id, tid)
+    return templates.TemplateResponse(request, "partials/turn_wait.html",
+                                      shell(user, "/", turn=turn))
+
+
+def _keep_cpu(tid: int) -> None:
+    """Free "scheduler": an open request to this service while the turn runs, so Cloud Run
+    (request-based CPU, scale to zero) keeps the instance and its CPU until the reply is saved.
+    Needs SELF_URL (set by scripts/deploy) and max one instance, so the request lands here."""
+    from app.config import get_settings
+    from app.routes.push import cron_secret
+    url = get_settings().self_url.rstrip("/")
+    if not url or not cron_secret():
+        return
+    try:
+        httpx.post(f"{url}/cron/hold/{tid}", headers={"x-cron-secret": cron_secret()},
+                   timeout=200)
+    except httpx.HTTPError as e:
+        log.info("cpu hold for turn %s ended: %s", tid, e)
+
+
+def _run_turn(tid: int, user: store.User, text: str, pics: list[bytes], mode: str, deep: bool,
+              mid: int, lang: str) -> None:
+    """One coach turn in a worker thread; the result is stored in chat_turns."""
+    reply, error, r = None, None, {"actions": []}
+    try:
+        with llm.trace("handle-chat-turn", input=text or "(photo)", user_id=user.id,
+                       session_id=f"{user.id}:{today_of(user)}", tags=["chat", mode]) as root:
+            try:
+                r = agent.run(user, text, pics, mode=mode, deep=deep, message_id=mid)
+                reply = r["reply"]
+            except llm.BudgetExceeded as e:
+                error = str(e)
+            except llm.LLMError as e:
+                log.warning("chat turn failed: %s", e)
+                error = i18n.t("The coach couldn't finish this time. Your message is saved; "
+                               "try again.", lang)
+            root.update(output=reply or error)
+            trace_id = llm.current_trace_id()
+        llm.langfuse.flush()
+        aid = None
+        if reply:
+            aid = store.add_message(user.id, "assistant", reply, trace_id)
+            agent.save_actions(user.id, aid, r["actions"])
+        store.finish_turn(user.id, tid, aid, error)
+    except Exception:  # anything else: the turn must not stay "running"
+        log.exception("chat turn %s crashed", tid)
+        store.finish_turn(user.id, tid, None, i18n.t(
+            "The coach couldn't finish this time. Your message is saved; try again.", lang))
+
+
+@router.get("/chat/turns/{turn_id}", response_class=HTMLResponse)
+def chat_turn(request: Request, turn_id: int, user: store.User = Depends(current_user)):
+    """Polled by the "Coach is replying…" bubble until the reply is ready."""
+    turn = store.get_turn(user.id, turn_id)
+    if turn is None:
+        return HTMLResponse("", status_code=404)
+    if turn["status"] == "running":
+        return templates.TemplateResponse(request, "partials/turn_wait.html",
+                                          shell(user, "/", turn=turn))
     error = None
-    with llm.trace("handle-chat-turn", input=text or "(photo)", user_id=user.id,
-                   session_id=f"{user.id}:{today_of(user)}", tags=["chat", mode]) as root:
-        try:
-            r = agent.run(user, text, pics, mode=mode, deep=bool(deep), message_id=mid)
-            reply = r["reply"]
-        except llm.BudgetExceeded as e:
-            r, reply, error = {"actions": []}, None, str(e)
-        except llm.LLMError as e:
-            log.warning("chat turn failed: %s", e)
-            r, reply = {"actions": []}, None
-            error = "The coach couldn't finish this time. Your message is saved; try again."
-        root.update(output=reply or error)
-        trace_id = llm.current_trace_id()
-    llm.langfuse.flush()
-    if reply:
-        aid = store.add_message(user.id, "assistant", reply, trace_id)
-        agent.save_actions(user.id, aid, r["actions"])
-        msg = [m for m in thread(user) if m["id"] == aid]
-    else:
-        msg = []
+    if turn["status"] == "failed":
+        error = turn["error"] if turn["error"] != "timeout" else i18n.t(
+            "The coach took too long. Your message is saved; try again.", store.user_lang(user.id))
+    msg = [m for m in thread(user) if m["id"] == turn["reply_id"]] if turn["reply_id"] else []
     ctx = shell(user, "/", reply_msgs=msg, error=error, **rail_context(user))
     return templates.TemplateResponse(request, "partials/turn.html", ctx)
 
@@ -360,9 +426,9 @@ if their food names are Ukrainian, else English. Plain text, no Markdown headers
 
 
 @router.post("/transcribe", response_class=HTMLResponse)
-async def transcribe(audio: UploadFile, user: store.User = Depends(current_user)):
+def transcribe(audio: UploadFile, user: store.User = Depends(current_user)):
     """Voice → text with Gemini (Ukrainian and English mixed). The text goes into the box."""
-    raw = await audio.read(8 * 1024 * 1024)
+    raw = audio.file.read(8 * 1024 * 1024)
     fmt = "mp4" if "mp4" in (audio.content_type or "") else "webm" if "webm" in (
         audio.content_type or "") else "wav"
     try:

@@ -1,115 +1,35 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Welcome") }} · Daily Coach{% endblock %}
 {% block body %}
-<div class="modal-bg" style="background:var(--bg)">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="wtitle">
-    <div class="row between"><div class="steps-bar grow" aria-hidden="true" style="margin:0">{% for i in range(1, 6) %}<i class="{{ 'on' if i <= step }}"></i>{% endfor %}</div>
-      <form method="post" action="/settings/lang" style="margin:0 0 0 12px"><input type="hidden" name="lang" value="{{ 'en' if lang == 'uk' else 'uk' }}"><input type="hidden" name="next" value="/welcome"><button class="link tiny">{{ "English" if lang == "uk" else "Українська" }}</button></form></div>
-    <p class="tiny muted" style="margin-top:14px">{{ _("Step") }} {{ step }} / 5</p>
-    {% if step == 1 %}
-      {% if guest %}
-      <h1 id="wtitle" style="margin-top:4px">{{ _("Your AI key") }}</h1>
-      <p class="muted small" style="margin:6px 0 10px">{{ _("The coach runs on AI models through OpenRouter. Guests use their own key, so the AI is billed to their account: about $0.005–0.02 a message, so $5 lasts hundreds of messages.") }}</p>
-      <ol class="small steps-list">
-        <li>{{ _("Sign in at") }} <a href="https://openrouter.ai" target="_blank" rel="noopener">openrouter.ai</a> {{ _("(Google works).") }}</li>
-        <li><a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener">{{ _("Credits") }}</a>: {{ _("add $5 (the models are paid).") }}</li>
-        <li><a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">{{ _("Keys") }}</a> → <b>{{ _("Create key") }}</b>, {{ _("copy it (starts with sk-or-) and paste it here.") }}</li>
-      </ol>
-      {% if own_key %}<p class="notice small">{{ _("Key saved") }} · ••••{{ own_key.last4 }}</p>
-      {% else %}
-      {% if key_error %}<p class="notice error small" style="margin-bottom:10px">{{ _("OpenRouter didn't accept that key. Check it and try again.") }}</p>{% endif %}
-      <form method="post" action="/profile/key" class="row" style="gap:8px;align-items:flex-end">
-        <input type="hidden" name="next" value="/welcome">
-        <div class="grow"><label for="gkey">{{ _("OpenRouter API key") }}</label><input id="gkey" name="api_key" type="password" placeholder="sk-or-…" autocomplete="off" required></div>
-        <button class="btn primary">{{ _("Save key") }}</button>
-      </form>
-      <p class="hint">{{ _("Stored encrypted; only the last 4 characters are shown. Never sent to the AI.") }}</p>
-      {% endif %}
-      <hr style="margin:18px 0;border:0;border-top:1px solid var(--line)">
-      {% endif %}
-      <h{{ 2 if guest else 1 }} {% if not guest %}id="wtitle"{% endif %} style="margin-top:4px">{{ _("Connect intervals.icu") }}</h{{ 2 if guest else 1 }}>
-      <p class="small" style="margin:6px 0 4px"><b>{{ _("Why intervals.icu:") }}</b> {{ _("Garmin gives its API, including the right to put workouts on your watch, only to approved companies, not to personal apps. intervals.icu is an approved Garmin partner: it brings your watch data in and sends workouts back to the watch.") }}</p>
-      <p class="muted small" style="margin:0 0 10px">{{ _("It's free and takes about 3 minutes. Or skip it and use sample watch data below.") }}</p>
-      <ol class="small steps-list">
-        <li>{{ _("Create a free account at") }} <a href="https://intervals.icu" target="_blank" rel="noopener">intervals.icu</a> {{ _("(sign in with Google).") }}</li>
-        <li>{{ _("Open") }} <a href="https://intervals.icu/settings" target="_blank" rel="noopener">{{ _("Settings") }}</a> → <b>Garmin Connect</b> → <b>{{ _("Connect") }}</b>. {{ _("Tick “Upload planned workouts”, so sessions reach your watch.") }}</li>
-        <li>{{ _("Same page, scroll to") }} <b>Developer Settings</b>: {{ _("copy the Athlete ID (like i123456), then create or show the API Key and copy it. Paste both below.") }}</li>
-      </ol>
-      {% include "partials/intervals.html" %}
-      {% if not secret %}
-      <div class="row" style="gap:8px;margin-top:14px;align-items:center;flex-wrap:wrap">
-        <span class="small muted">{{ _("No Garmin or intervals.icu account?") }}</span>
-        <button class="btn sm" hx-post="/intervals/sample" hx-target="#intervals" hx-swap="outerHTML">{{ _("Use sample watch data") }}</button></div>
-      <p class="hint">{{ _("A year of made-up sleep, HRV and runs, so you can try everything. “Send to watch” is then simulated.") }}</p>
-      {% endif %}
-      <form method="post" action="/welcome/1" class="row between" style="margin-top:20px"><span></span><button class="btn ink" {{ "" if secret and (own_key or not guest) else "disabled" }}>{{ _("Continue") }}</button></form>
-      <script>document.body.addEventListener("intervalsChanged", () => setTimeout(() => location.reload(), 400));</script>
-    {% elif step == 2 %}
-      <h1 id="wtitle" style="margin-top:4px">{{ _("About you") }}</h1>
-      <p class="muted small" style="margin:6px 0 16px">{{ _("Prefilled from intervals.icu where possible.") }}</p>
-      <form method="post" action="/welcome/2" class="stack">
-        <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
-          <div><label for="w">{{ _("Weight, kg") }}</label><input id="w" name="weight_kg" value="{{ prof.weight_kg or '' }}" inputmode="decimal"></div>
-          <div><label for="h">{{ _("Height, cm") }}</label><input id="h" name="height_cm" value="{{ prof.height_cm or '' }}" inputmode="numeric"></div>
-          <div><label for="b">{{ _("Birth year") }}</label><input id="b" name="birth_year" value="{{ prof.birth_year or '' }}" inputmode="numeric"></div>
-        </div>
-        <div><label>{{ _("Sports you do") }}</label>
-          <div class="chips">{% for s in sports %}<label><input type="checkbox" name="sports" value="{{ s }}" {{ "checked" if s in chosen }}><span>{{ _(sport_name(s)) }}</span></label>{% endfor %}</div>
-          <input name="other_sport" placeholder="{{ _('Other, comma-separated') }}" style="margin-top:8px" aria-label="{{ _('Other sports') }}"></div>
-        <div><label for="ps">{{ _("Do you follow a training plan?") }}</label><select id="ps" name="plan_source">
-          {% for k, lab in plan_sources %}<option value="{{ k }}" {{ "selected" if prof.plan_source == k }}>{{ _(lab) }}</option>{% endfor %}</select>
-          <p class="hint">{{ _("If you do, the coach keeps its key sessions and adjusts around them. If not, it plans from your goals.") }}</p></div>
-        <div class="grid3" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
-          <div><label for="d">{{ _("How you eat") }}</label><select id="d" name="diet">{% for d in ["Omnivore", "Vegetarian", "Vegan", "Pescatarian", "Other"] %}<option value="{{ d }}" {{ "selected" if prof.diet == d }}>{{ _(d) }}</option>{% endfor %}</select></div>
-          <div><label for="st">{{ _("Sleep target, h") }}</label><input id="st" name="sleep_target_h" value="{{ prof.sleep_target_h or '' }}" placeholder="8"></div>
-        </div>
-        <div><label for="sx">{{ _("Sex (for calorie targets)") }}</label><select id="sx" name="sex">
-          {% for v, lab in [("", "Prefer not to say"), ("M", "Male"), ("F", "Female")] %}<option value="{{ v }}" {{ "selected" if (prof.sex or "")[:1].upper() == v }}>{{ _(lab) }}</option>{% endfor %}</select>
-          <p class="hint">{{ _("Resting energy differs by about 160 kcal a day. If you skip it, targets use the midpoint.") }}</p></div>
-        <div class="row between" style="margin-top:8px"><button class="link small" formaction="/welcome/back">{{ _("Back") }}</button><button class="btn ink">{{ _("Continue") }}</button></div>
-      </form>
-    {% elif step == 3 %}
-      <h1 id="wtitle" style="margin-top:4px">{{ _("Your goals") }}</h1>
-      <p class="muted small" style="margin:6px 0 16px">{{ _("One race and one body goal for now. They appear on Training; tell the coach more later.") }}</p>
-      <form method="post" action="/welcome/3" class="stack">
-        <div><label for="mg">{{ _("Main goal") }}</label><input id="mg" name="main_goal" placeholder="{{ _('First Ironman in 2028; half marathon under 1:45 this spring') }}"></div>
-        <div class="card" style="background:var(--sunk);border:0">
-          <h2>{{ _("Next race") }}</h2>
-          <div class="grid3 fgrid" style="grid-template-columns:2fr 1fr;gap:10px;margin-top:8px">
-            <div><label for="rn">{{ _("Name") }}</label><input id="rn" name="race_name" placeholder="{{ _('Lviv Half Marathon') }}"></div>
-            <div><label for="rd">{{ _("Date") }}</label><input id="rd" name="race_date" type="date"></div>
-          </div>
-          <div class="grid3 fgrid" style="grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
-            <div><label for="dist">{{ _("Distance") }}</label><select id="dist" name="race_distance">{% for d in distances %}<option value="{{ d }}">{{ _(d) }}</option>{% endfor %}</select></div>
-            <div><label for="rg">{{ _("Goal") }}</label><select id="rg" name="race_goal" onchange="const t=document.getElementById('rt');t.parentNode.hidden=this.value==='finish';t.placeholder=this.value==='pace'?'4:58/km':'1:45:00'"><option value="finish">{{ _("Just finish") }}</option><option value="time">{{ _("Finish time") }}</option><option value="pace">{{ _("Pace") }}</option></select></div>
-            <div hidden><label for="rt">{{ _("Target") }}</label><input id="rt" name="race_target" placeholder="1:45:00"></div>
-          </div>
-        </div>
-        <div class="grid3 fgrid" style="grid-template-columns:2fr 1fr;gap:10px">
-          <div><label for="bg">{{ _("Body goal") }}</label><select id="bg" name="body_goal"><option value="">{{ _("None") }}</option><option value="lose">{{ _("Lose weight") }}</option><option value="gain">{{ _("Gain weight / muscle") }}</option><option value="maintain">{{ _("Keep my weight") }}</option></select></div>
-          <div><label for="bt">{{ _("Target, kg") }}</label><input id="bt" name="body_target" inputmode="decimal"></div>
-        </div>
-        <div class="row between" style="margin-top:8px"><button class="link small" formaction="/welcome/back">{{ _("Back") }}</button><button class="btn ink">{{ _("Continue") }}</button></div>
-      </form>
-    {% elif step == 4 %}
-      <h1 id="wtitle" style="margin-top:4px">{{ _("What you've written before (optional)") }}</h1>
-      <p class="muted small" style="margin:6px 0 10px">{{ _("Have you talked about your training, injuries or health with ChatGPT, or kept notes? Upload them and the coach learns your history in a minute instead of asking. It shows each fact it finds with the line it came from; you keep only what's right.") }}</p>
-      <details class="small" style="margin-bottom:12px"><summary style="cursor:pointer">{{ _("How to export your ChatGPT history") }}</summary>
-        <ol style="padding-left:18px;margin-top:6px"><li>{{ _("ChatGPT → Settings → Data controls → Export data.") }}</li><li>{{ _("Open the email, download the .zip and unzip it.") }}</li><li>{{ _("Upload conversations.json here. Big exports keep only chats about sport, health and food.") }}</li></ol></details>
-      {% include "partials/files.html" %}
-      <div class="row between" style="margin-top:20px">
-        <form method="post" action="/welcome/back"><button class="link small">{{ _("Back") }}</button></form>
-        <form method="post" action="/welcome/4"><button class="btn ink" onclick="const r = document.getElementById('review'); if (r) { event.preventDefault(); r.requestSubmit(); }">{{ _("Continue") }}</button></form>
-      </div>
-    {% else %}
-      <h1 id="wtitle" style="margin-top:4px">{{ _("A few questions") }}</h1>
-      <p class="muted small" style="margin:6px 0 16px">{{ _("Only what's still missing. Leave anything empty.") }}</p>
-      <div hx-get="/welcome/questions" hx-trigger="load" hx-swap="outerHTML"><p class="small muted"><span class="dots"><i></i><i></i><i></i></span> {{ _("Reading what you've shared…") }}</p></div>
-      <div class="row between" style="margin-top:20px">
-        <form method="post" action="/welcome/finish"><button class="link small">{{ _("Skip") }}</button></form>
-        <button class="btn primary" form="answers">{{ _("Open my coach") }}</button>
-      </div>
-    {% endif %}
+<main class="welcome">
+  <div class="row between">
+    <div class="brand" style="padding:0">{{ icon("activity") }} Daily Coach</div>
+    {% include "partials/lang_toggle.html" %}
   </div>
-</div>
+  <h1 id="wtitle" style="margin-top:22px">{{ _("Hi! A few things about you") }}</h1>
+  <p class="muted" style="margin-top:6px">{{ _("Takes a minute. Everything can be changed later in Settings.") }}</p>
+  <form method="post" action="/welcome" class="stack" style="margin-top:20px">
+    <div><label for="name">{{ _("Your name") }}</label><input id="name" name="name" value="{{ name }}" autocomplete="given-name"></div>
+    <div><label for="sport">{{ _("Your main sport") }}</label><select id="sport" name="sport">
+      <option value="">{{ _("No sport, just a healthy life") }}</option>
+      {% for s in sports %}<option value="{{ s }}" {{ "selected" if s == chosen }}>{{ _(sport_name(s)) }}</option>{% endfor %}</select></div>
+    <div><label for="goal">{{ _("Your main goal") }} <span class="muted">({{ _("optional") }})</span></label>
+      <input id="goal" name="goal" placeholder="{{ _('Lose 5 kg; run 10 km; sleep better') }}"></div>
+    <fieldset class="tracks">
+      <legend>{{ _("What do you want to track?") }}</legend>
+      <label class="track on"><input type="checkbox" checked disabled>{{ icon("apple") }}<span><b>{{ _("Food and water") }}</b><span class="small muted">{{ _("Always on: write, say or photograph what you eat") }}</span></span></label>
+      {% for key, ic, lab, sub in tracks %}
+      <label class="track"><input type="checkbox" name="tracks" value="{{ key }}" {{ "checked" if key in chosen_tracks }} {% if key == "weather" %}onchange="document.getElementById('city-row').hidden = !this.checked"{% endif %}>{{ icon(ic) }}<span><b>{{ _(lab) }}</b><span class="small muted">{{ _(sub) }}</span></span></label>
+      {% if key == "weather" %}
+      <div id="city-row" {{ "hidden" if "weather" not in chosen_tracks }} style="margin:2px 0 6px 44px">
+        <label for="city">{{ _("Your city") }}</label><input id="city" name="city" value="{{ city }}" placeholder="{{ _('Kyiv') }}">
+        {% if city_error %}<p class="notice error small" style="margin-top:6px">{{ _("Couldn't find that city. Check the spelling or leave it empty.") }}</p>{% endif %}
+      </div>
+      {% endif %}
+      {% endfor %}
+      <p class="hint">{{ _("No keys or passwords now. After this, the app shows you step by step how to connect each one.") }}</p>
+    </fieldset>
+    <button class="btn ink" style="width:100%;height:48px;margin-top:6px">{{ _("Start") }}</button>
+  </form>
+</main>
 {% endblock %}

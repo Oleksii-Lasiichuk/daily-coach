@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Nutrition") }} · Daily Coach{% endblock %}
+{% macro nrow(r) %}
+<tr><td style="width:34%">{{ _(r.label) }}</td>
+  <td><div class="bar" style="margin-top:7px"><i class="{{ r.flag or ('ink' if r.kind == 'limit' else '') }}" style="width:{{ [100, r.pct or 0] | min }}%"></i></div></td>
+  <td class="num" style="width:32%">{{ r.value | round(1) | string | replace(".0", "") }}{% if r.target %} <span class="muted">/ {{ r.target }}{{ " " + _(r.unit) if r.unit != "kcal" else "" }}</span>{% endif %}
+    {% if r.flag == "over" %}<span class="badge bad">{{ _("high") }}</span>{% elif r.flag == "low" %}<span class="badge warn">{{ _("low") }}</span>{% endif %}</td></tr>
+{% endmacro %}
+{% block main %}
+{% set d = v.day %}{% set e = v.byk.kcal %}
+<div class="page">
+  <div class="pagehead"><h1>{{ _("Nutrition") }}</h1>{% include "partials/nutrition_tabs.html" %}</div>
+  <nav class="daynav" aria-label="{{ _('Day') }}">
+    <a class="btn sm ghost" href="/nutrition?day={{ prev.isoformat() }}" aria-label="{{ _('Previous day') }}">{{ icon("chevron-left") }}</a>
+    <div class="daynav-title"><b>{{ _("Today") if d == today else (_("Yesterday") if (today - d).days == 1 else d | fdate("day")) }}</b>
+      {% if d == today or (today - d).days == 1 %}<span class="small muted">{{ d | fdate("dm") }}</span>{% endif %}
+      {% if v.day_type %}<span class="daytype {{ v.day_type }}" style="font-size:14px">{{ _(DAY_NAMES[v.day_type] ~ " day") }}</span>{% endif %}</div>
+    {% if next %}<a class="btn sm ghost" href="/nutrition?day={{ next.isoformat() if next < today else '' }}" aria-label="{{ _('Next day') }}">{{ icon("chevron-right") }}</a>
+    {% else %}<span class="btn sm ghost" aria-hidden="true" style="visibility:hidden">{{ icon("chevron-right") }}</span>{% endif %}
+  </nav>
+
+  {% if not v.logs %}
+    <div class="card" style="margin-top:14px"><h2>{{ _("Nothing logged this day") }}</h2>
+      <p class="muted small">{{ _("Tell the coach what you ate, record a voice note, or send a photo of your plate on") }} <a href="/">{{ _("Today") }}</a>.</p></div>
+  {% else %}
+  <div class="grid2" style="margin-top:14px">
+    <div class="card">
+      <span class="label">{{ _("Energy") }}</span>
+      <p style="margin-top:2px"><span class="bignum">{{ e.value | int }}</span> <span class="muted">/ {{ e.target }} {{ _("kcal") }}</span></p>
+      <div class="bar" style="margin-top:6px"><i class="{{ 'over' if e.pct and e.pct > 110 }}" style="width:{{ [100, e.pct or 0] | min }}%"></i></div>
+      <p class="small muted" style="margin-top:6px">
+        {% if e.value < e.target %}{{ _("Left") }}: {{ (e.target - e.value) | int }} {{ _("kcal") }}{% else %}{{ _("Over by") }} {{ (e.value - e.target) | int }} {{ _("kcal") }}{% endif %}
+        {% if v.burned %} · {{ _("burned in training") }} {{ v.burned }} {{ _("kcal") }}{% endif %}</p>
+      <div class="grid3" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px">
+        {% for k in ["protein_g", "carbs_g", "fat_g", "fiber_g"] %}{% set r = v.byk[k] %}
+        <div><div class="row between tiny"><span class="muted">{{ _(r.label) }}</span><span>{{ r.value | int }}/{{ r.target }} {{ _("g") }}</span></div>
+          <div class="bar" style="margin-top:4px;height:4px"><i class="{{ r.flag or 'ink' }}" style="width:{{ [100, r.pct or 0] | min }}%"></i></div></div>
+        {% endfor %}
+      </div>
+      <p class="tiny muted" style="margin-top:10px">{{ _("Targets follow your day type and weight (more carbs on hard and long days).") }}</p>
+    </div>
+    <div class="card"><h2>{{ _("Coach's review") }}</h2>
+      <div hx-get="/nutrition/review?day={{ d.isoformat() }}" hx-trigger="load" hx-swap="innerHTML">
+        <p class="small muted"><span class="dots"><i></i><i></i><i></i></span> {{ _("Reading your day…") }}</p></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px"><h2>{{ _("Meals") }}</h2>
+    {% for part, logs, t in v.parts %}
+    <div class="row between" style="margin-top:12px"><span class="label">{{ _(part) }}</span>
+      <span class="small muted">{{ t.kcal | int }} {{ _("kcal") }}{% if part != "Drinks" %} · {{ _("P") }} {{ t.protein_g | int }} · {{ _("C") }} {{ t.carbs_g | int }} · {{ _("F") }} {{ t.fat_g | int }}{% endif %}</span></div>
+    <ul class="list small" style="margin-top:4px">
+      {% for lg in logs %}{% with next="/nutrition?day=" ~ d.isoformat() %}{% include "partials/log_row.html" %}{% endwith %}{% endfor %}
+    </ul>
+    {% endfor %}
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card"><h2>{{ _("Drinks and training") }}</h2>
+      <div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="metric"><span class="k">{{ _("Water") }}</span><span class="v">{{ v.drinks.water_l }}<small> {{ _("L") }}</small></span></div>
+        <div class="metric"><span class="k">{{ _("Caffeine") }}</span><span class="v">{{ v.drinks.caffeine_mg }}<small> {{ _("mg") }}</small></span><span class="u">{{ _("limit") }} 400</span></div>
+        <div class="metric"><span class="k">{{ _("Alcohol") }}</span><span class="v">{{ v.drinks.alcohol_g }}<small> {{ _("g") }}</small></span><span class="u">{{ _("limit") }} 20</span></div>
+      </div>
+      {% if v.training %}<ul class="list small" style="margin-top:10px">{% for a in v.training %}
+        <li>{{ icon("run") }}<span class="grow">{{ a.name or _(sport_name(a.type)) }}</span><span class="muted">{% if a.minutes %}{{ a.minutes }} {{ _("min") }}{% endif %}{% if a.kcal %} · {{ a.kcal | int }} {{ _("kcal") }}{% endif %}</span></li>{% endfor %}</ul>
+      {% else %}<p class="small muted" style="margin-top:10px">{{ _("No training recorded this day.") }}</p>{% endif %}
+    </div>
+    <div class="card"><h2>{{ _("Nutrients") }}</h2>
+      <table class="tbl small">{% for k in ["sugar_g", "salt_g", "sat_fat_g"] %}{{ nrow(v.byk[k]) }}{% endfor %}</table>
+      <details style="margin-top:10px" open><summary class="small" style="cursor:pointer">{{ _("Vitamins and minerals") }}</summary>
+        <table class="tbl small" style="margin-top:6px">{% for k in ["iron_mg", "calcium_mg", "potassium_mg", "magnesium_mg", "vit_c_mg", "vit_d_ug"] %}{{ nrow(v.byk[k]) }}{% endfor %}</table>
+        <p class="tiny muted" style="margin-top:6px">{{ _("Adult reference values (EFSA/NIH). Vitamin D comes mostly from the sun, so a low number from food alone is common.") }}</p></details>
+    </div>
+  </div>
+  <p class="notice small" style="margin-top:14px">{{ icon("info") }} {{ _("These are estimates from your words and photos. On a public test set (NutriBench) the average error is about 70 kcal per meal; about 3 meals in 4 are within ±20%. If you know better, fix a meal below: ×½, ×2, your own kcal, or new text.") }}</p>
+  {% endif %}
+</div>
+<script>
+  // swipe left/right on a phone to change the day
+  (() => { let x0 = null; const prev = {{ ("/nutrition?day=" ~ prev.isoformat()) | tojson }}, next = {{ (("/nutrition?day=" ~ next.isoformat()) if next else "") | tojson }};
+    document.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 80) { if (dx > 0) location.href = prev; else if (next) location.href = next; } }, { passive: true });
+  })();
+</script>
+{% endblock %}

@@ -46,29 +46,33 @@ DEEP_MODEL = "anthropic/claude-sonnet-5.5"  # "Think harder"
 MODELS = {SMART_MODEL: "Gemini 3.8 Flash", DEEP_MODEL: "Claude Sonnet 5.5",
           FAST_MODEL: "Gemini 3.1 Flash-Lite"}
 
-_client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=settings.openrouter_api_key,
-    timeout=30,
-    max_retries=2,  # retries 429 and 5xx with backoff
-    default_headers={"X-Title": "Daily Coach"},
-)
+def _app_client(api_key: str) -> OpenAI:
+    return OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key, timeout=30,
+                  max_retries=2,  # retries 429 and 5xx with backoff
+                  default_headers={"X-Title": "Daily Coach"})
 
 
-MONTHLY_CAP_USD = 20.0  # cap per user on the app's key; no cap with the user's own key
+_client = _app_client(settings.openrouter_api_key)
+# Optional second app key ("family"): spending shows apart on the OpenRouter dashboard.
+_family_client = (_app_client(settings.openrouter_api_key_family)
+                  if settings.openrouter_api_key_family else _client)
 
+MEMBER_CAP_USD = 20.0  # monthly cap on the app's key for ALLOWED_EMAILS and admins
+STARTER_CAP_USD = 1.0  # for everyone else until the admin raises it on /admin
+MONTHLY_CAP_USD = MEMBER_CAP_USD  # kept for older callers and docs
 
 _user_clients: dict[str, OpenAI] = {}
 
 
 def client_for(user_id: str | None) -> OpenAI:
-    """The user's own OpenRouter key when they added one, else the app's key."""
+    """The user's own OpenRouter key when they added one, else the app key of their pool."""
     if not user_id:
         return _client
     from app import crypto, store
     row = store.get_secret(user_id, "openrouter")
     if not row:
-        return _client
+        user = store.get_user(user_id)
+        return _family_client if user and user.key_pool == "family" else _client
     if row["ciphertext"] not in _user_clients:
         _user_clients[row["ciphertext"]] = OpenAI(
             base_url="https://openrouter.ai/api/v1", api_key=crypto.decrypt(row["ciphertext"]),
@@ -82,27 +86,43 @@ def uses_own_key(user_id: str) -> bool:
 
 
 def is_member(user_id: str) -> bool:
-    """Members may use the app's key; guests from open sign-up may not. Without open sign-up
-    only allowlisted people can sign in, so everyone is a member (also tests and evals)."""
-    if not settings.open_signup:
-        return True
+    """On the allowlist, an admin or the demo athlete: the bigger default cap."""
     from app import demo, store
     user = store.get_user(user_id)
     email = user.email.lower() if user else ""
-    return email in settings.allowed_email_set or (demo.enabled() and email == demo.EMAIL)
+    return (email in settings.allowed_email_set or email in settings.admin_email_set
+            or (demo.enabled() and email == demo.EMAIL) or not settings.open_signup)
+
+
+def cap_for(user_id: str) -> float:
+    from app import store
+    user = store.get_user(user_id)
+    if user and user.monthly_cap_usd is not None:
+        return user.monthly_cap_usd
+    return MEMBER_CAP_USD if is_member(user_id) else STARTER_CAP_USD
+
+
+def may_use_app_key(user_id: str) -> bool:
+    from app import store
+    user = store.get_user(user_id)
+    return bool(user) and user.ai_access == "allowed"
 
 
 def check_budget(user_id: str | None) -> None:
-    """Before every model call: guests need their own key; members have a monthly cap."""
-    from app import store
+    """Before every model call: blocked people need their own key; others have a monthly cap
+    on the app's key (per person, set on /admin)."""
+    from app import i18n, store
     if not user_id or uses_own_key(user_id):
         return
-    if not is_member(user_id):
-        raise BudgetExceeded("Add your own OpenRouter key in Settings → Advanced to use the AI. "
-                             "Guests pay for their own AI use.")
-    if store.month_cost(user_id) >= MONTHLY_CAP_USD:
-        raise BudgetExceeded(f"Monthly AI budget of ${MONTHLY_CAP_USD:.0f} is used up. Add your "
-                             "own OpenRouter key in Settings → Advanced to continue.")
+    lang = store.user_lang(user_id)
+    if not may_use_app_key(user_id):
+        raise BudgetExceeded(i18n.t("AI access is paused for your account. Ask the person who "
+                                    "invited you, or add your own OpenRouter key in Settings → "
+                                    "Advanced.", lang))
+    if store.month_cost(user_id) >= cap_for(user_id):
+        raise BudgetExceeded(i18n.t("This month's AI budget is used up. Ask the person who "
+                                    "invited you to raise it, or add your own OpenRouter key in "
+                                    "Settings → Advanced.", lang))
 
 
 def chat(*, name: str, model: str, messages: list[dict], tools: list[dict] | None = None,

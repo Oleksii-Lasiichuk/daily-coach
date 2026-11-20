@@ -1,3 +1,3 @@
 {% for m in reply_msgs %}{% include "partials/msg.html" %}{% endfor %}
-{% if error %}<div class="msg coach"><div class="body"><p style="color:var(--bad)">{{ error }}</p></div></div>{% endif %}
-{% include "partials/rail_refresh.html" %}
+{% if error %}<div class="msg coach"><div class="body"><p style="color:var(--bad)">{{ _(error) }}</p></div></div>{% endif %}
+{% if day is defined %}{% include "partials/rail_refresh.html" %}{% endif %}

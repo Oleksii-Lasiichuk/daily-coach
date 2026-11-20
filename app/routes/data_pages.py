@@ -7,9 +7,10 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 
-from app import health, intervals, nutrition_stats, patterns, store
+from app import health, intervals, llm, nutrition_stats, patterns, store
 from app.auth import current_user
 from app.db import connection
+from app.pipeline import day_review
 from app.web import shell, templates
 
 router = APIRouter(dependencies=[Depends(current_user)])
@@ -20,9 +21,44 @@ def _today(user: store.User) -> date:
 
 
 @router.get("/nutrition", response_class=HTMLResponse)
-def nutrition(request: Request, days: int = 1, user: store.User = Depends(current_user)):
-    days = days if days in (1, 7, 30) else 1
+def nutrition(request: Request, days: int = 0, day: str = "",
+              user: store.User = Depends(current_user)):
+    """One day, Garmin-style, with ‹ date › (default), or the 7/30-day trends (?days=)."""
     today = _today(user)
+    if days in (7, 30):
+        return _nutrition_trends(request, user, today, days)
+    try:
+        d = min(date.fromisoformat(day), today) if day else today
+    except ValueError:
+        d = today
+    v = nutrition_stats.day_view(user, d, today)
+    return templates.TemplateResponse(request, "nutrition_day.html", shell(
+        user, "/nutrition", v=v, today=today, prev=d - timedelta(days=1),
+        next=d + timedelta(days=1) if d < today else None))
+
+
+@router.get("/nutrition/review", response_class=HTMLResponse)
+def nutrition_review(request: Request, day: str = "", user: store.User = Depends(current_user)):
+    """C9: the coach's review of one day (loaded after the page; cached per day)."""
+    today = _today(user)
+    try:
+        d = min(date.fromisoformat(day), today)
+    except ValueError:
+        return HTMLResponse("", status_code=404)
+    v = nutrition_stats.day_view(user, d, today)
+    rv, error = None, None
+    if v["logs"]:
+        try:
+            rv = day_review.cached_review(user.id, v["review_input"])
+        except llm.BudgetExceeded as e:
+            error = str(e)
+        except llm.LLMError:
+            error = "Couldn't write the review. Try again later."
+    return templates.TemplateResponse(request, "partials/day_review.html",
+                                      shell(user, "/nutrition", rv=rv, error=error))
+
+
+def _nutrition_trends(request: Request, user: store.User, today: date, days: int):
     first = today - timedelta(days=days - 1)
     meals = [lg for lg in store.logs_between(user.id, first, today)
              if lg["data"].get("nutrition") or lg["kind"] in ("meal", "drink", "alcohol")]
@@ -30,13 +66,11 @@ def nutrition(request: Request, days: int = 1, user: store.User = Depends(curren
     for m in reversed(meals):
         by_day.setdefault(m["day"], []).append(m)
     s = nutrition_stats.summary(user, today, days)
-    top_days = max(days, 7)  # one day says nothing about what you eat most
-    top = s["top_foods"] if days >= 7 else nutrition_stats.summary(user, today, 7)["top_foods"]
+    top = s["top_foods"]
     return templates.TemplateResponse(request, "nutrition.html", shell(
         user, "/nutrition", days=days, rows=nutrition_stats.bars(user, today, days), s=s,
-        by_day=by_day, top=top, top_days=top_days, today=today,
-        totals=nutrition_stats.day_totals, water=nutrition_stats.water_l(
-            store.logs_between(user.id, today, today))))
+        by_day=by_day, top=top, top_days=days, today=today,
+        totals=nutrition_stats.day_totals, water=0))
 
 
 def rolling(values: list, n: int) -> list:
@@ -145,13 +179,13 @@ def health_page(request: Request, user: store.User = Depends(current_user)):
     today = _today(user)
     connected = store.get_secret(user.id, "intervals") is not None
     sync_error = None
-    if connected and (health.last_synced(user.id) or date(2000, 1, 1)) < today:
+    if connected and health.last_synced(user.id) is None:  # first visit after connecting
         try:
             health.sync(user.id, today)
         except intervals.IntervalsError as e:
             sync_error = str(e)
     else:
-        health.maybe_sync(user.id, datetime.now(ZoneInfo(user.time_zone)))
+        health.sync_soon(user.id, datetime.now(ZoneInfo(user.time_zone)))
     profile = store.get_profile(user.id)
     data = chart_data(user.id, today)
     rows = health.series(user.id, today - timedelta(days=30), today)
@@ -182,13 +216,13 @@ def training(request: Request, week: str = "", user: store.User = Depends(curren
     start -= timedelta(days=start.weekday())
     end = start + timedelta(days=6)
     connected = store.get_secret(user.id, "intervals") is not None
-    if connected and (health.last_synced(user.id) or date(2000, 1, 1)) < today:
+    if connected and health.last_synced(user.id) is None:  # first visit after connecting
         try:
             health.sync(user.id, today)
         except intervals.IntervalsError:
             pass
     else:
-        health.maybe_sync(user.id, datetime.now(ZoneInfo(user.time_zone)))
+        health.sync_soon(user.id, datetime.now(ZoneInfo(user.time_zone)))
     acts = health.activities(user.id, start, end)
     logs = store.logs_between(user.id, start, end)
     with connection() as c:

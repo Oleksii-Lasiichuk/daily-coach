@@ -1,6 +1,7 @@
 """Push subscription (signed in), the service worker file, and the cron tick (secret header)."""
 
 import hmac
+import time
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse, Response
@@ -70,6 +71,24 @@ async def push_answer(request: Request, user: store.User = Depends(current_user)
 
 def cron_secret() -> str:
     return get_settings().cron_secret or derived_key("cron")
+
+
+@router.post("/cron/hold/{turn_id}")
+def hold_cpu(request: Request, turn_id: int):
+    """Stays open while a chat turn runs (at most 3 min). Called by the instance itself (see
+    pages._keep_cpu): with request-based billing Cloud Run gives CPU only during requests, so
+    without it a reply would stop when the person leaves the app. Returns no personal data."""
+    given = request.headers.get("x-cron-secret", "")
+    if not cron_secret() or not hmac.compare_digest(given, cron_secret()):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    deadline = time.monotonic() + 180
+    status = "running"
+    while status == "running" and time.monotonic() < deadline:
+        time.sleep(1)
+        with connection() as c:
+            r = c.execute("select status from chat_turns where id = %s", (turn_id,)).fetchone()
+        status = r["status"] if r else "missing"
+    return {"status": status}
 
 
 @router.post("/cron/tick")

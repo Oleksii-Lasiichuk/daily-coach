@@ -2,7 +2,7 @@
 and every query filters by it (S2 in docs/design-guidelines.md)."""
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
@@ -18,13 +18,23 @@ class User:
     display_name: str | None
     time_zone: str
     setup_step: int = 5
+    ai_access: str = "allowed"  # 'allowed' (may use the app's key) or 'blocked'
+    monthly_cap_usd: float | None = None  # None = the default cap for the role
+    key_pool: str = "main"  # which app key pays: 'main' or 'family'
+    tracks: list = field(default_factory=list)  # chosen at sign-up: 'training', 'weather', …
+    is_new: bool = False  # set by upsert_user on the first sign-in
 
 
 def _user(row: dict | None) -> User | None:
     if row is None:
         return None
+    cap = row.get("monthly_cap_usd")
     return User(id=str(row["id"]), email=row["email"], display_name=row["display_name"],
-                time_zone=row["time_zone"], setup_step=row.get("setup_step", 5))
+                time_zone=row["time_zone"], setup_step=row.get("setup_step", 5),
+                ai_access=row.get("ai_access", "allowed"),
+                monthly_cap_usd=float(cap) if cap is not None else None,
+                key_pool=row.get("key_pool", "main"), tracks=row.get("tracks") or [],
+                is_new=bool(row.get("inserted")))
 
 
 # --- users -------------------------------------------------------------------------------
@@ -35,7 +45,7 @@ def upsert_user(firebase_uid: str, email: str, display_name: str | None) -> User
             """insert into users (firebase_uid, email, display_name) values (%s, %s, %s)
                on conflict (firebase_uid) do update
                  set email = excluded.email, display_name = excluded.display_name
-               returning *""",
+               returning *, (xmax = 0) as inserted""",
             (firebase_uid, email.lower(), display_name),
         ).fetchone()
     return _user(row)
@@ -51,6 +61,34 @@ def set_setup_step(user_id: str, step: int) -> None:
         c.execute("update users set setup_step = %s where id = %s", (step, user_id))
 
 
+def set_tracks(user_id: str, tracks: list[str]) -> None:
+    with connection() as c:
+        c.execute("update users set tracks = %s where id = %s", (Jsonb(tracks), user_id))
+
+
+def set_ai_access(user_id: str, *, access: str, cap: float | None, key_pool: str) -> None:
+    """Admin only (checked by the route): who may use the app's key, up to which cap."""
+    with connection() as c:
+        c.execute("update users set ai_access = %s, monthly_cap_usd = %s, key_pool = %s "
+                  "where id = %s", (access, cap, key_pool, user_id))
+
+
+def all_users_with_cost() -> list[dict]:
+    """Admin page: every account with this month's AI cost (no personal data beyond the
+    name and email they signed in with)."""
+    with connection() as c:
+        return c.execute(
+            """select u.id, u.email, u.display_name, u.created_at, u.ai_access,
+                      u.monthly_cap_usd, u.key_pool, u.setup_step,
+                      exists (select 1 from user_secrets s where s.user_id = u.id
+                              and s.provider = 'openrouter') as own_key,
+                      coalesce((select sum(cost_usd) from llm_usage l where l.user_id = u.id
+                                and l.created_at >= date_trunc('month', now())), 0) as cost,
+                      (select max(created_at) from chat_messages m where m.user_id = u.id
+                       and m.role = 'user') as last_seen
+               from users u order by u.created_at desc""").fetchall()
+
+
 def set_time_zone(user_id: str, time_zone: str) -> None:
     with connection() as c:
         c.execute("update users set time_zone = %s where id = %s", (time_zone, user_id))
@@ -60,6 +98,12 @@ def user_lang(user_id: str) -> str:
     with connection() as c:
         r = c.execute("select lang from user_prefs where user_id = %s", (user_id,)).fetchone()
     return r["lang"] if r else "en"
+
+
+def set_lang(user_id: str, lang: str) -> None:
+    with connection() as c:
+        c.execute("insert into user_prefs (user_id, lang) values (%s, %s) on conflict (user_id) "
+                  "do update set lang = excluded.lang", (user_id, lang))
 
 
 def mark_once(user_id: str, key: str, day: date) -> bool:
@@ -151,6 +195,42 @@ def recent_messages(user_id: str, limit: int = 20) -> list[dict]:
                          "where user_id = %s order by id desc limit %s",
                          (user_id, limit)).fetchall()
     return list(reversed(rows))
+
+
+# --- chat turns (a reply runs in the background, so leaving the page loses nothing) -----
+
+TURN_TIMEOUT_MIN = 3
+
+
+def start_turn(user_id: str, message_id: int) -> int:
+    with connection() as c:
+        return c.execute("insert into chat_turns (user_id, message_id) values (%s, %s) "
+                         "returning id", (user_id, message_id)).fetchone()["id"]
+
+
+def finish_turn(user_id: str, turn_id: int, reply_id: int | None, error: str | None) -> None:
+    with connection() as c:
+        c.execute("update chat_turns set status = %s, reply_id = %s, error = %s, "
+                  "finished_at = now() where id = %s and user_id = %s",
+                  ("done" if reply_id else "failed", reply_id, error, turn_id, user_id))
+
+
+def get_turn(user_id: str, turn_id: int) -> dict | None:
+    """A turn running longer than TURN_TIMEOUT_MIN is treated as failed (the server restarted
+    or the model hung)."""
+    with connection() as c:
+        c.execute("update chat_turns set status = 'failed', error = 'timeout', finished_at = "
+                  "now() where user_id = %s and status = 'running' and started_at < now() - "
+                  "make_interval(mins => %s)", (user_id, TURN_TIMEOUT_MIN))
+        return c.execute("select * from chat_turns where id = %s and user_id = %s",
+                         (turn_id, user_id)).fetchone()
+
+
+def running_turn(user_id: str) -> dict | None:
+    with connection() as c:
+        r = c.execute("select id from chat_turns where user_id = %s and status = 'running' "
+                      "order by id desc limit 1", (user_id,)).fetchone()
+    return get_turn(user_id, r["id"]) if r else None
 
 
 # --- facts -------------------------------------------------------------------------------

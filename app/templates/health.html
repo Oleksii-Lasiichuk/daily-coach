@@ -6,7 +6,7 @@
     <h1>{{ _("Health") }}</h1>
     <div class="seg" id="range" role="group" aria-label="{{ _('Period') }}">{% for d, lab in [(30, "30 days"), (90, "90 days"), (180, "6 months"), (365, "Year"), (0, "All")] %}<button type="button" data-days="{{ d }}" {% if d == 90 %}aria-current="true"{% endif %}>{{ _(lab) }}</button>{% endfor %}</div>
   </div>
-  {% if sync_error %}<p class="notice error" style="margin-bottom:12px">{{ sync_error }}</p>{% endif %}
+  {% if sync_error %}<p class="notice error" style="margin-bottom:12px">{{ _(sync_error) }}</p>{% endif %}
   {% if not connected %}<div class="card" style="margin-bottom:14px"><h2>{{ _("Connect intervals.icu") }}</h2><p class="small muted">{{ _("Your Garmin sends sleep, HRV, resting heart rate, weight and training to intervals.icu.") }} <a href="/settings#intervals">{{ _("Connect it in Settings") }}</a> {{ _("to see a year of it here.") }}</p></div>{% endif %}
 
   {% if data.meta %}
@@ -66,7 +66,7 @@
       </div>
       {% if zones %}<div class="card"><h2>{{ _("Your zones") }}</h2>
         <table class="tbl small">{% for sport, z in zones.items() %}
-          <tr><td style="width:22%">{{ sport }}</td><td>{% if z.hr_zones_bpm %}{% for k, v in z.hr_zones_bpm.items() %}{{ k }} {{ v }}{{ " · " if not loop.last }}{% endfor %}{% endif %}
+          <tr><td style="width:22%">{{ _(sport_name(sport)) }}</td><td>{% if z.hr_zones_bpm %}{% for k, v in z.hr_zones_bpm.items() %}{{ k }} {{ v }}{{ " · " if not loop.last }}{% endfor %}{% endif %}
             <div class="tiny muted">{% if z.lthr %}LTHR {{ z.lthr }} · {% endif %}{% if z.max_hr %}max {{ z.max_hr }}{% endif %}{% if z.threshold_pace_per_km %} · {{ _("threshold") }} {{ z.threshold_pace_per_km }}/km{% endif %}{% if z.threshold_pace_per_100m %} · {{ _("threshold") }} {{ z.threshold_pace_per_100m }}/100 m{% endif %}{% if z.ftp %} · FTP {{ z.ftp }} W{% endif %}</div></td></tr>
         {% endfor %}</table>
         <p class="tiny faint" style="margin-top:6px">{{ _("Heart rate zones in bpm, from intervals.icu. Z1–Z2 easy, Z3 steady, Z4 threshold, Z5 maximal.") }}</p></div>{% endif %}

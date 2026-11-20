@@ -1,0 +1,6 @@
+{# EN / UA switch for every page, also before sign-in (the choice is kept in the session). #}
+<form method="post" action="/lang" class="seg" style="margin:0" aria-label="{{ _('Language') }}">
+  <input type="hidden" name="next" value="{{ request.url.path if request else '/' }}">
+  <button name="lang" value="en" {% if lang != "uk" %}aria-current="true"{% endif %}>English</button>
+  <button name="lang" value="uk" {% if lang == "uk" %}aria-current="true"{% endif %}>Українська</button>
+</form>

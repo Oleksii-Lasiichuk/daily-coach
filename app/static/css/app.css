@@ -72,6 +72,8 @@ svg { width: 18px; height: 18px; flex: none; }  /* default for inline icons */
 
 /* ---------- surfaces ---------- */
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.card.skeleton { min-height: 120px; background: var(--line-2); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
 .card h2 { margin-bottom: 8px; }
 .label { font-size: 12px; color: var(--muted); letter-spacing: .02em; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
@@ -437,3 +439,27 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
 .weekbars .tiny { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .cal-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
 @media (max-width: 760px) { .cal-grid { grid-template-columns: 1fr; } }
+
+/* v7: one-screen welcome */
+.welcome { max-width: 520px; margin: 0 auto; padding: 24px 16px 48px; }
+.tracks { border: 0; padding: 0; margin: 4px 0 0; min-width: 0; }
+.tracks legend { font-size: 14px; color: var(--ink); margin-bottom: 8px; padding: 0; }
+.track { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--panel); color: var(--ink); cursor: pointer; min-height: 56px; }
+.track > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.track input { width: 20px; height: 20px; flex: none; accent-color: var(--ink); margin: 0; }
+.track svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
+.track:has(input:checked) { border-color: var(--ink); }
+.track.on { cursor: default; }
+/* setup cards: one at a time */
+.setup-card:not([hidden]) ~ .setup-card { display: none; }
+.setup-card h3 { font-size: 15px; font-weight: 500; }
+.steps-num { padding-left: 20px; margin: 8px 0; } .steps-num li { margin: 6px 0; }
+.seg label span { display: inline-block; color: var(--muted); font: 500 13px/1 var(--font); padding: 7px 11px; border-radius: 8px; cursor: pointer; }
+.seg input:checked + span { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* v7: nutrition day view */
+.daynav { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.daynav-title { display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; text-align: center; font-size: 16px; }
+.daynav .btn { width: 44px; height: 44px; }

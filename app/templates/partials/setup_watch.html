@@ -1,0 +1,13 @@
+{# Sheet: connect a Garmin (or another watch) through intervals.icu, for a non-technical reader. #}
+<h2 id="sheet-title">{{ _("Connect your watch") }}</h2>
+<p class="small muted" style="margin-top:4px">{{ _("Your watch talks to the coach through intervals.icu, a free site that copies your Garmin data. You do this once.") }}</p>
+<ol class="steps-num small">
+  <li>{{ _("Open") }} <a href="https://intervals.icu" target="_blank" rel="noopener">intervals.icu</a> {{ _("and press “Sign up”. “Sign in with Google” is the easiest. It's free.") }}</li>
+  <li>{{ _("Connect Garmin: in intervals.icu open Settings (the gear at the top), find “Garmin Connect”, press Connect and sign in with your Garmin account. Allow everything it asks to share. Your runs, sleep and heart rate come in within a few minutes.") }}</li>
+  <li>{{ _("In the same Settings, scroll down to “Developer Settings”. Copy the “Athlete ID” (it looks like i123456).") }}</li>
+  <li>{{ _("Next to “API Key” press “Generate”, then copy the key.") }}</li>
+  <li>{{ _("Paste both below and press Connect. If something is wrong, it says what.") }}</li>
+</ol>
+<p class="tiny muted">{{ _("Coros, Suunto, Polar, Wahoo and Apple Watch (through an app) also connect to intervals.icu the same way.") }}</p>
+<div style="margin-top:12px">{% include "partials/intervals.html" %}</div>
+<script>document.body.addEventListener("intervalsChanged", () => setTimeout(() => location.reload(), 1200), { once: true });</script>

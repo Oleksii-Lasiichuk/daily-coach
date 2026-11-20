@@ -1,4 +1,5 @@
 {% from "_icons.html" import icon with context %}
+{% if setup %}{% include "partials/setup_cards.html" %}{% endif %}
 {% macro delta(v, usual, higher_better) %}{% if v is not none and usual %}{% set pct = ((v - usual) / usual * 100) | round | int %}{% if pct | abs >= 5 %}{% set bad = (pct < 0) == higher_better %}<b class="delta {{ 'bad' if bad and pct | abs >= 10 else ('good' if not bad else '') }}">{{ "▲" if pct > 0 else "▼" }}{{ pct | abs }}%</b>{% endif %}{% endif %}{% endmacro %}
 <div class="card">
   <div class="row between"><span class="daylink"><a href="/day/{{ (day | prevday) }}" aria-label="{{ _('Previous day') }}">{{ icon("chevron-left") }}</a><a href="/day/{{ day.isoformat() }}" class="label" style="width:auto;padding:0 4px;color:var(--muted)" title="{{ _('Open the full day') }}">{{ day | fdate("day") }}</a></span>
@@ -33,9 +34,9 @@
       <li><b>{{ _("Form") }}</b>: {{ _("fitness (load of the last 6 weeks) minus fatigue (load of the last week), from intervals.icu. −10 to −30: you're building fitness; below −30: too much; above +5: fresh, good before a race.") }}</li>
     </ul></details>
   {% elif not connected %}<p class="small" style="margin-top:8px"><a href="/settings#intervals">{{ _("Connect intervals.icu") }}</a> {{ _("to see sleep and HRV.") }}</p>
-  {% elif wellness_error %}<p class="notice error small" style="margin-top:8px">{{ wellness_error }}</p>{% endif %}
+  {% elif wellness_error %}<p class="notice error small" style="margin-top:8px">{{ _(wellness_error) }}</p>{% endif %}
   {% if weather %}<p class="small muted" style="margin-top:8px">{{ icon("cloud") }} {{ weather.place }}: {{ weather.t_min | round | int }}–{{ weather.t_max | round | int }}°C{% if weather.rain_mm %} · {{ _("rain") }} {{ weather.rain_mm }} mm{% endif %}{% if weather.air %} · {{ _("air") }} {{ _(weather.air) }}{% endif %}</p>{% endif %}
-  {% if rail_error %}<p class="notice error small" style="margin-top:8px">{{ rail_error }}</p>{% endif %}
+  {% if rail_error %}<p class="notice error small" style="margin-top:8px">{{ _(rail_error) }}</p>{% endif %}
 </div>
 
 {% if race %}
@@ -77,11 +78,11 @@
 
 <div class="card">
   <div class="row between"><span class="label">{{ _("Fuel today") }}</span><a class="small" href="/nutrition">{{ _("Details") }}</a></div>
-  <p style="margin-top:2px"><b>{{ totals.kcal | int }}</b> <span class="muted">/ {{ targets.kcal }} kcal</span>{% if water_l %} <span class="muted small">· {{ _("water") }} {{ water_l }} L</span>{% endif %}</p>
+  <p style="margin-top:2px"><b>{{ totals.kcal | int }}</b> <span class="muted">/ {{ targets.kcal }} {{ _("kcal") }}</span>{% if water_l %} <span class="muted small">· {{ _("water") }} {{ water_l }} L</span>{% endif %}</p>
   <div class="bar" style="margin-top:6px"><i style="width:{{ [100, (100 * totals.kcal / targets.kcal) | int] | min }}%" class="{{ 'over' if totals.kcal > targets.kcal * 1.1 }}"></i></div>
   <div class="grid3" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px">
     {% for k, lab in [("protein_g", "Protein"), ("carbs_g", "Carbs"), ("fat_g", "Fat")] %}
-    <div><div class="row between tiny"><span class="muted">{{ _(lab) }}</span><span>{{ totals[k] | int }}/{{ targets[k] }} g</span></div>
+    <div><div class="row between tiny"><span class="muted">{{ _(lab) }}</span><span>{{ totals[k] | int }}/{{ targets[k] }} {{ _("g") }}</span></div>
       <div class="bar" style="margin-top:4px;height:4px"><i class="ink" style="width:{{ [100, (100 * totals[k] / targets[k]) | int] | min }}%"></i></div></div>
     {% endfor %}
   </div>

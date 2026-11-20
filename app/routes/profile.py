@@ -90,9 +90,7 @@ def settings_page(request: Request, user: store.User = Depends(current_user)):
 def set_lang(lang: str = Form("en"), next: str = Form("/settings"),
              user: store.User = Depends(current_user)):
     if lang in i18n.LANGS:
-        prefs(user.id)
-        with connection() as c:
-            c.execute("update user_prefs set lang = %s where user_id = %s", (lang, user.id))
+        store.set_lang(user.id, lang)
     ok = next.startswith("/") and not next.startswith("//")
     return RedirectResponse(next if ok else "/settings", status_code=303)
 
@@ -112,9 +110,7 @@ async def save_you(request: Request, user: store.User = Depends(current_user)):
         store.delete_profile_field(user.id, "sex")
     lang = str(form.get("lang", ""))
     if lang in i18n.LANGS:
-        prefs(user.id)
-        with connection() as c:
-            c.execute("update user_prefs set lang = %s where user_id = %s", (lang, user.id))
+        store.set_lang(user.id, lang)
     return set_place(str(form.get("time_zone", "")), str(form.get("city", "")),
                      str(form.get("plan_source", "")), user)
 

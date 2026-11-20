@@ -39,7 +39,11 @@ class FileFacts(BaseModel):
 
 
 class SourceError(Exception):
-    pass
+    """`text` is the user-facing message (translated by the route); `name` the file."""
+
+    def __init__(self, text: str, name: str = ""):
+        super().__init__(f"{name}: {text}" if name else text)
+        self.text, self.name = text, name
 
 
 # --- chunking ----------------------------------------------------------------------------
@@ -175,23 +179,23 @@ def excerpts(user_id: str, query: str, k: int = 4, chars: int = 900) -> list[str
 def add_source(user_id: str, filename: str, raw: bytes) -> int:
     name = (filename or "file.txt").rsplit("/", 1)[-1][:120]
     if not name.lower().endswith((".txt", ".md", ".markdown", ".json")):
-        raise SourceError(f"{name}: only .txt, .md and .json files are supported.")
+        raise SourceError("only .txt, .md and .json files are supported.", name)
     if len(raw) > MAX_BYTES:
-        raise SourceError(f"{name}: larger than 25 MB. Split it into parts.")
+        raise SourceError("larger than 25 MB. Split it into parts.", name)
     text = decode(raw).strip()
     if name.lower().endswith(".json"):
         text = json_to_text(text)
     if not text:
-        raise SourceError(f"{name}: the file is empty.")
+        raise SourceError("the file is empty.", name)
     chunks = chunk_text(text)
     if len(chunks) > MAX_CHUNKS:
-        raise SourceError(f"{name}: too long to read ({len(chunks)} parts, max {MAX_CHUNKS}). "
-                          "Upload a smaller part, e.g. one ChatGPT project.")
-    with connection() as c:
+        raise SourceError("too long to read. Upload a smaller part, e.g. one ChatGPT project.",
+                          name)
+    with connection(atomic=True) as c:  # the file and its chunks together
         n = c.execute("select count(*) as n from sources where user_id = %s",
                       (user_id,)).fetchone()["n"]
         if n >= MAX_FILES:
-            raise SourceError(f"You already have {MAX_FILES} files. Delete one first.")
+            raise SourceError("You already have 20 files. Delete one first.")
         sid = c.execute("insert into sources (user_id, filename, bytes, n_chunks) "
                         "values (%s, %s, %s, %s) returning id",
                         (user_id, name, len(raw), len(chunks))).fetchone()["id"]

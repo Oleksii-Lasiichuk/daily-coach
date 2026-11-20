@@ -43,11 +43,11 @@
   <div class="grid2" style="margin-top:12px">
     <div class="card"><h2>{{ _("Training") }}</h2>
       {% for a in acts %}<div class="act-row"><b class="small">{{ a.name or a.type }}</b>
-        <div class="tiny muted">{{ a.type }}{% if a.km %} · {{ a.km }} km{% endif %} · {{ a.minutes }} {{ _("min") }}{% if a.avg_hr %} · {{ _("avg HR") }} {{ a.avg_hr | int }}{% endif %}{% if a.max_hr %} / {{ a.max_hr | int }}{% endif %}{% if a.elev %} · ↑{{ a.elev | int }} m{% endif %}{% if a.load %} · {{ _("load") }} {{ a.load }}{% endif %}{% if a.kcal %} · {{ a.kcal | int }} kcal{% endif %}</div></div>{% endfor %}
+        <div class="tiny muted">{{ a.type }}{% if a.km %} · {{ a.km }} km{% endif %} · {{ a.minutes }} {{ _("min") }}{% if a.avg_hr %} · {{ _("avg HR") }} {{ a.avg_hr | int }}{% endif %}{% if a.max_hr %} / {{ a.max_hr | int }}{% endif %}{% if a.elev %} · ↑{{ a.elev | int }} m{% endif %}{% if a.load %} · {{ _("load") }} {{ a.load }}{% endif %}{% if a.kcal %} · {{ a.kcal | int }} {{ _("kcal") }}{% endif %}</div></div>{% endfor %}
       {% for p in proposals %}<div style="margin-top:10px">{% include "partials/session_card.html" %}</div>{% endfor %}
       {% if not acts and not proposals %}<p class="small muted">{{ _("No session recorded.") }}</p>{% endif %}
     </div>
-    <div class="card"><h2>{{ _("Log") }}</h2><p class="small muted">{{ totals.kcal | int }} kcal · {{ _("P") }} {{ totals.protein_g | int }} · {{ _("C") }} {{ totals.carbs_g | int }} · {{ _("F") }} {{ totals.fat_g | int }}</p>
+    <div class="card"><h2>{{ _("Log") }}</h2><p class="small muted">{{ totals.kcal | int }} {{ _("kcal") }} · {{ _("P") }} {{ totals.protein_g | int }} · {{ _("C") }} {{ totals.carbs_g | int }} · {{ _("F") }} {{ totals.fat_g | int }}</p>
       {% if logs %}<ul class="list small" style="margin-top:6px">{% for lg in logs %}{% with next="/day/" ~ day.isoformat() %}{% include "partials/log_row.html" %}{% endwith %}{% endfor %}</ul>
       {% else %}<p class="small muted">{{ _("Nothing logged.") }}</p>{% endif %}
       {% if not is_future %}

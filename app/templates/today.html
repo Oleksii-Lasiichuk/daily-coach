@@ -6,7 +6,7 @@
                 ("health", "Health", "Trends, conditions, medication and lab results.")] %}
 {% block main %}
 <div class="chat">
-  <div class="strip" id="strip-body">{% include "partials/rail_cards.html" %}</div>
+  <div class="strip" id="strip-body">{% if rail_lazy %}<div class="card skeleton" hx-get="/rail" hx-trigger="load" hx-swap="none" aria-busy="true"></div>{% else %}{% include "partials/rail_cards.html" %}{% endif %}</div>
   <div class="thread" id="thread" aria-live="polite">
     {% if not messages %}
     <div class="empty-chat">
@@ -26,6 +26,7 @@
     </div>
     {% endif %}
     {% for m in messages %}{% include "partials/msg.html" %}{% endfor %}
+    {% if turn %}{% include "partials/turn_wait.html" %}{% endif %}
   </div>
   <div class="composer">
     <div class="quick" role="group" aria-label="{{ _('Quick log') }}">
@@ -71,7 +72,7 @@
   <div class="thinking"><span class="dots"><i></i><i></i><i></i></span><span>{{ _("Working") }} · <span class="secs">0</span> {{ _("s") }}</span>
     <span class="tiny faint">{{ _("Logging and planning can take 10–30 s") }}</span></div></div></template>
 {% endblock %}
-{% block rail %}<div id="rail-body" style="display:contents">{% include "partials/rail_cards.html" %}</div>{% endblock %}
+{% block rail %}<div id="rail-body" style="display:contents">{% if rail_lazy %}<div class="card skeleton" aria-busy="true"></div>{% else %}{% include "partials/rail_cards.html" %}{% endif %}</div>{% endblock %}
 {% block body %}{{ super() }}
 <script>
   const isTouch = matchMedia("(pointer: coarse)").matches;
@@ -119,9 +120,13 @@
     const t0 = Date.now(); timer = setInterval(() => { const s = document.querySelector(".msg.pending .secs"); if (s) s.textContent = Math.round((Date.now() - t0) / 1000); }, 1000);
     setTimeout(() => { box.value = ""; box.style.height = "auto"; }, 0); scrollDown();
   }
-  function afterSend() { clearInterval(timer); document.querySelectorAll(".msg.pending").forEach(x => x.remove());
+  function afterSend() { clearInterval(timer); document.querySelectorAll(".msg.pending:not(.waiting)").forEach(x => x.remove());
     images = []; const a = document.getElementById("attachments"); a.hidden = true; a.innerHTML = ""; scrollDown(); }
   document.body.addEventListener("htmx:afterSwap", (e) => { if (e.detail.target.id === "thread") scrollDown(); });
+  document.body.addEventListener("htmx:afterSettle", (e) => { if ((e.detail.pathInfo?.requestPath || "").startsWith("/chat/turns/")) scrollDown(); });
+  // seconds on a running turn's bubble (also after coming back to the page)
+  setInterval(() => document.querySelectorAll(".msg.waiting").forEach((w) => {
+    const s = w.querySelector(".secs"); if (s) s.textContent = Math.max(0, Math.round(Date.now() / 1000 - w.dataset.start)); }), 1000);
   // Voice: record, then the AI transcribes (UA/EN mixed).
   (() => {
     const mic = document.getElementById("mic"), micIcon = mic.innerHTML, stopIcon = `{{ icon("stop") }}`;

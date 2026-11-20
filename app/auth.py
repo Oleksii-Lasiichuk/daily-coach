@@ -15,7 +15,8 @@ from app import store
 from app.config import get_settings
 
 # /healthz is reserved on Cloud Run; /cron/tick checks its own secret header; /sw.js is static JS.
-PUBLIC_PATHS = {"/login", "/auth/session", "/status", "/sw.js", "/cron/tick"}
+PUBLIC_PATHS = {"/login", "/auth/session", "/lang", "/status", "/sw.js", "/cron/tick",
+                "/cron/hold/{turn_id}"}
 SESSION_MAX_AGE = 14 * 24 * 3600
 
 _google_request = google_requests.Request()
@@ -62,7 +63,7 @@ def origin_ok(request: Request) -> bool:
     """CSRF guard: state-changing requests must come from our own pages."""
     if request.method in ("GET", "HEAD", "OPTIONS"):
         return True
-    if request.url.path == "/cron/tick":  # server-to-server; checked by its secret header
+    if request.url.path.startswith("/cron/"):  # server-to-server; checked by its secret header
         return True
     origin = (request.headers.get("origin") or request.headers.get("referer", "")).rstrip("/")
     return any(origin == o or origin.startswith(o + "/") for o in get_settings().origins)

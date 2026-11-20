@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.concurrency import run_in_threadpool
 
 from app import sources, store
 from app.auth import current_user
@@ -28,20 +29,22 @@ def _ctx(request: Request, user: store.User, **extra) -> dict:
 async def upload(request: Request, files: list[UploadFile],
                  user: store.User = Depends(current_user)):
     errors = []
-    from app import llm
-    if not llm.is_member(user.id):  # guests: a few files, so open sign-up can't fill the DB
+    from app import i18n, llm
+    lang = store.user_lang(user.id)
+    if not llm.is_member(user.id):  # newcomers: a few files, so open sign-up can't fill the DB
         with connection() as c:
             have = c.execute("select count(*) as n from sources where user_id = %s",
                              (user.id,)).fetchone()["n"]
         if have + len(files) > GUEST_MAX_FILES:
-            errors.append(f"Guests can keep up to {GUEST_MAX_FILES} files. Delete one first.")
+            errors.append(i18n.t("You can keep up to 5 files. Delete one first.", lang))
             files = []
     for f in files:
         raw = await f.read(sources.MAX_BYTES + 1)
         try:
-            sources.add_source(user.id, f.filename or "file.txt", raw)
+            await run_in_threadpool(sources.add_source, user.id, f.filename or "file.txt", raw)
         except sources.SourceError as e:
-            errors.append(str(e))
+            text = i18n.t(e.text, lang)
+            errors.append(f"{e.name}: {text}" if e.name else text)
     return templates.TemplateResponse(request, "partials/files.html",
                                       _ctx(request, user, errors=errors))
 
