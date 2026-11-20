@@ -6,6 +6,7 @@ import importlib
 import sys
 
 ALL = ["c7", "c1", "c2", "c3", "c4", "c5", "c6", "c0", "c8", "c9"]
+ALL += ["c11"]  # plan 11 B4
 HEADLINE = {
     "c7_safety": ["recall", "false_alarm_rate"],
     "c1_router": ["macro_f1", "exact_match", "no_write_on_questions"],
@@ -18,6 +19,8 @@ HEADLINE = {
     "c8_reply": ["correct", "grounded", "says_missing"],
     "c9_day_review": ["grounded", "notices_expected", "no_false_claim", "useful_mean_1_5"],
 }
+HEADLINE["c11_spend"] = ["rules_accuracy", "accuracy_with_c11", "c11_accuracy_on_unplaced",
+                         "receipt_total_exact", "meal_offer_accuracy", "privacy_violations"]
 
 
 def main(selected: list[str]):

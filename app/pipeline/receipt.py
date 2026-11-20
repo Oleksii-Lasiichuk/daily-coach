@@ -52,6 +52,8 @@ def categorised_lines(rc: Receipt) -> list[dict]:
         cat = spend_rules.product_category(ln.name)
         if rc.kind == "pharmacy" and cat not in ("sports_nutrition",):
             cat = "pharmacy"
+        if rc.kind == "restaurant" and cat == "groceries":
+            cat = "eating_out"  # a cola in a café is eaten out, not shopping
         out.append({"name": ln.name[:120], "qty": ln.qty, "amount": round(ln.price, 2),
                     "category": cat or default})
     rest = round(rc.total - sum(x["amount"] for x in out), 2)
