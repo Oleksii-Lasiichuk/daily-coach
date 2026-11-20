@@ -688,7 +688,8 @@ Reported per input kind (clean PNG, "phone photo", text PDF), so a weak spot is 
   photos; a PDF goes through the Health page or the setup card. The extracted table is a list in
   the chat (the chat's light Markdown has no tables). HEIC is not decoded on the server (iOS
   Safari sends JPEG for `accept="image/*"`).
-- **Not done / not verified:** no real lab sheets measured (synthetic only); not deployed; the
+- **Not done / not verified:** C1 router and C8 not re-run cleanly after the two new tools (the
+  shared OpenRouter key hit the new-account 20 req/min limit: 15 of 60 C1 cases got 429); no real lab sheets measured (synthetic only); not deployed; the
   chat path `read_lab_sheet` is covered by the C1 tool list but not by an end-to-end eval case.
 
 ---
