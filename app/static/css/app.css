@@ -474,3 +474,13 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
 .dayline-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
 .chip-warn { display: flex; gap: 6px; align-items: flex-start; color: var(--ink, inherit); background: var(--accent-soft); border-radius: 8px; padding: 6px 8px; }
 .chip-warn svg { width: 14px; height: 14px; flex: none; margin-top: 1px; }
+/* B3 lab results */
+.lab-grid { display: grid; grid-template-columns: 1fr; gap: 0 24px; margin-top: 8px; }
+@media (min-width: 900px) { .lab-grid { grid-template-columns: 1fr 1fr; } }
+.spark.lab .ref { fill: var(--good-soft); }
+.spark.lab circle { fill: var(--accent); }
+.lab-upload { margin: 0; }
+.lab-upload label { margin: 0; cursor: pointer; }
+.lab-edit { display: flex; gap: 6px; align-items: flex-end; flex-wrap: wrap; }
+.lab-edit input { width: 7.5em; }
+.file-chip { display: inline-flex; gap: 6px; align-items: center; padding: 4px 8px; border-radius: 8px; background: var(--bubble); font-size: .9em; margin-bottom: 4px; }

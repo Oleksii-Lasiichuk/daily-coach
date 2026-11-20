@@ -37,11 +37,17 @@ def athlete_context(user: store.User, day: date) -> dict:
     return {
         "date": day.isoformat(),
         "profile": profile,
-        "facts": [f"{f['category']}: {f['text']}" for f in facts],
+        "facts": [f"{f['category']}: {f['text']}" for f in facts] + _lab_facts(user, day),
         "logs_yesterday_today": [{"day": str(lg["day"]), "kind": lg["kind"], **lg["data"]}
                                  for lg in logs],
         "past_days": history.recent_digests(user.id, day),
     }
+
+
+def _lab_facts(user: store.User, day: date) -> list[str]:
+    """B3: the short lab list for C5/C6 (context only, never a medical decision)."""
+    from app.pipeline import labs
+    return [f"lab result: {line}" for line in labs.context_lines(user.id, day)]
 
 
 def athlete_sports(profile: dict) -> list[str]:

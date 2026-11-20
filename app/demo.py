@@ -234,8 +234,27 @@ def seed() -> str:
             reasons.append({"text": "Two beers the evening before.", "evidence": "2 beers"})
         store.save_assessment(user, d, kind, 0.75, reasons,
                               {"summary": f"{kind.capitalize()} day from sleep and HRV."}, None)
+    _labs(user, today)
     store.set_setup_step(user, 6)
     return user
+
+
+def _labs(user: str, today: date) -> None:
+    """Two synthetic blood tests (B3): ferritin low in the first, recovering in the second."""
+    from app.pipeline import labs
+    from app.pipeline.labs import LabSheet, PrintedRow
+    for days_ago, values in [(170, {"Ferritin": "18", "Haemoglobin": "13.4", "Vitamin D": "21"}),
+                             (45, {"Ferritin": "34", "Haemoglobin": "14.1", "Vitamin D": "38"})]:
+        rows = [("Ferritin", values["Ferritin"], "ng/mL", "30 - 400"),
+                ("Haemoglobin", values["Haemoglobin"], "g/dL", "13.0 - 17.0"),
+                ("Vitamin D (25-OH)", values["Vitamin D"], "ng/mL", "30 - 100"),
+                ("TSH", "2.1", "mIU/L", "0.4 - 4.0"), ("Glucose", "4.9", "mmol/L", "3.9 - 5.6"),
+                ("CRP", "<0.5", "mg/L", "< 5")]
+        sheet = LabSheet(lab="Demo Lab", taken_on=None, rows=[PrintedRow(
+            name_as_printed=n, value_as_printed=v, unit_as_printed=u, ref_as_printed=r)
+            for n, v, u, r in rows])
+        labs.save(user, sheet, labs.normalise(sheet), today - timedelta(days=days_ago),
+                  "demo-lab.pdf", None)
 
 
 def user_id() -> str | None:

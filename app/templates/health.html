@@ -34,6 +34,27 @@
   <p class="tiny faint" style="margin-top:6px">{{ _("Daily values from intervals.icu, synced hourly. Tap a number to chart it. Minute-by-minute stress and sleep stages stay in Garmin Connect: intervals.icu receives one value per day.") }}</p>
   {% endif %}
 
+  <div class="card labs" id="labs" style="margin-top:14px">
+    <div class="row between"><h2>{{ _("Lab tests") }}</h2>
+      <form method="post" action="/labs" enctype="multipart/form-data" class="lab-upload">
+        <label class="btn sm ink" for="lab-file">{{ icon("upload") }} {{ _("Add lab results") }}</label>
+        <input id="lab-file" class="sr" type="file" name="file" accept="image/*,application/pdf" onchange="this.form.requestSubmit(); this.previousElementSibling.setAttribute('aria-busy', 'true'); this.previousElementSibling.lastChild.textContent = ' {{ _('Reading the sheet…') }}'"></form></div>
+    {% if lab_status == "saved" %}<p class="notice small" style="margin-top:8px">{{ _("Saved. The table is also in the chat; tap a marker to check or fix a value.") }}</p>
+    {% elif lab_status %}<p class="notice error small" style="margin-top:8px">{{ _(lab_messages[lab_status]) }}</p>{% endif %}
+    {% set flagged = lab_cards | selectattr("row.flag", "in", ["low", "high"]) | list %}
+    {% if flagged %}<div class="row" style="gap:6px;margin-top:8px">{% for c in flagged %}<span class="badge {{ 'bad' if c.row.flag == 'high' else 'warn' }}">{{ c.name }} {{ _(c.row.flag) }} · {{ c.row.taken_on | fdate("dm") }}</span>{% endfor %}</div>{% endif %}
+    {% if lab_cards %}
+    <ul class="list lab-grid">{% for c in lab_cards %}
+      <li class="click-row" hx-get="/labs/{{ c.key }}" hx-target="#sheet-body" hx-trigger="click, keyup[key=='Enter']" role="button" tabindex="0">
+        <div class="grow"><div class="row between"><b class="small">{{ c.name }}</b>
+          <span class="small">{{ lab_value(c.row) }} <span class="muted tiny">{{ _(c.row.unit) if c.row.unit else "" }}</span>{% if c.row.flag in ("low", "high") %} <span class="badge {{ 'bad' if c.row.flag == 'high' else 'warn' }}">{{ _(c.row.flag) }}</span>{% endif %}</span></div>
+          {% if c.band %}<svg class="spark lab" viewBox="0 0 200 44" preserveAspectRatio="none" role="img" aria-label="{{ c.name }}"><rect x="0" y="{{ c.band[0] }}" width="200" height="{{ c.band[1] }}" class="ref"/>{% if c.path %}<path d="{{ c.path }}"/>{% endif %}{% for x, y in c.dots %}<circle cx="{{ x }}" cy="{{ y }}" r="3"/>{% endfor %}</svg>{% endif %}
+          <div class="tiny muted">{{ c.row.taken_on | fdate("dm") }} {{ c.row.taken_on.year }}{% if c.n > 1 %} · {{ _("{n} tests").format(n=c.n) }}{% endif %}{% if lab_range(c.row.ref_low, c.row.ref_high) %} · {{ _("range") }} {{ lab_range(c.row.ref_low, c.row.ref_high) }}{% endif %}</div></div></li>
+    {% endfor %}</ul>
+    <p class="tiny faint" style="margin-top:6px">{{ _("The shaded band is the lab's reference range. Not a diagnosis: talk results over with your doctor.") }}</p>
+    {% else %}<p class="small muted" style="margin-top:6px">{{ _("Send a photo of a blood test or the lab's PDF. The coach reads the values, shows trends and what is out of range.") }}</p>{% endif %}
+  </div>
+
   <div class="grid2" style="margin-top:14px">
     <div class="stack">
       <div class="card"><h2>{{ _("Pain and niggles") }}</h2>

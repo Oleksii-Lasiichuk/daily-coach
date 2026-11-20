@@ -684,10 +684,38 @@ Reported per input kind (clean PNG, "phone photo", text PDF), so a weak spot is 
 
 ### Acceptance
 
-- [ ] Upload a photo or text PDF → table in ≤ 20 s; edit and undo work.
-- [ ] Health page trends with reference bands at 375/1280, light/dark, EN/UA.
-- [ ] C10 targets met or the gap explained in the report; C7 new cases pass.
-- [ ] No image kept; no patient identifiers stored.
+- [x] Upload a photo or text PDF → table in ≤ 20 s; edit and undo work.
+- [x] Health page trends with reference bands at 375/1280, light/dark, EN/UA.
+- [x] C10 targets met or the gap explained in the report; C7 new cases pass.
+- [x] No image kept; no patient identifiers stored.
+
+### Result (B3, 2026-11-20, branch `claude/b3-labs-6b7f59`)
+
+- **Built:** `app/lab_catalog.py` (38 markers, EN/UA/RU names, unit conversions),
+  `app/pipeline/labs.py` (read file, C10, normalise, save, trend, coach list),
+  `app/prompts/c10_labs.md`, `app/routes/labs.py` (`POST /labs`, `GET /labs/{marker}`,
+  `POST /labs/{id}`, `DELETE /labs/upload/{id}`, `DELETE /labs`), migration
+  `010_labs.sql` (dev branch only), Health "Lab tests" section with reference-band sparklines and
+  a per-marker sheet (edit, undo upload), setup card + "Lab results" track, Settings → Your data
+  (privacy text, delete all), agent tools `read_lab_sheet` and `lab_results`, lab list in the
+  agent context and C5/C6 facts, `lab_flags` in C9, demo athlete gets two synthetic tests.
+  Dependencies: `pypdf`, `pillow`.
+- **C10 eval** (15 synthetic sheets, 300 rows): marker F1 1.0, value exact 0.997, unit+range
+  1.0, date 15/15, flag 1.0, leaks 0; 4.8 s mean per sheet. First run F1 0.963 (a bracketed-alias
+  bug in the catalogue, fixed). **C7:** 42 cases recall 1.0 / false alarms 0; the two lab-answer
+  cases pass after a coach-prompt rule (before: 1/2 named a diagnosis). **C9:** no drop.
+- **Tests:** `tests/test_labs.py` (parsing, conversions both ways, printed range first, C9
+  input), `tests/test_labs_routes.py` (two-user isolation for every `/labs` route, edit, undo,
+  delete all, scan PDF). `uv run pytest` green, `i18n_check` 0 missing, `/ui-check` done on a
+  test account (sample watch data + synthetic labs).
+- **Deviations:** an upload from the Health page runs C10 inside the request (~5 s, an explicit
+  user action, like the chat's photo path), not as a background sync. The chat accepts lab
+  photos; a PDF goes through the Health page or the setup card. The extracted table is a list in
+  the chat (the chat's light Markdown has no tables). HEIC is not decoded on the server (iOS
+  Safari sends JPEG for `accept="image/*"`).
+- **Not done / not verified:** C1 router and C8 not re-run cleanly after the two new tools (the
+  shared OpenRouter key hit the new-account 20 req/min limit: 15 of 60 C1 cases got 429); no real lab sheets measured (synthetic only); not deployed; the
+  chat path `read_lab_sheet` is covered by the C1 tool list but not by an end-to-end eval case.
 
 ---
 

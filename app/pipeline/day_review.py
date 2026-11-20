@@ -77,6 +77,11 @@ def analyse(day: dict) -> dict:
     late = [m for m in real if m["time"] >= "22:00"]
     if late:
         add(1, f"late eating: {late[0]['what']} at {late[0]['time']}")
+    low_iron = [x for x in day.get("lab_flags", []) if x in ("ferritin", "hgb")]
+    if low_iron and not open_day:  # B3: a recent blood test showed low ferritin / haemoglobin
+        add(0.8, "recent blood test: " + " and ".join(
+            {"ferritin": "ferritin", "hgb": "haemoglobin"}[x] for x in low_iron)
+            + " low; iron-rich foods matter")
     return {"status": status, "on_target": good,
             "issues_worst_first": [x for _, x in sorted(issues, reverse=True)],
             "log_may_be_incomplete": day.get("meals_logged", 0) <= 2 or (

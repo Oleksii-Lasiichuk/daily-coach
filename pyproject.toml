@@ -20,6 +20,8 @@ dependencies = [
     "pywebpush==2.5.0",
     "icalendar==7.3.0",
     "recurring-ical-events==3.8.2",
+    "pypdf==7.1.1",
+    "pillow==13.0.0",
 ]
 
 [dependency-groups]

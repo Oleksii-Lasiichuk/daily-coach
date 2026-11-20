@@ -175,7 +175,9 @@ def tiles(rows: list[dict], meta: list[dict], today: date) -> list[dict]:
 
 
 @router.get("/health", response_class=HTMLResponse)
-def health_page(request: Request, user: store.User = Depends(current_user)):
+def health_page(request: Request, labs: str = "", user: store.User = Depends(current_user)):
+    from app.pipeline.labs import MESSAGES
+    from app.routes.labs import cards as lab_cards
     today = _today(user)
     connected = store.get_secret(user.id, "intervals") is not None
     sync_error = None
@@ -203,7 +205,10 @@ def health_page(request: Request, user: store.User = Depends(current_user)):
         user, "/health", data=data, tiles=tiles(rows, data["meta"], today), items=items,
         reminders=reminders, zones=zones, connected=connected, sync_error=sync_error,
         today=today, pain=pain, patterns=patterns.find(user.id, today),
-        goal_w=_num((profile.get("target_weight_kg") or {}).get("value"))))
+        goal_w=_num((profile.get("target_weight_kg") or {}).get("value")),
+        lab_cards=lab_cards(user.id, store.user_lang(user.id)),
+        lab_status=labs if labs in MESSAGES or labs == "saved" else "",
+        lab_messages=MESSAGES))
 
 
 def _fit(user: store.User, d: date, props: list[dict]) -> dict | None:

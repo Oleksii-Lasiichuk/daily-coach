@@ -259,6 +259,9 @@ def day_view(user: store.User, day: date, today: date) -> dict:
         "meals_logged": len(logs), "meals": meals, "drinks": drinks,
         "training": [{"type": t.get("type"), "minutes": t.get("minutes"), "km": t.get("km"),
                       "kcal": t.get("kcal")} for t in training]}
+    from app.pipeline import labs  # B3: low ferritin / haemoglobin → iron-rich food tip
+    if flags := labs.low_flags(user.id, day):
+        review_input["lab_flags"] = flags
     return {"day": day, "logs": logs, "totals": totals, "targets": tgt, "rows": rows,
             "byk": {r["key"]: r for r in rows}, "day_type": a["day_type"] if a else None,
             "parts": [(p, parts[p], day_totals(parts[p])) for p in order if p in parts],

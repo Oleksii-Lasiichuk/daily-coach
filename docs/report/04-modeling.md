@@ -176,3 +176,34 @@ Decisions:
   aim to be in bed by 22:30" when the calendar leaves less sleep than the target.
 - **Wake/bed/training time** come from B1's Settings fields (migration 008). Until B1 is merged,
   `day_windows.prefs_times` reads them defensively and falls back to 07:00 / 22:30 / 07:00.
+## B3 (2026-11-20): lab results, C10 lab extraction (plan 11)
+
+**Purpose.** Keep blood tests in one place with trends and reference ranges, and let the coach
+connect them to training and food. Input: a phone photo of the lab sheet or the lab's PDF.
+Output: one row per marker (value, unit, range, low/high flag, test date) in `lab_results`.
+
+**Split, as in C9: the model copies, code decides.**
+
+| Step | Kind | What it does |
+|---|---|---|
+| `labs.read_file` | code | photo → JPEG ≤ 2000 px (Pillow); PDF → text (`pypdf`); a PDF without a text layer → "send a photo instead" (no OCR stack) |
+| **C10** `pipeline/labs.extract` + `prompts/c10_labs.md` | LLM (vision), Flash-Lite; Flash once if the JSON fails | `LabSheet{lab, taken_on, rows[name, value, unit, ref — all *as printed*]}`. No field for patient name, birth date, order number or doctor |
+| `labs.normalise` + `app/lab_catalog.py` | code | 38 markers with EN/UA/RU names; parses `12,4`, `<0.5`, `5,6 ↑`, ranges `30 - 100`, `до 15`, `< 5`; converts units (vitamin D ng/mL × 2.496, glucose mg/dL ÷ 18, Hb g/dL × 10, …); flag uses the **lab's printed range first**, the catalogue default only when none is printed |
+| `labs.trend`, `context_lines`, `low_flags` | code | trends for the Health page and the `lab_results` tool; the short list the coach sees |
+
+**What the coach sees.** Only a short list, computed in code: the latest out-of-range value of
+each marker from the last 12 months plus the latest ferritin, vitamin D and haemoglobin
+(`"Ferritin 18 µg/L (2026-09-12, range 30–400): low"`). It goes into the agent context, into
+C5/C6 `facts` (as context, never a medical decision), and C9 gets `lab_flags` (low ferritin /
+haemoglobin → the tip may name iron-rich foods, never tablets or milligrams). Two new tools:
+`read_lab_sheet` (a lab photo sent in the chat) and `lab_results(marker?)`.
+
+**Where the original lives.** Every upload is a chat message (photo thumbnail or a PDF chip)
+and the coach's reply is the extracted list with an Undo. No separate file storage
+(decision 5 in plan 11). The image goes to the LLM only on that explicit upload; Settings → Your
+data says so and has "Delete all lab results".
+
+**Prompt change from the eval.** The first C7 lab-reply run showed the coach saying a high TSH
+"points to hypothyroidism" and once giving no training advice. The coach prompt now says: name
+the value as below/above the lab's range, suggest a doctor, never name a condition or a dose,
+and always add one or two training-safe tips.

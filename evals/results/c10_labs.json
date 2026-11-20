@@ -1,0 +1,73 @@
+{
+ "component": "c10_labs",
+ "metrics": {
+  "sheets": 15,
+  "rows_gold": 300,
+  "marker_f1": 1.0,
+  "value_exact": 0.997,
+  "unit_range_exact": 1.0,
+  "date_exact": "15/15",
+  "flag_accuracy": 1.0,
+  "leaks": 0,
+  "n": 15,
+  "errors": 0,
+  "by_kind": {
+   "png": {
+    "sheets": 5,
+    "rows_gold": 100,
+    "marker_f1": 1.0,
+    "value_exact": 1.0,
+    "unit_range_exact": 1.0,
+    "date_exact": "5/5",
+    "flag_accuracy": 1.0,
+    "leaks": 0
+   },
+   "photo": {
+    "sheets": 5,
+    "rows_gold": 100,
+    "marker_f1": 1.0,
+    "value_exact": 0.99,
+    "unit_range_exact": 1.0,
+    "date_exact": "5/5",
+    "flag_accuracy": 1.0,
+    "leaks": 0
+   },
+   "pdf": {
+    "sheets": 5,
+    "rows_gold": 100,
+    "marker_f1": 1.0,
+    "value_exact": 1.0,
+    "unit_range_exact": 1.0,
+    "date_exact": "5/5",
+    "flag_accuracy": 1.0,
+    "leaks": 0
+   }
+  },
+  "seconds_mean": 4.8,
+  "seconds_max": 8.1
+ },
+ "n_failures": 1,
+ "failures": [
+  {
+   "tp": 20,
+   "fp": 0,
+   "fn": 0,
+   "n_matched": 20,
+   "value_ok": 19,
+   "n_known": 18,
+   "unit_ok": 18,
+   "flag_ok": 20,
+   "wrong_value": [
+    {
+     "key": "transferrin_sat",
+     "pred": 40.0,
+     "gold": 44.0
+    }
+   ],
+   "id": "lab07",
+   "kind": "photo",
+   "lang": "uk"
+  }
+ ],
+ "mean_rows_per_sheet": 20
+}

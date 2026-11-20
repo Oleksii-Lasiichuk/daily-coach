@@ -16,7 +16,18 @@ from app import db
 from app.auth import SESSION_MAX_AGE, NotAuthenticated, not_authenticated_response, origin_ok
 from app.config import get_settings
 from app.crypto import derived_key
-from app.routes import admin, auth, data_pages, files, knowledge, pages, profile, push, welcome
+from app.routes import (
+    admin,
+    auth,
+    data_pages,
+    files,
+    knowledge,
+    labs,
+    pages,
+    profile,
+    push,
+    welcome,
+)
 from app.routes import calendar as calendar_routes
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -84,6 +95,7 @@ app.include_router(files.router)
 app.include_router(push.router)
 app.include_router(admin.router)
 app.include_router(calendar_routes.router)
+app.include_router(labs.router)
 
 
 @app.exception_handler(admin.NotFound)
