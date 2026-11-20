@@ -250,3 +250,75 @@ if __name__ == "__main__":
         print("Demo Athlete ready:", seed())
     else:
         print("usage: uv run python -m app.demo seed")
+
+
+# ---------- synthetic calendar (B2) ----------
+# "Connect calendar" with one of these links reads a generated ICS instead of the network, so the
+# test account and the UI check never touch a real calendar. Three styles, like the real feeds:
+# Google (UTC "Z" times + X-WR-TIMEZONE), iCloud (VTIMEZONE + TZID), Outlook (busy-only titles).
+DEMO_CALENDAR_HOST = "calendar.demo.invalid"
+DEMO_CALENDARS = {f"https://{DEMO_CALENDAR_HOST}/{k}.ics": k for k in ("google", "icloud",
+                                                                        "outlook")}
+_KYIV_VTZ = """BEGIN:VTIMEZONE
+TZID:Europe/Kyiv
+BEGIN:STANDARD
+DTSTART:19701025T040000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+TZOFFSETFROM:+0300
+TZOFFSETTO:+0200
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:19700329T030000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0300
+END:DAYLIGHT
+END:VTIMEZONE"""
+
+
+def is_demo_calendar(url: str) -> bool:
+    return url in DEMO_CALENDARS
+
+
+def calendar_ics(url: str = "") -> bytes:
+    """Today: standup, meetings until 18:30 with a lunch gap; a 22:00 call; tomorrow an 07:00
+    flight; a weekly yoga class; an all-day birthday. All synthetic."""
+    style = DEMO_CALENDARS.get(url, "icloud")
+    today = _today()
+    t1 = today + timedelta(days=1)
+
+    def local(d: date, hhmm: str) -> str:
+        h, m = hhmm.split(":")
+        if style == "google":
+            dt = datetime(d.year, d.month, d.day, int(h), int(m), tzinfo=TZ).astimezone(UTC)
+            return f":{dt:%Y%m%dT%H%M%S}Z"
+        return f";TZID=Europe/Kyiv:{d:%Y%m%d}T{h}{m}00"
+
+    def ev(uid: str, d: date, start: str, end: str, title: str, extra: str = "") -> str:
+        name = "Busy" if style == "outlook" else title
+        return (f"BEGIN:VEVENT\nUID:{uid}@demo\nDTSTAMP:20260101T000000Z\n"
+                f"DTSTART{local(d, start)}\nDTEND{local(d, end)}\nSUMMARY:{name}\n"
+                f"{extra}END:VEVENT")
+
+    monday = today - timedelta(days=today.weekday())
+    events = [
+        ev("standup", monday, "09:30", "09:45", "Team standup",
+           "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR\n"),
+        ev("yoga", monday + timedelta(days=2), "19:00", "20:00", "Yoga class",
+           "RRULE:FREQ=WEEKLY\n"),
+        ev("m1", today, "10:00", "12:00", "Planning"),
+        ev("m2", today, "13:15", "15:30", "Client workshop"),
+        ev("m3", today, "16:00", "18:30", "1:1s"),
+        ev("call", today, "22:00", "23:00", "Call with the US team"),
+        ev("flight", t1, "07:00", "09:30", "Flight to Lviv"),
+        "BEGIN:VEVENT\nUID:bday@demo\nDTSTAMP:20260101T000000Z\n"
+        f"DTSTART;VALUE=DATE:{t1:%Y%m%d}\nDTEND;VALUE=DATE:{t1 + timedelta(days=1):%Y%m%d}\n"
+        "SUMMARY:Birthday\nTRANSP:TRANSPARENT\nEND:VEVENT",
+    ]
+    head = ["BEGIN:VCALENDAR", "VERSION:2.0", f"PRODID:-//Daily Coach demo//{style}//EN"]
+    if style == "google":
+        head.append("X-WR-TIMEZONE:Europe/Kyiv")
+    else:
+        head.append(_KYIV_VTZ)
+    return ("\r\n".join(head + events + ["END:VCALENDAR"]).replace("\n", "\r\n")
+            .replace("\r\r\n", "\r\n") + "\r\n").encode()

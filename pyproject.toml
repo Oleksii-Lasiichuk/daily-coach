@@ -18,6 +18,8 @@ dependencies = [
     "langfuse==5.2.0",
     "python-multipart==0.0.33",
     "pywebpush==2.5.0",
+    "icalendar==7.3.0",
+    "recurring-ical-events==3.8.2",
 ]
 
 [dependency-groups]
