@@ -909,5 +909,7 @@
 "no free window ≥ {n} min": "немає вільного вікна ≥ {n} хв",
 "longest free window {n} min": "найдовше вільне вікно {n} хв",
 "busy": "зайнято",
-"session": "тренування"
+"session": "тренування",
+"About {h} h of sleep possible.": "Можливо близько {h} год сну.",
+"No free window of 30 min or more between wake and bedtime": "Між підйомом і сном немає вільного вікна від 30 хв"
 }

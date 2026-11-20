@@ -25,3 +25,26 @@ ranges (`Z2: 124-143`).
 | USDA FoodData Central | Per-100 g food values | Used as the reference for the Ukrainian meals; planned as a lookup tool for C3 |
 | Public Ukrainian chat / health-logging corpora | C1/C2 training or eval | None found that matches personal training logs; wrote synthetic cases instead |
 | The author's ChatGPT "life & sports" history | Realistic messages | Not used for the submission (personal data; the repo is public) |
+
+## B2 calendar: iCal (ICS) links (2026-11-20, plan 11)
+
+- **Source.** A read-only iCal link the person copies from Google ("Secret address in iCal
+  format"), iCloud ("Public Calendar") or Outlook ("Publish a calendar", busy-only possible).
+  One GET per person every 30 minutes in the cron tick. Free, no OAuth and no Google app review.
+- **Format.** RFC 5545. Real feeds contain recurring events (`RRULE` with `EXDATE`), moved single
+  occurrences (`RECURRENCE-ID`), `VTIMEZONE` blocks, Google's `X-WR-TIMEZONE` with UTC times,
+  floating times, all-day events with an exclusive `DTEND`, cancelled and "show as free" events.
+  These are parsed by `icalendar` 7.3 + `recurring-ical-events` 3.8 (BSD-2 / LGPL-3.0, used as
+  unmodified dependencies), not by hand.
+- **Quality limits.** Google's secret address can lag behind edits (not documented), so the UI
+  says "Changes show within about an hour". The feed does not say reliably which attendee is the
+  owner, so declined invitations still count as busy. Events longer than 16 h and all-day events
+  are day notes, not busy time.
+- **Privacy choice.** The link is a credential: stored encrypted (Fernet) in `user_secrets`, shown
+  as host + last 4 characters, never logged (only the host), never sent to an LLM. Only start,
+  end and all-day are stored, for −1…+14 days, and they are replaced on every sync. Titles are
+  stored only if the person turns on "Show event names to the coach" (default off). Locations,
+  attendees and descriptions are never stored.
+- **Test data.** No real calendar is used: unit tests use hand-written ICS fixtures in
+  `tests/data/ics/`, and the test account reads synthetic Google/iCloud/Outlook-style feeds
+  generated in memory by `app/demo.py` (`https://calendar.demo.invalid/{google,icloud,outlook}.ics`).

@@ -191,7 +191,10 @@ def strip(w: dict, start: str | None = None, minutes: float = 0) -> dict:
         a = _mins(start)
         b = a + int(minutes)
         sess = bar(a, b, f"{start}–{b // 60 % 24:02d}:{b % 60:02d}")
-    return {"busy": busy, "session": sess, "warnings": w["warnings"]}
+    sleep = {"h": w["sleep_possible_h"], "bed": w["sleep_warning_bed"],
+             "first": w["first_event_tomorrow"]} if w["sleep_warning_bed"] else None
+    no_window = bool(w["busy"]) and w["longest_free_min"] < 30
+    return {"busy": busy, "session": sess, "sleep": sleep, "no_window": no_window}
 
 
 def fit_line(w: dict, start: str | None, minutes: float) -> dict:

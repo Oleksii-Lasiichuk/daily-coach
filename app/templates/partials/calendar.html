@@ -2,18 +2,18 @@
 <div id="calendar">
   {% if cal_secret and cal_feed %}
     {% if found is defined %}<p class="notice small" style="margin-bottom:10px">{{ _("Connected. Found {n} events in the next 2 weeks.").format(n=found) }}</p>{% endif %}
-    <p class="small"><b>{{ _("Connected") }}</b> · {{ _("link") }} ••••{{ cal_secret.last4 }}
+    <p class="small"><b>{{ _("Connected") }}</b> · {{ cal_secret.external_id or _("link") }} ••••{{ cal_secret.last4 }}
       {% if cal_ago is not none %} · {{ _("last read {n} min ago").format(n=cal_ago) }} · {{ _("{n} events").format(n=cal_feed.event_count) }}{% else %} · {{ _("reading…") }}{% endif %}</p>
     {% if cal_feed.last_error %}<p class="notice error small" style="margin-top:6px">{{ _(cal_feed.last_error) }}</p>{% endif %}
     <p class="tiny muted" style="margin-top:2px">{{ _("Changes show within about an hour.") }}</p>
-    <form hx-post="/calendar/titles" hx-target="#calendar" hx-swap="outerHTML" hx-trigger="change" style="margin-top:8px">
+    <form hx-post="/calendar/titles" hx-target="closest #calendar" hx-swap="outerHTML" hx-trigger="change" style="margin-top:8px">
       <label class="row small" style="gap:8px;margin:0"><input type="checkbox" name="on" value="1" {{ "checked" if cal_feed.show_titles }}> {{ _("Show event names to the coach") }}</label>
       <p class="hint">{{ _("Off: the coach sees only when you're busy (“Busy”). Places, people and notes are never read.") }}</p>
     </form>
-    <button class="link tiny danger" style="margin-top:8px" hx-delete="/calendar" hx-target="#calendar" hx-swap="outerHTML" hx-confirm="{{ _('Remove the calendar? The link and your busy times are deleted.') }}">{{ _("Remove calendar") }}</button>
+    <button class="link tiny danger" style="margin-top:8px" hx-delete="/calendar" hx-target="closest #calendar" hx-swap="outerHTML" hx-confirm="{{ _('Remove the calendar? The link and your busy times are deleted.') }}">{{ _("Remove calendar") }}</button>
   {% else %}
     {% if error %}<p class="notice error small" style="margin-bottom:10px">{{ _(error) }}</p>{% endif %}
-    <form hx-post="/calendar" hx-target="#calendar" hx-swap="outerHTML" hx-indicator="this">
+    <form hx-post="/calendar" hx-target="closest #calendar" hx-swap="outerHTML" hx-indicator="this">
       <div class="row" style="gap:8px;align-items:flex-end">
         <div style="flex:1;min-width:200px"><label for="cal-url">{{ _("Calendar link (iCal, ends in .ics)") }}</label><input id="cal-url" name="url" type="password" inputmode="url" autocomplete="off" placeholder="https://…/basic.ics" required></div>
         <button class="btn primary">{{ _("Connect") }}</button>

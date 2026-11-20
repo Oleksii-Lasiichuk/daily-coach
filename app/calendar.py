@@ -154,7 +154,8 @@ def feed(user_id: str) -> dict | None:
 
 def save_url(user_id: str, url: str) -> None:
     url = normalize_url(url)
-    store.save_secret(user_id, "ical", crypto.encrypt(url), crypto.last4(url), None)
+    tail = url.split("?")[0].removesuffix(".ics")  # every link ends in .ics: show what differs
+    store.save_secret(user_id, "ical", crypto.encrypt(url), crypto.last4(tail), host(url))
     with connection() as c:
         c.execute("insert into calendar_feeds (user_id) values (%s) on conflict (user_id) do "
                   "update set next_at = now(), last_error = null", (user_id,))

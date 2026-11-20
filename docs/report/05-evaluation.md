@@ -346,3 +346,42 @@ drinking is found in 43% of 90-day logs. For a health claim we prefer fewer fals
   kept the judge's comments in the result files so they can be checked.
 - **End to end only on synthetic turns:** `evals/run_e2e.py` runs 12 real turns on the demo
   athlete. The next step is to label two weeks of real chats and measure the whole system.
+
+## B2 additions (2026-11-20, plan 11): C13 + C6 "planner respects the calendar"
+
+Data: `evals/data/c13_calendar.jsonl`, 15 synthetic days made by `evals/make_c13_days.py`: office
+days, night and early shifts, back-to-back meetings with a 45-min lunch gap, 20-min gaps only, a
+travel day with a 22:00 call and an 07:00 flight, weekends, a conference with no window ≥ 30 min,
+standups the day after the DST switch, a late party. Each case reuses the athlete context of C6
+case 2 (a normal day). Script: `evals/run_c13.py` (registered in `run_all.py`). Result:
+`evals/results/c13_calendar.json`.
+
+| Metric | Target | Result |
+|---|---|---|
+| Overlaps with busy blocks, after the validator loop | 0 | **0** / 15 |
+| Overlaps before the validator (the LLM alone) | (reported) | 0 / 15 |
+| Valid on the first try | — | 1.0 |
+| Fit rate (inside a free window; rest or shortened on a no-slot day) | ≥ 0.9 | **1.0** |
+| Sleep-warning recall (4 cases built to need one) | 1.0 | **1.0**, 0 false alarms on the other 11 |
+
+On both no-slot days the planner chose rest. On the other days it picked the morning window
+nearest the 07:00 usual training time, or the only window (11:30 on the midday-gap day, 19:30 on
+the busy-until-19:00 day). Before the validator the LLM alone made no overlaps either, so in this
+run the validator was a safety net that was never needed. With 15 cases this does not prove it is
+never needed.
+
+**Parsing (data check for C13)** is covered by unit tests (`tests/test_calendar.py`,
+`tests/test_day_windows.py`, all pass): weekly RRULE with EXDATE, a moved occurrence, DST,
+UTC and floating times, X-WR-TIMEZONE, all-day single and multi-day, long events, cancelled and
+transparent events, the window end (exclusive), HTML pages, files over 5 MB and bad links
+rejected.
+
+**C6 regression check** (same 20 cases, no calendar in them): valid first try 1.0, after retry
+1.0 (unchanged). The judge mean was 3.96 against 4.15 in the previous recorded run. A second run
+on the same code, rate-limited to 4 cases, scored specificity 4.0 against 3.55 in the first, so
+the gap is within the judge's run-to-run noise. The new prompt paragraph only applies when
+`day_windows` is present.
+
+Limitations: the 15 days are synthetic and use one athlete. The feeds of real Google/iCloud/Outlook
+accounts were not connected (synthetic feeds in each provider's style were). The sleep rule
+assumes the person goes to bed at the usual bedtime unless an event ends later.

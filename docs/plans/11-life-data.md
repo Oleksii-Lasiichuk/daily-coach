@@ -491,10 +491,35 @@ create index on calendar_blocks (user_id, starts_at);
 
 ### Acceptance
 
-- [ ] Google, iCloud and Outlook links (synthetic test calendars created for the test account)
+- [x] Google, iCloud and Outlook links (synthetic test calendars created for the test account)
       connect from the sheet; errors are readable.
-- [ ] 0 overlaps in the C13 eval; the planner moves or shortens sessions on busy days.
-- [ ] Titles stored only with the toggle on; ICS URL encrypted; sync only in the tick.
+- [x] 0 overlaps in the C13 eval; the planner moves or shortens sessions on busy days.
+- [x] Titles stored only with the toggle on; ICS URL encrypted; sync only in the tick.
+
+### Result (B2, 2026-11-20, branch `claude/b2-calendar-95a268`, not deployed)
+
+- **Built:** migration `009_calendar.sql` (full provider list incl. `monobank`, `garmin`);
+  `app/calendar.py` (fetch/parse/sync, tick hook via `next_at`, background sync after Connect);
+  C13 `app/day_windows.py`; `Workout.start` + prompt rule + validator overlap check; agent context
+  busy summary; `plan_sessions` gets `longest_free_min`; evening nudge sleep warning; Today
+  "Your day" strip; Training "fits 12:30–13:30" line; Settings → Calendar; setup card + 3-tab
+  sheet; welcome track; EN/UA strings. Synthetic Google/iCloud/Outlook-style feeds in
+  `app/demo.py` (`calendar.demo.invalid`, no network).
+- **Eval (`evals/run_c13.py`, 15 days):** overlaps 0 (before and after the validator), fit rate
+  1.0, sleep-warning recall 1.0 with 0 false alarms. C6 regression: validity 1.0/1.0 unchanged,
+  judge mean 3.96 vs 4.15 (within run-to-run noise, see report).
+- **Tests:** 17 parsing/C13 tests, a validator test, two-user isolation for `POST /calendar`,
+  `POST /calendar/titles`, `DELETE /calendar` (+ pages), and an end-to-end connect → sync →
+  titles → remove test that also checks the URL never appears in logs. `uv run pytest`: 80 passed.
+  `i18n_check`: 0 missing.
+- **UI check:** 375 px light/dark EN/UA (Today strip, Settings card, setup sheet tabs, toggle,
+  remove, error, connect) and 1280 px light, no horizontal scroll. Training fit line checked in
+  the HTML only (EN/UA).
+- **Deviations:** the masked link shows host + last 4 characters before `.ics` (every link ends
+  in `.ics`). Wake/bed/training time are read defensively (defaults 07:00 / 22:30 / 07:00) until
+  B1's migration 008 merges.
+- **Known limitations:** no real provider accounts connected; 1280 px dark not screenshotted;
+  the strip shows decimals with a dot in UA ("6.5 год"); not deployed.
 
 ---
 
