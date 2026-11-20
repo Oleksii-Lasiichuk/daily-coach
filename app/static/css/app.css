@@ -465,8 +465,9 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
 .daynav .btn { width: 44px; height: 44px; }
 
 /* Money (plan 11 B4) */
-.money-cats li { padding: 6px 0; }
-.money-bar { position: relative; margin-top: 5px; overflow: visible; }
+.list.money-cats > li { display: block; padding: 6px 0; }
+.money-cats .row { flex-wrap: nowrap; }
+.money-bar { position: relative; margin-top: 5px; overflow: visible; width: 100%; }
 .money-bar .tick { position: absolute; top: -3px; width: 2px; height: 12px; background: var(--ink-2); border-radius: 1px; }
 .money-tx { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; }
 .money-tx .grow { flex: 1 1 140px; min-width: 0; overflow-wrap: anywhere; }
@@ -476,3 +477,5 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
 .money-pickform select { width: auto; max-width: 100%; }
 .money-flag.up { border-color: var(--warn); } .money-flag.down { border-color: var(--good); }
 .money-tx .num.good { color: var(--good); }
+.money-tx .num { order: 2; } .money-pick { order: 1; }
+.money-pick[open] { order: 3; flex-basis: 100%; }

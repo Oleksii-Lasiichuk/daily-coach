@@ -28,8 +28,8 @@
   <div class="grid2" style="margin-top:14px">
     {% for f in v.flags %}
     <div class="card money-flag {{ f.flag }}"><span class="label">{{ _(cat_name(f.category)) }}</span>
-      <p style="margin-top:2px"><span class="bignum">{{ f.ratio }}×</span> <span class="muted">{{ _("your usual") }}</span></p>
-      <p class="small muted">{{ f.uah }} ₴ {{ _("vs") }} {{ f.avg_3m }} ₴ · {{ f.n }} {{ _("payments") }}</p></div>
+      <p style="margin-top:2px"><span class="bignum">{{ "%.1f" | format(f.ratio) }}×</span> <span class="muted">{{ _("your usual") }}</span></p>
+      <p class="small muted">{{ f.uah }} ₴ {{ _("vs") }} {{ f.avg_3m }} ₴ · {{ _("payments") }}: {{ f.n }}</p></div>
     {% endfor %}
     {% if v.race and v.race.uah %}
     <div class="card"><span class="label">{{ icon("flag") }} {{ _("Race cost so far") }}</span>
