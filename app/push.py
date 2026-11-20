@@ -143,7 +143,7 @@ def tick() -> dict:
                    if w["sleep_h"] else "")
                 + (" · " + i18n.t("alcohol on {n} days", lang).format(n=w["alcohol_days"])
                    if w["alcohol_days"] else ""))
-            stats["weekly"] += send(uid, "Your week", body, url="/journal")
+            stats["weekly"] += send(uid, "Your week", body, url="/day")
         if _due(now, "04:00") and _mark(uid, "insight", now):
             stats["insights"] += daily_insight(uid, now)
     return stats

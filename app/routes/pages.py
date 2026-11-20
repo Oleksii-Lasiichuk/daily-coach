@@ -1,8 +1,7 @@
 """Today: the chat with the coach agent, actions with Undo, session cards, and the side panel
-(day, sessions, fuel, insight). Also the Journal (calendar + day pages)."""
+(day, sessions, fuel, insight). Also the day pages (/day/{date})."""
 
 import base64
-import calendar
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
@@ -12,7 +11,7 @@ import httpx
 from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import agent, health, history, i18n, intervals, llm, nutrition_stats, store, weather
+from app import agent, health, i18n, intervals, llm, nutrition_stats, store, weather
 from app.auth import current_user
 from app.db import connection
 from app.pipeline import common
@@ -444,37 +443,13 @@ def transcribe(audio: UploadFile, user: store.User = Depends(current_user)):
         return HTMLResponse("", status_code=502)
 
 
-# --- journal -----------------------------------------------------------------------------
+# --- days (the Journal page was removed in v7: /day does the same, better) ---------------
 
-@router.get("/history")
-def old_history():
-    return RedirectResponse("/journal", status_code=301)
-
-
-@router.get("/journal", response_class=HTMLResponse)
-def journal(request: Request, month: str = "", user: store.User = Depends(current_user)):
-    today = today_of(user)
-    try:
-        first = date.fromisoformat(month + "-01") if month else today.replace(day=1)
-    except ValueError:
-        first = today.replace(day=1)
-    last = first.replace(day=calendar.monthrange(first.year, first.month)[1])
-    data = history.days_between(user.id, first, last)
-    weeks = calendar.Calendar(firstweekday=0).monthdatescalendar(first.year, first.month)
-    cells: dict[date, dict] = {}
-    for r in health.series(user.id, first, last):
-        cells.setdefault(date.fromisoformat(r["day"]), {})["sleep"] = r.get("sleep_h")
-    for a in health.activities(user.id, first, last):
-        c = cells.setdefault(date.fromisoformat(a["day"]), {})
-        c["km"] = round(c.get("km", 0) + (a.get("km") or 0), 1)
-        c["min"] = c.get("min", 0) + (a.get("minutes") or 0)
-    return templates.TemplateResponse(request, "journal.html", shell(
-        user, "/journal", first=first, weeks=weeks, data=data, today=today, cells=cells,
-        week=history.week_review(user.id, today),
-        prev_m=(first - timedelta(days=1)).strftime("%Y-%m"),
-        next_m=(last + timedelta(days=1)).strftime("%Y-%m") if last < today else None,
-        digests=[(d, history.digest(d, data[d]), history.day_chips(data[d]))
-                 for d in sorted(data, reverse=True)]))
+@router.get("/day", response_class=RedirectResponse)
+@router.get("/journal", response_class=RedirectResponse)
+@router.get("/history", response_class=RedirectResponse)
+def day_today(user: store.User = Depends(current_user)):
+    return RedirectResponse(f"/day/{today_of(user).isoformat()}", status_code=303)
 
 
 @router.get("/day/{day}", response_class=HTMLResponse)
@@ -482,7 +457,7 @@ def day_page(request: Request, day: str, user: store.User = Depends(current_user
     try:
         d = date.fromisoformat(day)
     except ValueError:
-        return RedirectResponse("/journal", status_code=303)
+        return RedirectResponse("/day", status_code=303)
     tz = ZoneInfo(user.time_zone)
     start = datetime.combine(d, datetime.min.time(), tz)
     messages = [m for m in store.recent_messages(user.id, 400)
@@ -504,7 +479,7 @@ def day_page(request: Request, day: str, user: store.User = Depends(current_user
                           "value": round(v, dec or None), "usual": usual})
     data = chart_data(user.id, min(today, d + timedelta(days=8)), 120)
     return templates.TemplateResponse(request, "day.html", shell(
-        user, "/journal", day=d, assessment=store.get_assessment(user.id, d), logs=logs,
+        user, "/day", day=d, assessment=store.get_assessment(user.id, d), logs=logs,
         proposals=proposals, messages=messages, stats=stats, data=data,
         acts=health.activities(user.id, d, d), totals=nutrition_stats.day_totals(logs),
         is_future=d > today, today=today, prev_d=d - timedelta(days=1),
@@ -527,11 +502,11 @@ def day_add(day: str, text: str = Form(""), user: store.User = Depends(current_u
     try:
         d = date.fromisoformat(day)
     except ValueError:
-        return RedirectResponse("/journal", status_code=303)
+        return RedirectResponse("/day", status_code=303)
     if text.strip() and d <= today_of(user):
         when = datetime.combine(d, datetime.min.time(), ZoneInfo(user.time_zone)).replace(
             hour=21) if d < today_of(user) else datetime.now(ZoneInfo(user.time_zone))
-        with llm.trace("add-to-day", input=text, user_id=user.id, tags=["journal"]):
+        with llm.trace("add-to-day", input=text, user_id=user.id, tags=["day"]):
             try:
                 ex = extract.extract(f"(All of this happened on {d:%A %d %B %Y}.) " +
                                      text.strip()[:2000], when, user.id)
@@ -552,7 +527,7 @@ def day_assess(day: str, user: store.User = Depends(current_user)):
     try:
         d = date.fromisoformat(day)
     except ValueError:
-        return RedirectResponse("/journal", status_code=303)
+        return RedirectResponse("/day", status_code=303)
     if d <= today_of(user):
         with llm.trace("assess-day", input=f"assess {d}", user_id=user.id, tags=["assess"]):
             try:

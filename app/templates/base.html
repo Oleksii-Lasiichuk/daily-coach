@@ -24,7 +24,7 @@
 <body>
 {% block body %}
 {% set nav = [("/", "Today", "chat"), ("/training", "Training", "run"), ("/nutrition", "Nutrition", "apple"),
-              ("/health", "Health", "heart"), ("/journal", "Journal", "calendar"), ("/memory", "Memory", "brain")] %}
+              ("/health", "Health", "heart"), ("/day", "Days", "calendar"), ("/memory", "Memory", "brain")] %}
 <div class="shell {% if has_rail %}has-rail{% endif %}" id="shell">
   <aside class="side" aria-label="{{ _('Main menu') }}">
     <a class="brand" href="/"><span class="mark">{{ icon("activity") }}</span>Daily Coach</a>
@@ -48,7 +48,7 @@
 </div>
 <nav class="tabs" aria-label="{{ _('Main menu') }}">
   {% for href, label, ic in [("/", "Today", "chat"), ("/training", "Training", "run"), ("/nutrition", "Nutrition", "apple"), ("/health", "Health", "heart"), ("/more", "More", "more")] %}
-  <a href="{{ href }}" {% if active == href or (href == "/more" and active in ["/memory", "/journal", "/settings", "/more"]) %}aria-current="page"{% endif %}>{{ icon(ic) }}{{ _(label) }}</a>
+  <a href="{{ href }}" {% if active == href or (href == "/more" and active in ["/memory", "/day", "/settings", "/more"]) %}aria-current="page"{% endif %}>{{ icon(ic) }}{{ _(label) }}</a>
   {% endfor %}
 </nav>
 {% block modal %}{% endblock %}

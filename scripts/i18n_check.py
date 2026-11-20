@@ -87,7 +87,6 @@ def dynamic_keys() -> set[str]:
     # item labels on the coach's action lines (agent.save_item)
     keys |= {"Gear", "Race", "Goal", "Medication", "Injury", "Health", "Preference", "Life",
              "Note", "Lab"}
-    keys |= {"sent to watch", "suggested"}  # history.day_chips session status
     from app import nutrition_stats
     keys |= {p for p, *_ in nutrition_stats.MEAL_PARTS} | {"Snacks", "Drinks"}
     keys |= set(nutrition_stats.UNITS.values()) - {"kcal"} | {"kcal"}

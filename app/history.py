@@ -1,5 +1,5 @@
 """Day-by-day memory: a short, code-written digest of each past day (no LLM, so it can't drift
-from what was logged). Used in prompts (recent days) and by the History calendar."""
+from what was logged). Used in prompts (recent days) and the week review."""
 
 from datetime import date, timedelta
 
@@ -27,10 +27,8 @@ def days_between(user_id: str, first: date, last: date) -> dict[date, dict]:
                    from proposals where user_id = %s and day between %s and %s
                      and status in ('applied', 'proposed')
                    order by day, (status = 'applied') desc, id desc""", (user_id, first, last)):
-            day = out.setdefault(p["day"], {"logs": []})
-            day["session"] = p["name"] + (" (applied)" if p["status"] == "applied"
-                                          else " (suggested)")  # for the coach's prompt
-            day["session_name"], day["session_status"] = p["name"], p["status"]
+            out.setdefault(p["day"], {"logs": []})["session"] = (
+                p["name"] + (" (applied)" if p["status"] == "applied" else " (suggested)"))
     return out
 
 
@@ -53,24 +51,6 @@ def digest(day: date, d: dict) -> str:
     body = "; ".join(parts)
     tail = f" Session: {d['session']}." if d.get("session") else ""
     return f"{head}. {body}.{tail}".replace(". .", ".")
-
-
-def day_chips(d: dict) -> dict:
-    """Short numbers for one day in the Journal: kcal, sleep, drinks, worst pain, session."""
-    kcal = sleep = drinks = 0.0
-    pain = None
-    for lg in d.get("logs", []):
-        data = lg["data"]
-        n = data.get("nutrition") or {}
-        kcal += n.get("kcal") or (n.get("totals") or {}).get("kcal") or 0
-        sleep = data.get("sleep_hours") or sleep
-        drinks += data.get("alcohol_drinks") or 0
-        if data.get("pain_score") is not None:
-            pain = max(pain or 0, float(data["pain_score"]))
-    return {"type": d.get("type"), "kcal": round(kcal), "sleep": sleep, "drinks": drinks,
-            "pain": pain, "session": d.get("session_name"),
-            "session_status": "sent to watch" if d.get("session_status") == "applied" else
-            "suggested", "n": len(d.get("logs", []))}
 
 
 def recent_digests(user_id: str, today: date, days: int = 14) -> list[str]:

@@ -4,7 +4,7 @@
 <div class="page">
   <h1>{{ _("More") }}</h1>
   <div class="stack" style="margin-top:14px">
-    {% set links = [("/journal", "Journal", "calendar", "Your days, the week in numbers"), ("/memory", "Memory", "brain", "Instructions, preferences, files"), ("/settings", "Settings", "settings", "You, reminders, language, intervals.icu")] %}
+    {% set links = [("/day", "Days", "calendar", "Each day: watch data, food, training, what the coach said"), ("/memory", "Memory", "brain", "Instructions, preferences, files"), ("/settings", "Settings", "settings", "You, reminders, language, intervals.icu")] %}
     {% if is_admin %}{% set links = links + [("/admin", "People", "user", "Who signed up, AI caps")] %}{% endif %}
     {% for href, label, ic, sub in links %}
     <a class="card row" href="{{ href }}" style="text-decoration:none;gap:14px">{{ icon(ic) }}<span class="grow"><b>{{ _(label) }}</b>{% if href == "/memory" and inbox_count %} <span class="badge warn">{{ inbox_count }} {{ _("to review") }}</span>{% endif %}<br><span class="small muted">{{ _(sub) }}</span></span></a>

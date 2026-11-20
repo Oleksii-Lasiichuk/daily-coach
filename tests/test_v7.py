@@ -138,8 +138,8 @@ def test_one_screen_sign_up_then_setup_cards_and_no_watch_needed(client, users, 
     assert "Your height and weight" not in client.get("/rail").text
     assert "find that city" in client.post("/setup/city", data={"city": "Nowhere"}).text
     # every page works without intervals.icu
-    for path in ["/", "/rail", "/training", "/health", "/nutrition", "/journal", "/memory",
-                 "/settings", "/more"]:
+    for path in ["/", "/rail", "/training", "/health", "/nutrition", "/day", "/day/2026-11-01",
+                 "/memory", "/settings", "/more"]:
         assert client.get(path).status_code == 200, path
 
 
@@ -237,3 +237,14 @@ def test_cpu_hold_needs_the_secret_and_ends_with_the_turn(client, users, monkeyp
     assert client.post(f"/cron/hold/{tid}").status_code == 403
     done = client.post(f"/cron/hold/{tid}", headers={"x-cron-secret": cron_secret()})
     assert done.json() == {"status": "done"}
+
+
+def test_journal_is_gone_and_old_links_open_today(client, users):
+    u = users()
+    store.set_setup_step(u.id, 6)
+    login(client, u)
+    for old in ("/journal", "/history", "/day"):
+        r = client.get(old, follow_redirects=False)
+        assert r.status_code == 303 and r.headers["location"].startswith("/day/20"), old
+    page = client.get("/").text
+    assert 'href="/journal"' not in page and 'href="/day"' in page

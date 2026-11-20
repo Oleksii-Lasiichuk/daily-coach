@@ -42,7 +42,7 @@ def test_user_b_cannot_read_or_change_user_a(client, users):
                           "returning id", (a.id,)).fetchone()["id"]
 
     for path in ["/", "/memory", "/settings", "/nutrition?days=30", "/health", "/training",
-                 "/journal", f"/day/{date.today().isoformat()}"]:
+                 f"/day/{date.today().isoformat()}"]:
         r = client.get(path)
         assert r.status_code == 200 and "SECRET-A" not in r.text, path
     for path in [f"/items/{fact}/sheet", f"/logs/{log}/sheet"]:

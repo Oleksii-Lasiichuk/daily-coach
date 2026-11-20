@@ -67,7 +67,7 @@ message / voice / photo ─┬─ C7 safety gate (parallel)
 | Training | The week: your plan, coach suggestions, done; goals, races and gear (editable, shoe km) |
 | Nutrition | One day with ‹ date › (swipe on a phone): energy and macros against that day's targets, meals by breakfast/lunch/dinner/snacks, drinks and training, nutrients, the coach's review (C9); 7- and 30-day trends; fix any meal (×½, ×2, kcal, text) |
 | Health | A year of HRV, resting HR, sleep, weight (with goal), fitness and fatigue, each explained; pain trend; patterns from your log; conditions, medication and lab results (editable) |
-| Journal | The week in numbers vs last week; calendar; each day can be assessed, corrected and added to |
+| Days (/day) | One day at a time with ‹ › : watch numbers vs usual, food, training, the day type and what the coach said; any day can be assessed, corrected and added to (replaced the Journal in v7) |
 | Memory | Instructions to the coach, food and training preferences, life notes, your files and the review inbox |
 | Settings | You, time zone, city (weather), language, your plan, all reminders, intervals.icu; Advanced: models, own key, cost |
 | People (/admin) | Admins only: who signed up, this month's AI cost, cap, pause, which app key |
