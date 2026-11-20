@@ -370,11 +370,30 @@ def context_lines(user_id: str, today: date) -> list[str]:
     return out
 
 
+def num(x) -> str:
+    """Display: 1 decimal from 10 up, 2 below ("94.8", "2.1", "0.03", "145")."""
+    x = float(x)
+    return f"{round(x, 1 if abs(x) >= 10 else 2):g}"
+
+
+def show_range(low, high) -> str:
+    if low is None and high is None:
+        return ""
+    if low is None:
+        return f"< {num(high)}"
+    if high is None:
+        return f"> {num(low)}"
+    return f"{num(low)}–{num(high)}"
+
+
+def show_value(r: dict) -> str:
+    return (f"{r['qualifier'] or ''}{num(r['value'])}" if r["value"] is not None
+            else r.get("value_text") or r.get("text") or "–")
+
+
 def line(r: dict) -> str:
-    rng = ("–".join("" if x is None else f"{float(x):g}" for x in (r["ref_low"], r["ref_high"]))
-           if r["ref_low"] is not None or r["ref_high"] is not None else "no range")
-    value = (f"{r['qualifier'] or ''}{float(r['value']):g}" if r["value"] is not None
-             else r["value_text"] or "?")
+    rng = show_range(r["ref_low"], r["ref_high"]) or "no range"
+    value = show_value(r)
     name = cat.name(r["marker"]) if r["marker"] in cat.MARKERS else r["name_as_printed"]
     return f"{name} {value} {r['unit'] or ''} ({r['taken_on']}, range {rng}): {r['flag']}"
 

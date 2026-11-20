@@ -65,7 +65,7 @@
           </form></details>
       </div>
       <div class="card" id="data"><h2>{{ _("Your data") }}</h2>
-        <h3 style="margin-top:8px">{{ _("Lab results") }}</h3>
+        <p class="small" style="margin-top:8px"><b>{{ _("Lab results") }}</b></p>
         <p class="small muted" style="margin-top:4px">{{ _("A lab sheet you upload is sent to the AI model (through OpenRouter) once, to read the values. Saved: each value with its unit, range and test date, the lab's name and the file name. Not saved: your name, birth date, order number or doctor from the sheet. The photo or PDF stays only in the chat message.") }}</p>
         <button type="button" class="btn sm danger-t" style="margin-top:8px" hx-delete="/labs" hx-confirm="{{ _('Delete all lab results? This cannot be undone.') }}">{{ icon("trash") }} {{ _("Delete all lab results") }}</button>
       </div>

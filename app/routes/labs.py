@@ -19,6 +19,8 @@ from app.pipeline.common import to_json
 from app.web import shell, templates
 
 router = APIRouter(dependencies=[Depends(current_user)])
+templates.env.globals.update(lab_value=labs.show_value, lab_range=labs.show_range,
+                             lab_num=labs.num)
 
 
 def _today(user: store.User):
@@ -36,7 +38,10 @@ def band_spark(points: list[dict], w: int = 200, h: int = 44) -> dict:
         return {}
     last = points[-1]
     lo_ref, hi_ref = last["ref_low"], last["ref_high"]
-    scale = vals + [x for x in (lo_ref, hi_ref) if x is not None]
+    # The band can be much wider than the values (ferritin 30–400): zoom on the values and
+    # let the band run off the top, so a change from 18 to 34 is visible.
+    top_ref = None if hi_ref is None else min(hi_ref, max(vals) * 1.6)
+    scale = vals + [x for x in (lo_ref, top_ref) if x is not None]
     lo, hi = min(scale), max(scale)
     pad = ((hi - lo) or abs(hi) or 1) * 0.1
     lo, hi = lo - pad, hi + pad
@@ -48,7 +53,7 @@ def band_spark(points: list[dict], w: int = 200, h: int = 44) -> dict:
     pts = [(round(i * w / n, 1) if len(points) > 1 else w / 2, y(p["value"]))
            for i, p in enumerate(points) if p["value"] is not None]
     path = "M" + " L".join(f"{x},{yy}" for x, yy in pts) if len(pts) > 1 else ""
-    top = y(hi_ref) if hi_ref is not None else 0
+    top = max(0, y(hi_ref)) if hi_ref is not None else 0
     bottom = y(lo_ref) if lo_ref is not None else h
     return {"path": path, "dots": pts[-1:], "band": (top, max(0, bottom - top))}
 
@@ -65,19 +70,20 @@ def cards(user_id: str, lang: str) -> list[dict]:
 
 
 def table_md(rows: list[dict], lang: str) -> str:
-    """The coach's reply after an upload: the extracted table (Markdown)."""
+    """The coach's reply after an upload: one line per value, out of range first (bold).
+    A list, because the chat's light Markdown has no tables."""
     t = i18n.t
-    head = (f"| {t('Marker', lang)} | {t('Value', lang)} | {t('Range', lang)} | "
-            f"{t('Flag', lang)} |\n|---|---|---|---|\n")
     lines = []
-    for r in rows:
-        v = (f"{r['qualifier'] or ''}{r['value']:g} {r['unit'] or ''}" if r["value"] is not None
-             else r["value_text"] or "?")
-        rng = "–".join("" if x is None else f"{x:g}" for x in (r["ref_low"], r["ref_high"])) \
-            if r["ref_low"] is not None or r["ref_high"] is not None else ""
-        f = {"low": t("low", lang), "high": t("high", lang), "in": "✓"}.get(r["flag"], "")
-        lines.append(f"| {label(r['marker'], r['name_as_printed'], lang)} | {v} | {rng} | {f} |")
-    return head + "\n".join(lines)
+    for r in sorted(rows, key=lambda r: r["flag"] not in ("low", "high")):
+        v = labs.show_value(r) + (f" {t(r['unit'], lang)}" if r["value"] is not None
+                                  and r["unit"] else "")
+        rng = labs.show_range(r["ref_low"], r["ref_high"])
+        name = label(r["marker"], r["name_as_printed"], lang)
+        if r["flag"] in ("low", "high"):
+            lines.append(f"- **{name} {v}: {t(r['flag'], lang)}** ({t('range', lang)} {rng})")
+        else:
+            lines.append(f"- {name} {v}" + (f" ({t('range', lang)} {rng})" if rng else ""))
+    return "\n".join(lines)
 
 
 def ingest_upload(user: store.User, raw: bytes, filename: str) -> str:
@@ -93,7 +99,8 @@ def ingest_upload(user: store.User, raw: bytes, filename: str) -> str:
     with connection() as c:
         mid = c.execute("insert into chat_messages (user_id, role, content, attachments) values "
                         "(%s, 'user', %s, %s::jsonb) returning id",
-                        (user.id, i18n.t("Lab results", lang) + f": {filename[:80]}",
+                        (user.id, i18n.t("Lab results", lang) + ("" if "text" in content
+                                                              else f": {filename[:80]}"),
                          to_json(attach))).fetchone()["id"]
     try:
         out = labs.ingest(user.id, raw, filename, mid, _today(user))

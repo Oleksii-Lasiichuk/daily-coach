@@ -37,7 +37,7 @@
     <h3>{{ icon("droplet") }} {{ _("Add your last blood test.") }}</h3>
     <p class="small muted" style="margin-top:4px">{{ _("A photo of the paper or the PDF from the lab. The coach reads the values, shows trends and tells you what is out of range.") }}</p>
     <ol class="small" style="margin:6px 0 0 18px"><li>{{ _("Press “Add results”.") }}</li><li>{{ _("Choose the photo or the PDF (from Synevo, Dila, CSD… sites or e‑mail). One page per photo, flat and sharp.") }}</li><li>{{ _("Check the table it shows; fix any value with a tap.") }}</li></ol>
-    <form method="post" action="/labs" enctype="multipart/form-data" class="lab-upload row" style="margin-top:10px"><label class="btn sm ink" for="setup-lab-file">{{ _("Add results") }}</label><input id="setup-lab-file" class="sr" type="file" name="file" accept="image/*,application/pdf" onchange="this.form.requestSubmit()">
+    <form method="post" action="/labs" enctype="multipart/form-data" class="lab-upload row" style="margin-top:10px"><label class="btn sm ink">{{ _("Add results") }}<input class="sr" type="file" name="file" accept="image/*,application/pdf" onchange="this.form.requestSubmit()"></label>
   {% endif %}
       <button type="button" class="btn sm ghost" onclick="dismissFor(this.closest('.setup-card'), 3)">{{ _("Later") }}</button></div>
   {% if c in ("body", "city", "labs") %}</form>{% endif %}

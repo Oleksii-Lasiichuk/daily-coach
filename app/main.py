@@ -16,8 +16,18 @@ from app import db
 from app.auth import SESSION_MAX_AGE, NotAuthenticated, not_authenticated_response, origin_ok
 from app.config import get_settings
 from app.crypto import derived_key
-from app.routes import (admin, auth, data_pages, files, knowledge, labs, pages, profile, push,
-                        welcome)
+from app.routes import (
+    admin,
+    auth,
+    data_pages,
+    files,
+    knowledge,
+    labs,
+    pages,
+    profile,
+    push,
+    welcome,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 log = logging.getLogger("app")
