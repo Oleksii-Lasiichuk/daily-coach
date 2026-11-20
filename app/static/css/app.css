@@ -463,3 +463,16 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .daynav-title { display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; text-align: center; font-size: 16px; }
 .daynav .btn { width: 44px; height: 44px; }
+
+/* Money (plan 11 B4) */
+.money-cats li { padding: 6px 0; }
+.money-bar { position: relative; margin-top: 5px; overflow: visible; }
+.money-bar .tick { position: absolute; top: -3px; width: 2px; height: 12px; background: var(--ink-2); border-radius: 1px; }
+.money-tx { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; }
+.money-tx .grow { flex: 1 1 140px; min-width: 0; overflow-wrap: anywhere; }
+.money-pick summary { cursor: pointer; list-style: none; }
+.money-pick summary::-webkit-details-marker { display: none; }
+.money-pickform { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.money-pickform select { width: auto; max-width: 100%; }
+.money-flag.up { border-color: var(--warn); } .money-flag.down { border-color: var(--good); }
+.money-tx .num.good { color: var(--good); }

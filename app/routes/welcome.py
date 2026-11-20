@@ -27,6 +27,7 @@ TRACKS = [("training", "watch", "Training from my watch",
            "Garmin and others, through intervals.icu"),
           ("weather", "cloud", "Weather for my city", "So runs fit the weather"),
           ("reminders", "bell", "Reminders", "Meals, sleep, medication")]
+TRACKS += [("money", "wallet", "Spending", "Monobank and receipts")]  # plan 11 B4
 
 
 @router.get("/welcome", response_class=HTMLResponse)
@@ -88,6 +89,8 @@ def setup_cards(user: store.User, has_push: bool, profile: dict) -> list[str]:
         cards.append("push")
     if user.tracks and interview.missing_slots(profile, store.list_facts(user.id)):
         cards.append("questions")  # only for people who signed up through the new screen
+    if "money" in user.tracks and not store.get_secret(user.id, "monobank"):
+        cards.append("money")  # plan 11 B4
     return cards
 
 

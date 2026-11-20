@@ -33,6 +33,10 @@
     <h3>{{ icon("chat") }} {{ _("A few questions from the coach") }}</h3>
     <p class="small muted" style="margin-top:4px">{{ _("Injuries, health, races: what the coach should know. 2 minutes, skip any.") }}</p>
     <div class="row" style="margin-top:10px"><button class="btn sm ink" hx-get="/setup/questions" hx-target="#sheet-body" hx-indicator="this">{{ _("Answer") }}</button>
+  {% elif c == "money" %}
+    <h3>{{ icon("wallet") }} {{ _("Connect Monobank (read-only)") }}</h3>
+    <p class="small muted" style="margin-top:4px">{{ _("See where money goes: food, delivery, race entries, gear. Or just send photos of receipts.") }}</p>
+    <div class="row" style="margin-top:10px"><button class="btn sm ink" hx-get="/setup/money/sheet" hx-target="#sheet-body">{{ _("Show me how") }}</button>
   {% endif %}
       <button type="button" class="btn sm ghost" onclick="dismissFor(this.closest('.setup-card'), 3)">{{ _("Later") }}</button></div>
   {% if c in ("body", "city") %}</form>{% endif %}

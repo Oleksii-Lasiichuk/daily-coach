@@ -1,0 +1,18 @@
+{# Settings → Money: Monobank status, disconnect, delete. #}
+{% from "_icons.html" import icon with context %}
+{% if secret %}
+  <p class="small"><span class="badge good">{{ _("Connected") }}</span> · {{ status.accounts | length }} {{ _("cards") }}{% if status.last4 %} · {% for l in status.last4 %}…{{ l }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+    {% if status.last_import %} · {{ _("last import") }} {{ status.last_import | local_time(user.time_zone, "%d.%m %H:%M") }}{% endif %}
+    · {{ _("token") }} …{{ secret.last4 }}</p>
+  {% if status.importing %}<p class="small muted">{{ _("Importing…") }} {{ status.windows_done }} {{ _("of") }} {{ status.windows_total }}</p>{% endif %}
+  <form method="post" action="/money/mono/delete" style="margin-top:10px" onsubmit="return confirm({{ _('Disconnect Monobank?') | tojson }})">
+    <div class="seg" role="radiogroup" aria-label="{{ _('Your imported payments') }}">
+      <label style="margin:0"><input type="radio" name="keep" value="keep" class="sr" checked><span>{{ _("Keep payments") }}</span></label>
+      <label style="margin:0"><input type="radio" name="keep" value="delete" class="sr"><span>{{ _("Delete payments") }}</span></label></div>
+    <div class="row" style="margin-top:8px"><button class="btn sm ghost">{{ _("Disconnect") }}</button></div></form>
+{% else %}
+  <p class="small muted">{{ _("Not connected. Receipts work without Monobank.") }}</p>
+  {% include "partials/money_connect.html" %}
+{% endif %}
+<form method="post" action="/money/delete" style="margin-top:12px" onsubmit="return confirm({{ _('Delete all payments, receipts and your category rules? This cannot be undone.') | tojson }})">
+  <button class="btn sm ghost">{{ icon("trash") }} {{ _("Delete all money data") }}</button></form>

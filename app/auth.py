@@ -17,6 +17,8 @@ from app.config import get_settings
 # /healthz is reserved on Cloud Run; /cron/tick checks its own secret header; /sw.js is static JS.
 PUBLIC_PATHS = {"/login", "/auth/session", "/lang", "/status", "/sw.js", "/cron/tick",
                 "/cron/hold/{turn_id}"}
+# Monobank webhook (plan 11 B4): the secret token in the path is the check.
+PUBLIC_PATHS |= {"/hooks/mono/{hook_token}"}
 SESSION_MAX_AGE = 14 * 24 * 3600
 
 _google_request = google_requests.Request()
@@ -64,6 +66,8 @@ def origin_ok(request: Request) -> bool:
     if request.method in ("GET", "HEAD", "OPTIONS"):
         return True
     if request.url.path.startswith("/cron/"):  # server-to-server; checked by its secret header
+        return True
+    if request.url.path.startswith("/hooks/mono/"):  # Monobank → us; checked by the path token
         return True
     origin = (request.headers.get("origin") or request.headers.get("referer", "")).rstrip("/")
     return any(origin == o or origin.startswith(o + "/") for o in get_settings().origins)

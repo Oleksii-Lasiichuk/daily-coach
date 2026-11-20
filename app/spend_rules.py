@@ -59,7 +59,7 @@ MERCHANTS: list[tuple[str, list[str]]] = [
                   "dobroho dnia apteka"]),
     ("medical", ["synevo", "dila", "medlab", "dobrobut", "into sana", "boris", "oxford medical",
                  "klinika", "clinic", "stomatolog", "dental", "esculab", "laboratoriia"]),
-    ("coffee", ["aroma kava", "lviv croissants", "starbucks", "coffee", "kava", "costa",
+    ("coffee", ["aroma kava", "kaviarn", "lviv croissants", "starbucks", "coffee", "kava", "costa",
                 "one love", "black honey", "takava", "white rabbit"]),
     ("eating_out", ["mcdonald", "kfc", "puzata khata", "domino", "sushi", "pizza", "restoran",
                     "restaurant", "kafe", "cafe", "bistro", "burger", "pyvnytsia", "bar "]),

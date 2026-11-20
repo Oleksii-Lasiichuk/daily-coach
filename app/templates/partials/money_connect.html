@@ -1,0 +1,8 @@
+<form method="post" action="/money/mono" style="margin-top:12px">
+  <label for="mono-token">{{ _("Monobank token") }}</label>
+  <input id="mono-token" name="token" autocomplete="off" spellcheck="false" required>
+  <fieldset style="margin-top:10px;border:0;padding:0"><legend class="small">{{ _("Import the last") }}</legend>
+    <div class="seg" role="radiogroup">{% for m in months %}
+      <label style="margin:0"><input type="radio" name="months" value="{{ m }}" class="sr" {% if m == 6 %}checked{% endif %}><span>{{ m }} {{ _("mo") }}</span></label>{% endfor %}</div></fieldset>
+  <div class="row" style="margin-top:10px"><button class="btn sm ink">{{ _("Connect") }}</button></div>
+</form>

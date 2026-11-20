@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Money") }} · Daily Coach{% endblock %}
+{% block main %}
+<div class="page">
+  <div class="pagehead"><h1>{{ _("Money") }}</h1>
+    <button class="btn sm ink" type="button" onclick="document.getElementById('rc-file').click()">{{ icon("camera") }} {{ _("Add receipt") }}</button></div>
+  <form id="rc-form" hx-post="/money/receipt" hx-encoding="multipart/form-data" hx-target="#rc-out" hx-indicator="#rc-out" hidden>
+    <input id="rc-file" type="file" name="image" accept="image/*" onchange="htmx.trigger('#rc-form', 'submit')"></form>
+  <div id="rc-out" class="money-rc"><p class="small muted htmx-indicator"><span class="dots"><i></i><i></i><i></i></span> {{ _("Reading the receipt…") }}</p></div>
+
+  {% if request.query_params.get("error") %}<p class="notice error small" style="margin-top:10px">{% set e = request.query_params.get("error") %}{{ _("Monobank didn't accept this token. Copy it again from api.monobank.ua.") if e == "token" else (_("Monobank allows one check per minute. Try again in a minute.") if e == "wait" else _("Couldn't reach Monobank. Try again later.")) }}</p>{% endif %}
+  {% if not secret %}
+    <div class="card" style="margin-top:14px"><h2>{{ icon("wallet") }} {{ _("Connect Monobank (read-only)") }}</h2>
+      <p class="small muted">{{ _("Card purchases arrive by themselves. Without Monobank, send photos of receipts.") }}</p>
+      <div class="row" style="margin-top:10px"><button class="btn sm ink" hx-get="/setup/money/sheet" hx-target="#sheet-body">{{ _("Show me how") }}</button></div></div>
+  {% elif status.importing %}
+    <p class="notice small" style="margin-top:10px">{{ _("Importing…") }} {{ status.windows_done }} {{ _("of") }} {{ status.windows_total }} · {{ _("about") }} {{ (status.eta_min / 60) | round(1) | string | replace(".0", "") }} {{ _("h left") }}</p>
+  {% endif %}
+
+  <nav class="daynav" aria-label="{{ _('Month') }}" style="margin-top:14px">
+    <a class="btn sm ghost" href="/money?month={{ prev }}" aria-label="{{ _('Previous month') }}">{{ icon("chevron-left") }}</a>
+    <div class="daynav-title"><b>{{ v.month | fdate("month") }}</b><span class="small muted">{{ _("Spent") }} {{ "{:,.0f}".format(v.spent).replace(",", " ") }} ₴</span></div>
+    {% if next %}<a class="btn sm ghost" href="/money?month={{ next }}" aria-label="{{ _('Next month') }}">{{ icon("chevron-right") }}</a>
+    {% else %}<span class="btn sm ghost" aria-hidden="true" style="visibility:hidden">{{ icon("chevron-right") }}</span>{% endif %}
+  </nav>
+
+  {% if v.flags or v.race %}
+  <div class="grid2" style="margin-top:14px">
+    {% for f in v.flags %}
+    <div class="card money-flag {{ f.flag }}"><span class="label">{{ _(cat_name(f.category)) }}</span>
+      <p style="margin-top:2px"><span class="bignum">{{ f.ratio }}×</span> <span class="muted">{{ _("your usual") }}</span></p>
+      <p class="small muted">{{ f.uah }} ₴ {{ _("vs") }} {{ f.avg_3m }} ₴ · {{ f.n }} {{ _("payments") }}</p></div>
+    {% endfor %}
+    {% if v.race and v.race.uah %}
+    <div class="card"><span class="label">{{ icon("flag") }} {{ _("Race cost so far") }}</span>
+      <p style="margin-top:2px"><span class="bignum">{{ v.race.uah }} ₴</span></p>
+      <p class="small muted">{{ v.race.race }} · {% for c, uah in v.race.parts.items() %}{{ _(cat_name(c)) }} {{ uah }} ₴{% if not loop.last %} · {% endif %}{% endfor %}</p></div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card"><h2>{{ _("By category") }}</h2>
+      {% if not v.categories %}<p class="small muted">{{ _("No spending this month yet.") }}</p>{% endif %}
+      <ul class="list money-cats">
+      {% for c in v.categories if c.uah or c.avg_3m %}
+        <li><div class="row between small"><span>{{ _(cat_name(c.category)) }} <span class="muted">· {{ c.n }}</span></span><span class="num">{{ c.uah }} ₴{% if c.avg_3m %} <span class="muted">/ {{ c.avg_3m }}</span>{% endif %}</span></div>
+          <div class="bar money-bar"><i class="{{ 'over' if c.flag == 'up' else 'ink' }}" style="width:{{ (100 * c.uah / bar_max) | round(1) }}%"></i>{% if c.avg_3m %}<b class="tick" style="left:{{ (100 * c.avg_3m / bar_max) | round(1) }}%" title="{{ _('3-month usual') }}"></b>{% endif %}</div></li>
+      {% endfor %}</ul>
+      {% if v.categories %}<p class="tiny muted" style="margin-top:8px">{{ _("The mark is your usual for the same days of the last 3 months.") }}</p>{% endif %}
+    </div>
+    <div class="card"><h2>{{ _("Payments") }}</h2>
+      {% if not days %}<p class="small muted">{{ _("Nothing here yet.") }}</p>{% endif %}
+      {% for d, rows in days.items() %}
+      <p class="label" style="margin-top:10px">{{ d | fdate("day") }}</p>
+      <ul class="list small">
+        {% for r in rows %}
+        <li class="money-tx"><span class="grow">{{ r.description or _("Payment") }}{% if r.hold %} <span class="badge">{{ _("pending") }}</span>{% endif %}</span>
+          <details class="money-pick"><summary class="badge {{ 'accent' if r.category_by == 'user' }}">{{ _(cat_name(r.category)) }}</summary>
+            <form hx-post="/money/tx/{{ r.id }}/category" class="money-pickform">
+              <select name="category" aria-label="{{ _('Category') }}">{% for c in categories %}<option value="{{ c }}" {% if c == r.category %}selected{% endif %}>{{ _(cat_name(c)) }}</option>{% endfor %}</select>
+              {% if r.source == "monobank" %}<label class="small" style="margin:0"><input type="checkbox" name="always" value="1"> {{ _("Always for this merchant") }}</label>{% endif %}
+              <button class="btn sm ink">{{ _("Save") }}</button></form></details>
+          <span class="num {{ 'good' if r.amount_minor > 0 }}">{{ "%+.0f" | format(r.amount_minor / 100) }} ₴</span></li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </div>
+  </div>
+  {% if secret %}<p class="small muted" style="margin-top:14px"><a href="/settings#money">{{ _("Monobank settings") }}</a></p>{% endif %}
+</div>
+{% endblock %}

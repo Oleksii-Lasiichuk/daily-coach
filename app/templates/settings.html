@@ -38,6 +38,8 @@
         {% include "partials/intervals.html" %}</div>
     </div>
     <div class="stack">
+      {% if "money" in (user.tracks or []) %}<div class="card" id="money"><h2>{{ _("Money") }}</h2>
+        <div hx-get="/money/settings" hx-trigger="load"><p class="small muted">…</p></div></div>{% endif %}
       <div class="card" id="reminders"><h2>{{ _("Reminders") }}</h2>
         <div class="notice ios-hint" id="ios-hint" hidden><b>{{ _("On iPhone: add the app to your Home Screen first.") }}</b><br>{{ _("In Safari tap Share → Add to Home Screen, open Daily Coach from the Home Screen, then come back here and turn notifications on. iPhone only allows notifications for installed apps.") }}</div>
         <div class="row between" style="margin:10px 0">

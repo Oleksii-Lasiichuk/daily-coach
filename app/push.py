@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 from pywebpush import WebPushException, webpush
 
 from app import health, history, i18n, intervals, llm, nutrition_stats, store
+from app import money, money_stats, mono
 from app.config import get_settings
 from app.db import connection
 from app.pipeline import common
@@ -143,10 +144,32 @@ def tick() -> dict:
                    if w["sleep_h"] else "")
                 + (" · " + i18n.t("alcohol on {n} days", lang).format(n=w["alcohol_days"])
                    if w["alcohol_days"] else ""))
+            food = money_stats.week_food(store.get_user(uid), now.date())
+            if food:
+                body += " · " + i18n.t("Spent on food: {food} ₴ (delivery {d} ₴)", lang).format(
+                    food=food[0], d=food[1])
             stats["weekly"] += send(uid, "Your week", body, url="/journal")
+        if n_money := money_tick(uid, now):
+            stats["money"] = stats.get("money", 0) + n_money
         if _due(now, "04:00") and _mark(uid, "insight", now):
             stats["insights"] += daily_insight(uid, now)
     return stats
+
+
+def money_tick(user_id: str, now: datetime) -> int:
+    """Monobank (plan 11 B4): one statement call at most, then categorise; webhook check daily.
+    Users without a Monobank token or money rows are skipped with one cheap query."""
+    if not store.get_secret(user_id, "monobank"):
+        return 0
+    try:
+        n = mono.sync_step(user_id)
+        money.categorise_pending(user_id)
+        if _mark(user_id, "mono-webhook", now):
+            mono.check_webhook(user_id)
+    except Exception as e:  # one user's bank problem never stops the tick
+        log.warning("money tick failed: %s", type(e).__name__)
+        return 0
+    return n
 
 
 def _mark(user_id: str, key: str, now: datetime) -> bool:

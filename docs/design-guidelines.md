@@ -14,7 +14,7 @@ forward, so protections added early go missing in code added later.
 
 | # | Typical AI mistake | Our rule |
 |---|---|---|
-| S1 | Auth checked only in the browser, or only on some routes | Every route except `/login`, `/healthz` and static files requires a session. The default is deny: one FastAPI dependency `current_user` used by every router. A test lists all routes and fails if one is unprotected. |
+| S1 | Auth checked only in the browser, or only on some routes | Every route except `/login`, `/healthz` and static files requires a session. The default is deny: one FastAPI dependency `current_user` used by every router. A test lists all routes and fails if one is unprotected. Exception (plan 11 B4): `/hooks/mono/{token}`, the Monobank webhook: a random 32-byte token in the path (stored as a SHA-256 hash), accepts only items for that user's own accounts, writes one row, no LLM. |
 | S2 | Queries not scoped to the user (user A reads user B's data) | Every table with personal data has `user_id`. Every data function takes `user_id` as its first argument; there is no "get by id" without it. A test with two users checks isolation for every endpoint. |
 | S3 | Secrets in code, client JS, logs or git | Server-side only. Local: `.env` (git-ignored). Prod: Secret Manager. Users' third-party keys (intervals.icu) are encrypted at rest, never logged, never returned to the browser (only the last 4 characters), and never put in an LLM prompt. |
 | S4 | LLM output trusted as-is | Every LLM output that drives logic is parsed into a Pydantic model. Invalid output → one retry → a clear error. Workouts pass a code validator before anything is written. |
