@@ -109,3 +109,13 @@ def _blank_pdf() -> bytes:
     b = io.BytesIO()
     w.write(b)
     return b.getvalue()
+
+
+def test_day_review_names_low_ferritin():
+    from app.pipeline import day_review
+    day = {"targets": {"kcal": 2500}, "eaten": {"kcal": 2400}, "day_is_over": True,
+           "meals_logged": 4, "meals": [], "drinks": {}, "training": [],
+           "lab_flags": ["ferritin"]}
+    assert any("ferritin" in x for x in day_review.analyse(day)["issues_worst_first"])
+    assert not any("ferritin" in x for x in day_review.analyse(
+        day | {"lab_flags": []})["issues_worst_first"])

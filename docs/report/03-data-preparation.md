@@ -32,3 +32,17 @@ a diff.
 - **Wellness:** turned into a compact summary with 7-day baselines computed in code (not by the
   LLM): `{today, baseline_7d, activities_14d}`.
 - **HR zones:** explicit ranges. Pace is shown per km for running and per 100 m for swimming.
+
+## B3 (2026-11-20): synthetic lab sheets for C10
+
+No public dataset has Ukrainian lab sheets with labels, and real reports are personal health
+data, so `evals/make_c10_labs.py` draws 15 sheets with fake values (seeded, reproducible):
+5 clean PNG, 5 "phone photos" (tilt ±4°, shadow gradient, blur, JPEG), 5 text PDFs
+(matplotlib, real text layer). Three made-up table layouts in the style of common UA lab forms
+(no real forms or logos), 9 Ukrainian and 6 English sheets. Each has 18 catalogue markers and 2
+unknown ones (procalcitonin, homocysteine, anti-TPO), ~15 % low and ~15 % high values, some
+units the catalogue must convert (vitamin D in ng/mL, Hb in g/dL, glucose in mg/dL…), lab ranges
+slightly different from the catalogue defaults (so "printed range first" is tested), and
+distractors: patient "Тест Тестенко" / "Test Testenko", birth date, order number, doctor, a
+later "issued" date and a comment paragraph. Labels (`evals/data/c10_labs.jsonl`) are written by
+the generator from the true values; 3 images and 2 PDFs were checked by eye.
