@@ -14,6 +14,7 @@ from app.pipeline.labs import LabSheet, PrintedRow
     ("Вітамін В12", "b12"), ("ТТГ", "tsh"), ("Тиреотропный гормон", "tsh"),
     ("Холестерин ЛПНЩ", "ldl"), ("Холестерин загальний", "chol_total"), ("ШОЕ", "esr"),
     ("Лейкоцити (WBC)", "wbc"), ("Тромбоциты", "plt"), ("Glucose", "glucose"),
+    ("ШОЕ (ESR)", "esr"), ("ЛПНЩ (LDL)", "ldl"), ("ТТГ (TSH)", "tsh"), ("ЛПВЩ (HDL)", "hdl"),
 ])
 def test_aliases(printed, key):
     assert cat.find(printed) == key

@@ -131,7 +131,7 @@ UNIT_ALIASES = {
     "miu/l": "mIU/L", "мод/л": "mIU/L", "ммо/л": "mIU/L", "uiu/ml": "mIU/L", "μiu/ml": "mIU/L",
     "мкмо/мл": "mIU/L", "мкод/мл": "mIU/L",
     "10^9/l": "10^9/L", "10*9/l": "10^9/L", "x10^9/l": "10^9/L", "тис/мкл": "10^9/L",
-    "10^3/ul": "10^9/L", "10^12/l": "10^12/L", "10*12/l": "10^12/L", "x10^12/l": "10^12/L",
+    "10^3/ul": "10^9/L", "10^9/л": "10^9/L", "10^12/л": "10^12/L", "10^12/l": "10^12/L", "10*12/l": "10^12/L", "x10^12/l": "10^12/L",
     "млн/мкл": "10^12/L", "10^6/ul": "10^12/L",
     "mm/h": "mm/h", "мм/год": "mm/h", "мм/ч": "mm/h", "mm/hr": "mm/h",
 }
@@ -149,6 +149,9 @@ def find(name: str) -> str | None:
     k = key(name)
     if k in _ALIAS:
         return _ALIAS[k]
+    for part in re.split(r"[()]", name or ""):  # "ШОЕ (ESR)", "ТТГ (TSH)"
+        if key(part) in _ALIAS:
+            return _ALIAS[key(part)]
     for alias, marker in sorted(_ALIAS.items(), key=lambda x: -len(x[0])):
         if len(alias) >= 5 and (k.startswith(alias) or alias in k):
             return marker
