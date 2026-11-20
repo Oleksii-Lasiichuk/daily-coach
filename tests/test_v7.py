@@ -248,3 +248,13 @@ def test_journal_is_gone_and_old_links_open_today(client, users):
         assert r.status_code == 303 and r.headers["location"].startswith("/day/20"), old
     page = client.get("/").text
     assert 'href="/journal"' not in page and 'href="/day"' in page
+
+
+def test_calendar_fetch_refuses_internal_addresses():
+    import pytest
+
+    from app import calendar
+    for url in ["https://127.0.0.1/x.ics", "https://localhost/x.ics",
+                "https://metadata.google.internal/computeMetadata/v1/", "https://10.0.0.5/a.ics"]:
+        with pytest.raises(calendar.CalendarError):
+            calendar.fetch(url)

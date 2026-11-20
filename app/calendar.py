@@ -61,6 +61,24 @@ def host(url: str) -> str:
     return urlparse(url).netloc
 
 
+def _public_https(request: httpx.Request) -> None:
+    """Every hop (also redirects): https to a public address only, so a calendar link can't
+    make the server call internal addresses (metadata server, localhost, private ranges)."""
+    import ipaddress
+    import socket
+    host_ = request.url.host
+    if request.url.scheme != "https" or not host_ or host_.endswith(".internal"):
+        raise CalendarError("This link isn't a calendar")
+    try:
+        addrs = {a[4][0] for a in socket.getaddrinfo(host_, 443)}
+    except OSError:
+        raise CalendarError("Can't reach the calendar") from None
+    for a in addrs:
+        ip = ipaddress.ip_address(a.split("%")[0])
+        if not ip.is_global:
+            raise CalendarError("This link isn't a calendar")
+
+
 def fetch(url: str, client: httpx.Client | None = None) -> bytes:
     """Raw ICS bytes. Limits: 10 s, 5 MB, must look like a calendar."""
     url = normalize_url(url)
@@ -68,7 +86,8 @@ def fetch(url: str, client: httpx.Client | None = None) -> bytes:
     if demo.is_demo_calendar(url):
         return demo.calendar_ics(url)
     own = client is None
-    client = client or httpx.Client(timeout=TIMEOUT_S, follow_redirects=True)
+    client = client or httpx.Client(timeout=TIMEOUT_S, follow_redirects=True, max_redirects=5,
+                                    event_hooks={"request": [_public_https]})
     try:
         with client.stream("GET", url, headers={"User-Agent": "DailyCoach/1.0"}) as r:
             if r.status_code in (401, 403, 404, 410):
