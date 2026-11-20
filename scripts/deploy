@@ -15,7 +15,7 @@ echo "Deploying to project $PROJECT as $account"
 env_value() { grep -E "^$1=" .env | head -1 | cut -d= -f2-; }
 prod_value() { grep -E "^$1=" .env.prod 2>/dev/null | head -1 | cut -d= -f2-; }
 
-ORIGINS="https://$PROJECT.web.app,https://$PROJECT.firebaseapp.com${EXTRA_ORIGIN:+,$EXTRA_ORIGIN}"
+ORIGINS="https://$PROJECT.web.app,https://$PROJECT.firebaseapp.com,https://coach.lasiichuk.com${EXTRA_ORIGIN:+,$EXTRA_ORIGIN}"
 LF_PUBLIC="${LANGFUSE_PUBLIC_KEY_PROD:-$(prod_value LANGFUSE_PUBLIC_KEY)}"
 [ -n "$LF_PUBLIC" ] || { echo "Set LANGFUSE_PUBLIC_KEY_PROD (prod Langfuse public key)"; exit 1; }
 
