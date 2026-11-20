@@ -19,7 +19,7 @@ Connect the rest of life to the coach, so it can reason across areas and say thi
   matters, and ask your doctor about a re-test."
 - "You spent 2× more on delivery this month than your usual, although your goal is to cook."
 
-Four sources, each its own shippable slice (code + migration + setup card + sync + eval +
+Four sources for everyone plus one personal one (B5), each its own shippable slice (code + migration + setup card + sync + eval +
 report section + deploy):
 
 | Slice | Source | New components | Size |
@@ -46,7 +46,7 @@ before B2 — they don't depend on each other — but keep B1 first.
 - **In:** "Use my location" in the browser + hourly weather, air quality, UV, sunrise/sunset,
   heat/cold/dark/AQI rules; calendar through a secret/public iCal link; lab results from a photo
   or a text PDF, with trends; Monobank personal API (statement import + webhook); receipt photos;
-  spending categories and insights. Each with a setup card (EN and UA), a sync in `/cron/tick`
+  spending categories and insights; Garmin Personal API for Oleksii only (B5). Each with a setup card (EN and UA), a sync in `/cron/tick`
   where it needs one, an eval, two-user isolation tests and a report section. New "what to
   track" options on the welcome screen.
 - **Out (and why):**
