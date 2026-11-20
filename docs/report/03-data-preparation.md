@@ -32,3 +32,15 @@ a diff.
 - **Wellness:** turned into a compact summary with 7-day baselines computed in code (not by the
   LLM): `{today, baseline_7d, activities_14d}`.
 - **HR zones:** explicit ranges. Pace is shown per km for running and per 100 m for swimming.
+
+## C11 spend category set (plan 11 B4)
+
+`evals/make_c11_spend.py` writes 161 synthetic card payments (`evals/data/c11_spend.jsonl`):
+chains in Ukrainian and Latin spellings, misleading MCCs (Glovo with a grocery MCC), unknown
+local cafés and shops, race-registration sites, sports-nutrition shops, pharmacies and labs,
+transfers, cash and income. Labels are by hand (one of the 22 fixed categories).
+It also draws 15 receipt images with PIL in a Ukrainian fiscal-receipt layout with fake shop
+names (`evals/data/c11_receipts/`), with line labels, the total and whether a "Log as a meal /
+fuel" offer is expected. The first 10 are the accuracy set; all 15 are used for the offer check.
+**Bias:** the merchant rules and the set were written in the same session, so the rules-only
+number is optimistic (see 05). Labels are not yet reviewed by Oleksii.

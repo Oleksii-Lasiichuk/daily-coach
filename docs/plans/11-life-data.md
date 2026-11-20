@@ -940,10 +940,42 @@ groceries vs sports_nutrition, gym_classes vs race_entries).
 
 - [ ] Connect Monobank from the sheet; the chosen period (default 6 months) imported within ~3 h, respecting 1 call /
       60 s; new purchases appear within a minute through the webhook, or within 6 h without it.
-- [ ] Money page with categories, insights and corrections at 375/1280, light/dark, EN/UA.
-- [ ] Only aggregates reach the coach; the tool-output test proves it; token encrypted; no
+      *(Built and tested against a fake Monobank; not yet run with a real token or deployed.)*
+- [x] Money page with categories, insights and corrections at 375/1280, light/dark, EN/UA.
+- [x] Only aggregates reach the coach; the tool-output test proves it; token encrypted; no
       IBAN/comment/counterparty stored.
-- [ ] C11 rules-only vs rules+LLM recorded; ≥ 0.90 or the gap explained.
+- [x] C11 rules-only vs rules+LLM recorded; ≥ 0.90 or the gap explained.
+
+### Result (B4, 2026-11-20, branch `claude/b4-money-ce4eba`)
+
+- **Built:** migration `011_money.sql` (full provider list); `app/spend_rules.py`;
+  `app/pipeline/spend.py` (C11) and `receipt.py` with prompts `c11_spend.md`,
+  `c11_receipt.md`; `app/mono.py` (client, connect, one-call-per-tick import, 31-day windows,
+  ≥ 500 continuation, catch-up every 6 h, daily webhook check, webhook handler);
+  `app/money.py`; `app/money_stats.py`; routes in `app/routes/money.py` (`/money`,
+  `/money/mono`, `/money/mono/delete`, `/money/delete`, `/money/tx/{id}/category`,
+  `/money/receipt`, `/money/receipt/{id}/meal|delete`, `/money/settings`, `/setup/money/sheet`,
+  public `/hooks/mono/{token}` GET/POST); tick wiring and the Sunday food line in `app/push.py`;
+  coach tools `money_summary` and `read_receipt` + up to 2 flags in the context; the "Log it"
+  button under a receipt reply; Money page, Settings section, setup card and sheet, welcome
+  track, nav/More entry, `wallet` icon, 91 UA strings; synthetic payments for the demo athlete.
+- **Eval (C11):** rules only 0.944, coverage 0.957; rules + C11 **0.981**; C11 on unplaced
+  0.857; privacy violations 0; receipts total 10/10, lines 1.0, split 10/10; meal offer 1.0.
+  Rules-only is optimistic (rules and set written together); see 05-evaluation.
+- **Tests:** `tests/test_money.py` (every merchant and MCC rule, fake Monobank via
+  `httpx.MockTransport`: one call per tick, 31-day windows, 429 back-off, ≥ 500 rows, hold →
+  settled upsert, transfer names dropped, token not logged; webhook unknown token 404, foreign
+  account ignored, A's hook never writes B; insights thresholds, empty months, race cost;
+  tool-output keys; receipt split; two-user isolation for every money route). `uv run pytest`:
+  344 passed. `i18n_check`: 0 missing.
+- **Deviations:** receipt lines use product keywords then the receipt kind's default, not C11.
+  The eval set has 161 payments (plan: 150). Disconnect keeps or deletes payments by a choice
+  on the form (no extra dialog).
+- **Not done / known limits:** step 1 (checking the live api.monobank.ua token screens with
+  Oleksii's phone) not done — the sheet text follows the plan; real-token run, deploy and
+  setting the webhook from prod not done (deploy is out of this session's scope); C11 labels not
+  reviewed by Oleksii; a receipt saved before its card payment is imported is not matched later
+  (it would count twice); only UAH payments are summed.
 
 ---
 

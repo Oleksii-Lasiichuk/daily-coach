@@ -346,3 +346,28 @@ drinking is found in 43% of 90-day logs. For a health claim we prefer fewer fals
   kept the judge's comments in the result files so they can be checked.
 - **End to end only on synthetic turns:** `evals/run_e2e.py` runs 12 real turns on the demo
   athlete. The next step is to label two weeks of real chats and measure the whole system.
+
+## C11 Spend category (plan 11 B4, 2026-11-20)
+
+`uv run python -m evals.run_c11` → `evals/results/c11_spend.json`.
+
+| Metric | Result | Target |
+|---|---|---|
+| Accuracy, rules only (unplaced = wrong), 161 payments | 0.944 | reported (plan expected ~0.7) |
+| Rules coverage | 0.957 | reported |
+| Accuracy, rules + C11 | **0.981** | ≥ 0.90 |
+| C11 accuracy on the 7 rule-unplaced payments | 0.857 (6/7) | ≥ 0.80 |
+| Privacy: C11 inputs with anything but merchant + MCC, or a transfer | 0 | 0 |
+| Receipts: total exact / line category accuracy / split adds up (10) | 10/10 / 1.0 / 10/10 | 10/10 / ≥ 0.85 / 10/10 |
+| Meal-offer accuracy (15 receipts) | 1.0 | ≥ 0.9 |
+
+Main confusions: groceries/sports_nutrition 1 ("Енергетичні гелі Біг", MCC 5499: the grocery
+MCC wins because no rule knows the word "гелі" for merchants), coffee/eating_out 1 ("Кавовий
+куточок", MCC 5814: rules say eating_out); eating_out/delivery 0, gym_classes/race_entries 0.
+C11's one miss: a newspaper kiosk labelled `other`, answered `shopping` (arguable).
+
+**Why rules-only is so high, and what that means:** the merchant list and the eval set were
+written in the same session, so many eval names are in the rules. On real statements, with
+long-tail local merchants, coverage will be lower and C11 will matter more. Next step: run
+the rules on Oleksii's own exported statement locally (never committed) and report coverage
+only. Receipts are clean synthetic images; real crumpled, faded photos will score lower.

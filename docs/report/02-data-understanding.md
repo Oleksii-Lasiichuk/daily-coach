@@ -25,3 +25,24 @@ ranges (`Z2: 124-143`).
 | USDA FoodData Central | Per-100 g food values | Used as the reference for the Ukrainian meals; planned as a lookup tool for C3 |
 | Public Ukrainian chat / health-logging corpora | C1/C2 training or eval | None found that matches personal training logs; wrote synthetic cases instead |
 | The author's ChatGPT "life & sports" history | Realistic messages | Not used for the submission (personal data; the repo is public) |
+
+## Money: Monobank personal API (plan 11 B4, checked 2026-11-20, spec v250818)
+
+- **Source:** a personal read-only token from api.monobank.ua (QR scan in the Monobank app).
+  The docs allow a personal token for a service used by one's own family.
+- **Calls and limits:** `client-info` and `statement/{account}/{from}/{to}` each allow 1 request
+  per 60 s; a statement window is at most 31 days + 1 hour (2 682 000 s). The current spec
+  states no row cap; older versions returned at most 500 items newest-first, so ≥ 500 items
+  are treated as "maybe cut" and the next call continues from the oldest item.
+- **Webhook:** Monobank checks the URL with a GET (needs 200), then POSTs each new item; it
+  waits 5 s, retries after 60 s and 600 s, then switches the webhook off. So the webhook is an
+  optimisation and a 6-hourly catch-up statement call is the source of truth.
+- **Fields kept:** id, time, amount (kopecks, negative = spending), currency, `mcc` /
+  `originalMcc`, description (merchant), hold; from accounts: id, type, currency, last 4 card
+  digits. **Dropped on purpose:** `comment` (free text), `counterIban/Edrpou/Name`, `balance`,
+  `receiptId`, IBAN, full card number, the client's name. Transfer descriptions (MCC 4829 type)
+  contain people's names and are replaced by "Transfer" before storing.
+- **MCC reference:** ISO 18245 via github.com/greggles/mcc-codes (Unlicense); only the ~60
+  codes our categories need are kept, in `app/spend_rules.py`.
+- **Size:** ~1–2 k rows per person per year (~200 B each), far inside the Neon free 1 GB.
+- **Eval data:** no real bank data exists in git. The C11 set is synthetic (see 03).
