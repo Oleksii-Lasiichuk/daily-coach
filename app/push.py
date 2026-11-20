@@ -184,6 +184,9 @@ def morning_report(user_id: str, now: datetime) -> str | None:
                 "habits": [h["name"] for h in store.habits_for_day(user_id, now.date())],
                 "items": [f"{f['category']}: {f['text']}" for f in store.list_facts(user_id)
                           if f["category"] in ("race", "injury", "medication", "health")]}
+        from app import weather  # B1: same C12 facts as the coach
+        data["weather"] = ((weather.for_user(user_id, now.date()) or {}).get("advice") or {}
+                           ).get("facts") or "not available"
         try:
             r = llm.complete(name="write-morning-report", model=llm.SMART_MODEL,
                              user_id=user_id, max_tokens=400, messages=[

@@ -4,6 +4,8 @@ import re
 
 from app.pipeline.planner import Step, Workout
 
+OUTDOOR = {"Run", "TrailRun", "Ride", "MountainBikeRide", "GravelRide", "Walk", "Hike",
+           "Rowing", "Ski"}  # B1: sports usually done outside
 LIMITS = {"recover": (40, 2), "easy": (75, 2), "normal": (180, 5), "push": (180, 5)}
 
 
@@ -28,7 +30,8 @@ def max_zone(w: Workout) -> int:
 
 
 def validate(w: Workout, day_type: str, sports: list[str], red_flag: bool = False,
-             injury_or_illness: bool = False) -> list[str]:
+             injury_or_illness: bool = False, weather_flags: list[str] | None = None
+             ) -> list[str]:
     """Returns rule violations (empty list = ok)."""
     if w.action == "rest":
         return []
@@ -61,6 +64,11 @@ def validate(w: Workout, day_type: str, sports: list[str], red_flag: bool = Fals
         problems.append(f"A {day_type} day allows zones up to {max_z} (got zone {max_zone(w)}).")
     if injury_or_illness and max_zone(w) > 2:
         problems.append("An active injury or illness allows zones up to 2 only.")
+    bad_out = [f for f in ("indoors_aqi", "storm") if f in (weather_flags or [])]
+    if bad_out and w.sport in OUTDOOR and max_zone(w) >= 4:
+        problems.append(f"weather.advice.flags has {', '.join(bad_out)}: no zone 4+ outdoors. "
+                        "Either switch to an indoor sport from athlete_sports (e.g. "
+                        "WeightTraining) or keep every step in zone 1–3, and say why.")
     return problems
 
 

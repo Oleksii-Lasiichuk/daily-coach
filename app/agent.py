@@ -122,7 +122,15 @@ def context_block(user: store.User, now: datetime) -> dict:
         "habits_today": [f"{h['name']}: {'done' if h['done'] else 'not yet'}"
                          for h in store.habits_for_day(user.id, day)],
         "past_days": history.recent_digests(user.id, day),
+        "weather_today": _weather_facts(user.id, day),
     }
+
+
+def _weather_facts(user_id: str, day) -> list[str] | str:
+    """B1: today's C12 facts (what to wear, flags), so the coach answers from facts."""
+    from app import weather
+    s = weather.for_user(user_id, day)
+    return (s or {}).get("advice", {}).get("facts") or "no weather (no location set)"
 
 
 # --- tools -------------------------------------------------------------------------------
