@@ -472,3 +472,5 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
 .dayline .busy { position: absolute; top: 0; bottom: 0; background: var(--muted); opacity: .55; }
 .dayline .sess { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; background: var(--accent); }
 .dayline-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.chip-warn { display: flex; gap: 6px; align-items: flex-start; color: var(--ink, inherit); background: var(--accent-soft); border-radius: 8px; padding: 6px 8px; }
+.chip-warn svg { width: 14px; height: 14px; flex: none; margin-top: 1px; }

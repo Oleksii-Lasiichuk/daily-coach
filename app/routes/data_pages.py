@@ -206,6 +206,16 @@ def health_page(request: Request, user: store.User = Depends(current_user)):
         goal_w=_num((profile.get("target_weight_kg") or {}).get("value"))))
 
 
+def _fit(user: store.User, d: date, props: list[dict]) -> dict | None:
+    """B2: "fits 12:30–13:30" / "no free window ≥ 40 min" for a day with a calendar."""
+    from app import day_windows
+    w = day_windows.for_user(user.id, d, ZoneInfo(user.time_zone)) if props else None
+    if not w:
+        return None
+    wk = props[-1]["workout"]
+    return day_windows.fit_line(w, wk.get("start"), wk.get("minutes") or 0)
+
+
 @router.get("/training", response_class=HTMLResponse)
 def training(request: Request, week: str = "", user: store.User = Depends(current_user)):
     today = _today(user)
@@ -239,7 +249,8 @@ def training(request: Request, week: str = "", user: store.User = Depends(curren
                      "planned": [lg for lg in logs if lg["day"] == d and lg["kind"] ==
                                  "planned_workout"],
                      "proposals": [p for p in props if p["day"] == d],
-                     "type": (assessments.get(d) or {}).get("day_type")})
+                     "type": (assessments.get(d) or {}).get("day_type"),
+                     "fit": _fit(user, d, [p for p in props if p["day"] == d])})
     items = store.list_facts(user.id, status=None)
     gear = [f for f in items if f["category"] == "gear"]
     goals_ctx = goal_cards(user.id, [f for f in items if f["category"] in ("race", "goal")],

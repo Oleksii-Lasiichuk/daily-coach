@@ -164,3 +164,41 @@ def coach_summary(user_id: str, day: date, tz: ZoneInfo) -> dict | None:
     out["free_today"] = [f"{a}–{b}" for a, b, _m in w["free"]]
     out["warnings"] = w["warnings"]
     return out
+
+
+STRIP_FROM, STRIP_TO = 6 * 60, 23 * 60  # the Today strip shows 06:00-23:00
+
+
+def strip(w: dict, start: str | None = None, minutes: float = 0) -> dict:
+    """Bars for the Today "Your day" strip as % of 06-23 h: busy blocks and the planned session."""
+    span = STRIP_TO - STRIP_FROM
+
+    def bar(a: int, b: int, label: str) -> dict | None:
+        a, b = max(a, STRIP_FROM), min(b, STRIP_TO)
+        if b <= a:
+            return None
+        return {"left": round((a - STRIP_FROM) / span * 100, 2),
+                "width": round((b - a) / span * 100, 2), "label": label}
+    busy = []
+    for s, e in w["busy"]:
+        a, b = _mins(s), _mins(e)
+        b = b if b > a else 24 * 60  # past midnight
+        x = bar(a, b, f"{s}–{e}")
+        if x:
+            busy.append(x)
+    sess = None
+    if start and _mins(start) is not None:
+        a = _mins(start)
+        b = a + int(minutes)
+        sess = bar(a, b, f"{start}–{b // 60 % 24:02d}:{b % 60:02d}")
+    return {"busy": busy, "session": sess, "warnings": w["warnings"]}
+
+
+def fit_line(w: dict, start: str | None, minutes: float) -> dict:
+    """Training page: 'fits 12:30-13:30', or 'no free window >= N min'."""
+    if start and fits(w, start, minutes):
+        b = _mins(start) + int(minutes)
+        return {"fits": [start, f"{b // 60 % 24:02d}:{b % 60:02d}"]}
+    if minutes and w["longest_free_min"] < minutes:
+        return {"no_window": int(minutes)}
+    return {"longest": w["longest_free_min"]}
