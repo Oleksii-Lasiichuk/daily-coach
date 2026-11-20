@@ -17,13 +17,18 @@
         <label style="margin:0"><input type="radio" name="sex" value="M" class="sr"><span>{{ _("Male") }}</span></label>
         <label style="margin:0"><input type="radio" name="sex" value="F" class="sr"><span>{{ _("Female") }}</span></label></div>
       <div class="row" style="margin-top:10px"><button class="btn sm ink">{{ _("Save") }}</button>
-  {% elif c == "city" %}
-    <h3>{{ icon("cloud") }} {{ _("Your city, for the weather") }}</h3>
-    <p class="small muted" style="margin-top:4px">{{ _("The coach takes heat, rain and air quality into account.") }}</p>
+  {% elif c == "location" %}
+    <h3>{{ icon("cloud") }} {{ _("Weather where you are") }}</h3>
+    <p class="small muted" style="margin-top:4px">{{ _("Press the button and allow location once. We keep only the area (about 1 km), never a track.") }}</p>
+    <ol class="small" style="margin:6px 0 0 18px">
+      <li>{{ _("Press “Use my location”.") }}</li>
+      <li>{{ _("When the phone asks, choose “Allow”. On iPhone, if nothing happens: Settings → Privacy → Location Services → Safari Websites (or the app) → “While Using”.") }}</li>
+      <li>{{ _("No luck? Type your city below.") }}</li></ol>
+    {% include "partials/location_button.html" %}
     {% if city_error %}<p class="notice error small" style="margin-top:6px">{{ _("Couldn't find that city. Check the spelling.") }}</p>{% endif %}
     <form hx-post="/setup/city" hx-swap="none" style="margin-top:10px">
       <input name="city" placeholder="{{ _('Kyiv') }}" aria-label="{{ _('Your city') }}" required>
-      <div class="row" style="margin-top:10px"><button class="btn sm ink">{{ _("Save") }}</button>
+      <div class="row" style="margin-top:10px"><button class="btn sm ghost">{{ _("Save city") }}</button>
   {% elif c == "push" %}
     <h3>{{ icon("bell") }} {{ _("Turn on reminders") }}</h3>
     <p class="small muted" style="margin-top:4px">{{ _("A short reminder to log meals and a morning plan. You choose the times in Settings.") }}</p>
@@ -35,7 +40,7 @@
     <div class="row" style="margin-top:10px"><button class="btn sm ink" hx-get="/setup/questions" hx-target="#sheet-body" hx-indicator="this">{{ _("Answer") }}</button>
   {% endif %}
       <button type="button" class="btn sm ghost" onclick="dismissFor(this.closest('.setup-card'), 3)">{{ _("Later") }}</button></div>
-  {% if c in ("body", "city") %}</form>{% endif %}
+  {% if c in ("body", "location") %}</form>{% endif %}
 </div>
 {% endfor %}
 <script>if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !(matchMedia("(display-mode: standalone)").matches || navigator.standalone)) document.querySelectorAll(".ios-only").forEach(e => e.hidden = false);</script>

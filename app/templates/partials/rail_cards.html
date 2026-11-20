@@ -35,7 +35,7 @@
     </ul></details>
   {% elif not connected %}<p class="small" style="margin-top:8px"><a href="/settings#intervals">{{ _("Connect intervals.icu") }}</a> {{ _("to see sleep and HRV.") }}</p>
   {% elif wellness_error %}<p class="notice error small" style="margin-top:8px">{{ _(wellness_error) }}</p>{% endif %}
-  {% if weather %}<p class="small muted" style="margin-top:8px">{{ icon("cloud") }} {{ weather.place }}: {{ weather.t_min | round | int }}–{{ weather.t_max | round | int }}°C{% if weather.rain_mm %} · {{ _("rain") }} {{ weather.rain_mm }} mm{% endif %}{% if weather.air %} · {{ _("air") }} {{ _(weather.air) }}{% endif %}</p>{% endif %}
+  {% if wx %}{% include "partials/weather_tile.html" %}{% endif %}
   {% if rail_error %}<p class="notice error small" style="margin-top:8px">{{ _(rail_error) }}</p>{% endif %}
 </div>
 

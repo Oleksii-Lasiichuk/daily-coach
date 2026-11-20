@@ -1,0 +1,14 @@
+{
+ "component": "c12_weather",
+ "metrics": {
+  "n": 71,
+  "pass_rate": 1.0,
+  "pass_advise": 1.0,
+  "pass_best_hour": 1.0,
+  "pass_clothing": 1.0,
+  "pass_flags": 1.0,
+  "pass_heat": 1.0
+ },
+ "n_failures": 0,
+ "failures": []
+}

@@ -443,3 +443,17 @@ def _audit(c, user_id: str, actor: str, action: str, entity: str, entity_id: str
               (user_id, actor, action, entity, entity_id,
                Jsonb(json.loads(json.dumps(before, default=str))) if before is not None else None,
                Jsonb(json.loads(json.dumps(after, default=str))) if after is not None else None))
+
+
+# --- B1: day times and location settings (user_prefs, migration 008) ---------------------
+
+TIME_DEFAULTS = {"usual_training_time": "07:00", "wake_time": "07:00", "bedtime": "22:30"}
+
+
+def day_times(user_id: str) -> dict:
+    """Usual training time, wake time, bedtime ('HH:MM', defaults filled) and location_auto."""
+    with connection() as c:
+        r = c.execute("select usual_training_time, wake_time, bedtime, location_auto "
+                      "from user_prefs where user_id = %s", (user_id,)).fetchone() or {}
+    return {k: r.get(k) or v for k, v in TIME_DEFAULTS.items()} | {
+        "location_auto": r.get("location_auto", True)}

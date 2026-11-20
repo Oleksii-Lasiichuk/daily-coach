@@ -51,6 +51,13 @@ def next_race(user_id: str, today: date) -> dict | None:
     return best
 
 
+
+# B1: short chip text for each C12 flag (translated in the template).
+templates.env.globals["WX_FLAGS"] = {
+    "indoors_aqi": "Poor air: intervals indoors", "storm": "Thunderstorm: indoors",
+    "rain": "Heavy rain", "ice": "Ice: careful footing", "dark": "Dark: headlamp",
+    "uv_high": "Strong sun: sunscreen", "wind": "Strong gusts", "pollen": "High pollen"}
+
 def rail_context(user: store.User) -> dict:
     day = today_of(user)
     connected = store.get_secret(user.id, "intervals") is not None
@@ -79,6 +86,9 @@ def rail_context(user: store.User) -> dict:
         "water_l": nutrition_stats.water_l(logs),
         "habits": store.habits_for_day(user.id, day), "race": next_race(user.id, day),
         "weather": weather.for_day((profile.get("location") or {}).get("value"), day),
+        "wx": weather.for_user(user.id, day, next((p["workout"].get("sport") for p in proposals
+                                                   if p["status"] != "undone"), None),
+                               session_min or None),
         "totals": totals, "targets": nutrition_stats.targets(
             user.id, a["day_type"] if a else None, session_min),
         "suggestion": suggestion if isinstance(suggestion, dict) and suggestion.get("date") ==

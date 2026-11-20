@@ -115,6 +115,29 @@
     toast({{ _("Couldn't turn on notifications.") | tojson }}); return false;
   }
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+  {% if user %}
+  // B1 location: "Use my location" (button) and a silent update on app open when the browser
+  // already allows it (never prompts); the server skips it if turned off or < 6 h old.
+  function useLocation(btn, silent) {
+    const say = (t) => { if (silent) return; const m = btn && btn.parentElement.querySelector(".loc-msg");
+      if (m) { m.textContent = t; m.hidden = false; } else toast(t); const c = document.querySelector("input[name=city]"); if (c) c.focus(); };
+    if (!("geolocation" in navigator)) { say({{ _("This browser can't share location. Type your city instead.") | tojson }}); return; }
+    if (btn) btn.disabled = true;
+    navigator.geolocation.getCurrentPosition(async (p) => {
+      const body = new URLSearchParams({ lat: p.coords.latitude, lon: p.coords.longitude, auto: silent ? "1" : "" });
+      const r = await fetch("/location", { method: "POST", body }).catch(() => null);
+      if (btn) btn.disabled = false;
+      if (!silent) { if (r && r.ok) location.reload(); else say({{ _("Couldn't save the location. Try again.") | tojson }}); }
+    }, (e) => { if (btn) btn.disabled = false;
+      say(e.code === 1 ? {{ _("Location is blocked. Allow it in the browser settings, or type your city.") | tojson }} : {{ _("Couldn't get the location in time. Try again or type your city.") | tojson }}); },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+  }
+  (async () => { try {
+    if (!navigator.permissions || (await navigator.permissions.query({ name: "geolocation" })).state !== "granted") return;
+    let last = 0; try { last = +localStorage.getItem("loc:tried") || 0; localStorage.setItem("loc:tried", Date.now()); } catch (e) {}
+    if (Date.now() - last > 36e5) useLocation(null, true);
+  } catch (e) {} })();
+  {% endif %}
 </script>
 </body>
 </html>
