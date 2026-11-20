@@ -125,10 +125,16 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
     w_day = weather.for_day(profile.get("location"), day)
     if w_day:
         plan_inputs["weather"] = w_day
+    windows = _day_windows(user, day, profile)
+    if windows:  # B2 calendar: C13 free windows; the validator enforces them
+        plan_inputs["day_windows"] = windows
+        done["longest_free_min"] = windows["longest_free_min"]
+        plan_inputs["usual_training_time"] = windows.pop("usual_training_time", None)
     feedback = None
     for _attempt in range(2):
         w = planner.plan(plan_inputs, feedback=feedback, user_id=user.id)
-        feedback = validate(w, day_type, sports, red_flag=red_flag, injury_or_illness=injury)
+        feedback = validate(w, day_type, sports, red_flag=red_flag, injury_or_illness=injury,
+                            day_windows=windows)
         if not feedback:
             break
     if feedback:
@@ -139,7 +145,21 @@ def assess_and_plan(user: store.User, day: date, request: str, red_flag: bool,
         workout["instead_of"] = "; ".join(p.get("description", "") for p in planned)[:200]
     result.proposal_id = store.add_proposal(user.id, day, workout, w.rationale, w.evidence)
     done["workout"] = {"status": "proposed on a card; the athlete applies it", "action": w.action,
-                       "name": w.name, "minutes": workout["minutes"], "sport": w.sport}
+                       "name": w.name, "minutes": workout["minutes"], "sport": w.sport,
+                       "start": w.start}
+
+
+def _day_windows(user: store.User, day: date, profile: dict) -> dict | None:
+    """C13 for the day when a calendar is connected (else None)."""
+    from app import day_windows
+    try:
+        target = float(profile.get("sleep_target_h") or 8)
+    except (TypeError, ValueError):
+        target = 8.0
+    w = day_windows.for_user(user.id, day, ZoneInfo(user.time_zone), target)
+    if w:
+        w["usual_training_time"] = day_windows.prefs_times(user.id)["usual_training_time"]
+    return w
 
 
 # Physical limits for one log entry. Above them the entry is not saved and the coach asks.

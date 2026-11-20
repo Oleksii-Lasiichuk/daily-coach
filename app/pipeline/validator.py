@@ -28,11 +28,12 @@ def max_zone(w: Workout) -> int:
 
 
 def validate(w: Workout, day_type: str, sports: list[str], red_flag: bool = False,
-             injury_or_illness: bool = False) -> list[str]:
-    """Returns rule violations (empty list = ok)."""
+             injury_or_illness: bool = False, day_windows: dict | None = None) -> list[str]:
+    """Returns rule violations (empty list = ok). day_windows: C13 output when the day has
+    calendar data; then the session must start inside one free window and end before it closes."""
     if w.action == "rest":
         return []
-    problems = []
+    problems = calendar_problems(w, day_windows) if day_windows else []
     if red_flag:
         problems.append("A red flag was raised today: only 'rest' is allowed.")
     if sports and w.sport not in sports:
@@ -62,6 +63,21 @@ def validate(w: Workout, day_type: str, sports: list[str], red_flag: bool = Fals
     if injury_or_illness and max_zone(w) > 2:
         problems.append("An active injury or illness allows zones up to 2 only.")
     return problems
+
+
+def calendar_problems(w: Workout, day_windows: dict) -> list[str]:
+    """B2: the hard guarantee that a session never sits on top of a busy block."""
+    from app.day_windows import fits
+    minutes = total_minutes(w)
+    free = ", ".join(f"{a}–{b} ({m} min)" for a, b, m in day_windows["free"]) or "none"
+    if not w.start:
+        return [f"The day has calendar data: set `start` (HH:MM) inside a free window ({free})."]
+    if not fits(day_windows, w.start, minutes):
+        longest = day_windows["longest_free_min"]
+        return [f"Start {w.start} + {minutes:g} min does not fit inside one free window "
+                f"({free}). Move it into a window, shorten it to the longest window "
+                f"({longest} min), or rest and say which day to move it to."]
+    return []
 
 
 def _amount(s: Step) -> str:

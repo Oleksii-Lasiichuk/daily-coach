@@ -83,7 +83,14 @@ def settings_page(request: Request, user: store.User = Depends(current_user)):
         prof=profile_vals, reminders=reminders, zones=ZONES, langs=i18n.LANGS,
         plan_sources=PLAN_SOURCES, secret=store.get_secret(user.id, "intervals"),
         summary=intervals.athlete_summary(profile_vals), saved=request.query_params.get("saved"),
-        error=request.query_params.get("error"), vapid=get_settings().vapid_public_key))
+        error=request.query_params.get("error"), vapid=get_settings().vapid_public_key,
+        **_calendar_vars(user)))
+
+
+def _calendar_vars(user: store.User) -> dict:
+    """B2: the Calendar card's status (link, last read, titles toggle)."""
+    from app.routes.calendar import calendar_context
+    return {k: v for k, v in calendar_context(user).items() if k.startswith("cal_")}
 
 
 @router.post("/settings/lang")

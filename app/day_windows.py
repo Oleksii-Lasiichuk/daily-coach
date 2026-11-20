@@ -76,7 +76,7 @@ def windows(blocks: list[dict], day: date, tz: ZoneInfo, wake: str = "07:00",
         cursor = max(cursor, e)
     free = [w for w in free if w[1] > w[0]]
 
-    warnings = []
+    warnings, aim_bed = [], None
     usual_bed = day_end
     last_end = max((e for _s, e in busy), default=None)
     earliest_bed = max(usual_bed, last_end + timedelta(minutes=BUFFER_MIN)) if last_end else \
@@ -96,6 +96,7 @@ def windows(blocks: list[dict], day: date, tz: ZoneInfo, wake: str = "07:00",
                else f"the usual {usual_bed:{fmt}} bedtime")
         reason = f" for the {first_tomorrow:{fmt}} start" if first_tomorrow else ""
         aim = max(bedtime_latest, earliest_bed) if late else bedtime_latest
+        aim_bed = aim.strftime(fmt)
         warnings.append(f"Only {sleep_h:g} h possible between {why} and the "
                         f"{next_wake:{fmt}} wake{reason}: aim to be in bed by {aim:{fmt}}")
     longest = max((int((e - s).total_seconds() // 60) for s, e in free), default=0)
@@ -110,6 +111,7 @@ def windows(blocks: list[dict], day: date, tz: ZoneInfo, wake: str = "07:00",
         "bedtime_latest": bedtime_latest.strftime(fmt),
         "sleep_possible_h": sleep_h,
         "first_event_tomorrow": first_tomorrow.strftime(fmt) if first_tomorrow else None,
+        "sleep_warning_bed": aim_bed,  # set only when sleep_possible_h < target - 0.5
         "warnings": warnings,
     }
 
@@ -139,3 +141,26 @@ def for_user(user_id: str, day: date, tz: ZoneInfo, sleep_target_h: float = 8.0)
     p = prefs_times(user_id)
     tomorrow = calendar.blocks_for_day(user_id, day + timedelta(days=1), tz) or []
     return windows(blocks, day, tz, p["wake_time"], p["bedtime"], sleep_target_h, tomorrow)
+
+
+def coach_summary(user_id: str, day: date, tz: ZoneInfo) -> dict | None:
+    """Agent context: today's and tomorrow's busy summary and C13 warnings. Titles only when the
+    person turned on "Show event names to the coach" (they are null in the table otherwise)."""
+    from app import calendar
+    w = for_user(user_id, day, tz)
+    if w is None:
+        return None
+    out = {}
+    for label, d in (("today", day), ("tomorrow", day + timedelta(days=1))):
+        blocks = [b for b in calendar.blocks_for_day(user_id, d, tz) or [] if not b["all_day"]]
+        if not blocks:
+            out[label] = "free (no events)"
+            continue
+        first, last = blocks[0]["starts_at"].astimezone(tz), blocks[-1]["ends_at"].astimezone(tz)
+        text = f"busy {first:%H:%M}–{last:%H:%M}, {len(blocks)} blocks"
+        names = [f"{b['starts_at'].astimezone(tz):%H:%M} {b['title']}" for b in blocks
+                 if b["title"]]
+        out[label] = text + (f" ({'; '.join(names)})" if names else "")
+    out["free_today"] = [f"{a}–{b}" for a, b, _m in w["free"]]
+    out["warnings"] = w["warnings"]
+    return out

@@ -38,3 +38,14 @@ def test_text_and_minutes():
     assert to_intervals_text(w) == ("Warmup\n- 10m Z1-Z2 HR\n\nMain set 5x\n"
                                     "- 400mtr Z4 Pace\n- 90s")
     assert total_minutes(w) == 10 + 5 * (0.4 * 6 + 1.5)
+
+
+def test_calendar_start_must_fit_a_free_window():
+    w = {"free": [["07:00", "09:00", 120], ["12:30", "13:30", 60]], "longest_free_min": 120}
+    session = run(45, 2)
+    assert any("set `start`" in p for p in validate(session, "normal", ["Run"], day_windows=w))
+    session.start = "12:50"  # 12:50 + 45 min ends 13:35, past the 13:30 window end
+    assert any("does not fit" in p for p in validate(session, "normal", ["Run"], day_windows=w))
+    session.start = "07:15"
+    assert validate(session, "normal", ["Run"], day_windows=w) == []
+    assert validate(session, "normal", ["Run"]) == []  # no calendar: no start needed

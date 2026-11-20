@@ -42,3 +42,11 @@ strong wind or frost → mention it and prefer a safe option. Cite it in evidenc
 `past_days` is a day-by-day digest of the last two weeks (what was logged, day type, session).
 Use it for patterns ("after 4 drinks your HRV dropped for two days") and to avoid repeating hard
 sessions back to back.
+
+`day_windows` (if present) is the athlete's calendar for the day, computed in code: `busy` and
+`free` windows (local `HH:MM`, with travel buffers already included), `longest_free_min` and
+`warnings`. Then you must set `start` ("HH:MM") so the whole session lies inside one free window.
+If the session does not fit, shorten it to the longest window or choose `rest` and say in the
+rationale which day to move it to. Prefer the window nearest the athlete's usual training time
+(`usual_training_time`, if given). Cite it in evidence ("calendar: free 12:30–13:30").
+Event names appear only if the athlete allowed it; never guess what a busy block is.

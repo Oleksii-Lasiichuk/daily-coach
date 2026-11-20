@@ -29,6 +29,10 @@
     <p class="small muted" style="margin-top:4px">{{ _("A short reminder to log meals and a morning plan. You choose the times in Settings.") }}</p>
     <p class="small ios-only" hidden style="margin-top:6px">{{ _("On iPhone: in Safari tap Share → Add to Home Screen, open the app from there, then press the button.") }}</p>
     <div class="row" style="margin-top:10px"><button type="button" class="btn sm ink" onclick="enablePush().then(ok => { if (ok) location.reload(); })">{{ _("Turn on") }}</button>
+  {% elif c == "calendar" %}
+    <h3>{{ icon("calendar") }} {{ _("Connect your calendar") }}</h3>
+    <p class="small muted" style="margin-top:4px">{{ _("The coach reads when you're busy, never changes anything. 3 minutes.") }}</p>
+    <div class="row" style="margin-top:10px"><button class="btn sm ink" hx-get="/setup/calendar/sheet" hx-target="#sheet-body">{{ _("Show me how") }}</button>
   {% elif c == "questions" %}
     <h3>{{ icon("chat") }} {{ _("A few questions from the coach") }}</h3>
     <p class="small muted" style="margin-top:4px">{{ _("Injuries, health, races: what the coach should know. 2 minutes, skip any.") }}</p>

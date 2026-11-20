@@ -122,7 +122,17 @@ def context_block(user: store.User, now: datetime) -> dict:
         "habits_today": [f"{h['name']}: {'done' if h['done'] else 'not yet'}"
                          for h in store.habits_for_day(user.id, day)],
         "past_days": history.recent_digests(user.id, day),
+        **_calendar_context(user, day),
     }
+
+
+def _calendar_context(user: store.User, day) -> dict:
+    """B2: busy summary and sleep warnings when a calendar is connected."""
+    from zoneinfo import ZoneInfo
+
+    from app import day_windows
+    s = day_windows.coach_summary(user.id, day, ZoneInfo(user.time_zone))
+    return {"calendar": s} if s else {}
 
 
 # --- tools -------------------------------------------------------------------------------
@@ -271,7 +281,9 @@ class Turn:
                             assess=d == self.now.date())
             if res.proposal_id:
                 self.proposals.append(res.proposal_id)
-            out.append({"day": str(d), **done.get("workout", {})})
+            out.append({"day": str(d), **done.get("workout", {}),
+                        **({"longest_free_min": done["longest_free_min"]}
+                           if "longest_free_min" in done else {})})
         if self.proposals:
             n = len(self.proposals)
             self.act("plan_sessions", self.t("Proposed sessions: {n}. Review the card", n=n),
