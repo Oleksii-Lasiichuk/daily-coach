@@ -153,3 +153,44 @@ and its text is marked as data.
   the per-person `monthly_cap_usd`, else $20 for the invite list and admins, else $1 for
   newcomers. The app key comes from `users.key_pool` (`main` or an optional `family` key). A
   person's own key still wins.
+
+## B1 (2026-11-20, plan 11): location and C12 weather advice
+
+**Purpose.** Plan around the real conditions where the person is, at the hour they train.
+
+| Component | Kind | Input | Output |
+|---|---|---|---|
+| `POST /location` | code | lat/lon from the browser | profile `location = {name, lat, lon, source: gps, at}`, rounded to ~1 km |
+| `weather.forecast` / `reverse_name` | code (Open-Meteo, Nominatim) | rounded point | hourly + daily forecast, AQI, pollen; place name |
+| `weather.session` | code | place, day, usual training time (Settings), session length, sport | the session hours, the day, hourly strip, C12 advice |
+| **C12** `app/weather_rules.py` | code (rule tables) | session hours, 12 h before, sunrise/sunset | `pace_slower_pct`, `heat_level`, `clothing`, `flags`, `best_hour`, `facts` |
+
+**C12 rule tables** (heuristics, documented as such, tuned by Oleksii, not a study):
+
+1. Heat → pace: air temperature + dew point in °F, the common runners' table (≤ 100 → 0 %, …,
+   171–180 → 8–10 %, > 180 → no hard running). Cycling gets "drink more, ride by HR" instead.
+2. Clothing by the coldest feels-like during the session, bands at 20 / 12 / 5 / 0 / −5 °C, plus
+   windproof layer at gusts ≥ 30 km/h, rain jacket at rain probability ≥ 60 %, sunscreen at
+   UV ≥ 6 when warm.
+3. Flags: `indoors_aqi` (European AQI > 80), `storm` (codes 95/96/99), `rain` (≥ 4 mm/h),
+   `ice` (≤ 0.5 °C and freezing-rain codes, or wet with temperature crossing 0 °C in the last
+   12 h), `dark` (session starts before sunrise or ends after sunset), `uv_high` (UV ≥ 6), `wind`
+   (gusts ≥ 50 km/h), `pollen` (CAMS "high" band, only when a profile fact mentions an allergy).
+   AQI 60–80 adds the fact "shorten the intervals".
+4. Best hour: the daylight start hour with no flags and the lowest heat sum.
+
+**Why code, not the LLM:** these are thresholds on numbers; code is exact, free, testable and
+explains itself. The LLM only reads the `facts` (C6 planner, chat, morning report) and puts them
+into words.
+
+**How the coach uses it.** C6 gets `weather = {day, session_hours, advice}` and a hard rule:
+with `indoors_aqi` or `storm`, an outdoor sport may only use zones 1–3. The validator enforces
+it in code (zone 4+ outdoors → feedback, re-plan). The chat context gets `weather_today` (the
+C12 facts), so "what should I wear?" is answered from facts. The morning report gets the same.
+
+**Privacy.** Only rounded coordinates leave the server; the planner and chat never see
+coordinates, only the place name and the facts.
+
+**Main alternative considered:** show "near 50.45, 30.52" without Nominatim. Rejected: family
+members won't read coordinates. Another: let the LLM decide clothing from raw forecast numbers;
+rejected for the reasons above.

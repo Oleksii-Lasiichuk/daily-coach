@@ -25,3 +25,18 @@ ranges (`Z2: 124-143`).
 | USDA FoodData Central | Per-100 g food values | Used as the reference for the Ukrainian meals; planned as a lookup tool for C3 |
 | Public Ukrainian chat / health-logging corpora | C1/C2 training or eval | None found that matches personal training logs; wrote synthetic cases instead |
 | The author's ChatGPT "life & sports" history | Realistic messages | Not used for the submission (personal data; the repo is public) |
+
+## B1 (plan 11): location and weather data
+
+| Source | What we read | Limits and licence (checked 2026-11-20) |
+|---|---|---|
+| Browser geolocation | latitude, longitude, only after the person presses "Use my location", or on app open when the browser already allows it and the stored place is > 6 h old | Rounded to 2 decimals (~1 km) on the server; one current place, overwritten, no history |
+| Open-Meteo Forecast API | 7 days hourly: temperature, feels-like, dew point, humidity, precipitation and its probability, weather code, wind and gusts, UV index, day/night; daily: max/min, rain sum, max wind, sunrise, sunset, daylight, max UV; place time zone | Free for non-commercial use, < 10 000 calls/day; 11 hourly variables count as 2 calls; CC BY 4.0, attribution shown in Settings. Cached 1 h per rounded point |
+| Open-Meteo Air Quality API (CAMS) | hourly European AQI, PM2.5, birch and grass pollen (Europe only, ~4 days) | Same terms; 5 days ahead |
+| Nominatim (OpenStreetMap) | place name for the rounded point (`zoom=10`, city/town level), in the app language | OSMF policy: ≤ 1 request/s, identifying User-Agent (`DailyCoach/1.0 (+app URL)`, no personal email), results cached. One call per button press |
+
+Quality notes: Open-Meteo returns local-time hours with `timezone=auto`, so the session hour is
+matched in the place's own time. Pollen is `null` outside Europe and after ~4 days; AQI after
+5 days. Every missing value is treated as "no data" by the rules (no flag), never as zero risk
+made up by a model. Nominatim at city zoom sometimes returns a municipality name (e.g.
+"Бучанська міська громада" instead of "Буча"); acceptable for a label.
