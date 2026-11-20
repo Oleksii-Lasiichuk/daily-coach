@@ -4,9 +4,9 @@ CRISP-DM phases: 1. Business understanding (what each source is for), 2. Data un
 (the new sources and their limits), 3. Data preparation (synthetic eval sets), 4. Modeling
 (C10 lab extraction, C11 spend category, two new code components), 5. Evaluation,
 6. Deployment.
-Status: **draft for review.** Starts after [plan 10](10-v7-life-os.md) (family-ready app) is
-deployed. Nothing here is built yet. The slices start once the open questions at the end are
-answered.
+Status: **approved 2026‑11‑20** (Oleksii's answers to the open questions are in "Decisions"
+at the end). Starts after [plan 10](10-v7-life-os.md) (family-ready app) is deployed. Nothing
+here is built yet.
 
 ## Goal
 
@@ -28,6 +28,7 @@ report section + deploy):
 | B2 | Calendar via an iCal (ICS) link | C13 Day windows (code), C6 gets windows | M, ~4 days |
 | B3 | Lab results from a photo or PDF | C10 Lab extraction (LLM + code) | M, ~4 days |
 | B4 | Money: Monobank API + receipt photos + insights | C11 Spend category (rules + LLM), receipt extraction | L, ~7 days |
+| B5 | Garmin Personal API, Oleksii's own account only (read-only) | Garmin sync (code) | S–M, ~2 days |
 
 "Days" are focused working days with Claude Code, including evals, `/ui-check` and the report.
 
@@ -49,14 +50,16 @@ before B2 — they don't depend on each other — but keep B1 first.
   where it needs one, an eval, two-user isolation tests and a report section. New "what to
   track" options on the welcome screen.
 - **Out (and why):**
-  - PrivatBank API: there is no personal API for individuals. `api.privatbank.ua` offers only
-    "Публічні" (exchange rates) and "API для юр.осіб" (Autoclient for businesses / ФОП), checked
-    2026‑11‑20. A Privat24 statement file upload is a possible later slice (B4b), not in this plan.
+  - PrivatBank, dropped: there is no personal API for individuals (`api.privatbank.ua` offers
+    only "Публічні" exchange rates and "API для юр.осіб", checked 2026‑11‑20), and no statement
+    file upload either. Money = Monobank + receipt photos only.
   - Google Calendar OAuth / push (needs Google app verification for sensitive scopes); the ICS
     link covers Google, iCloud and Outlook read-only.
   - Background location, route suggestions, native app.
   - Writing anything to the calendar or the bank. Everything here is read-only.
-  - Garmin direct integration (see "Garmin" below): intervals.icu stays the bridge.
+  - Garmin for other people (see "Garmin" below): intervals.icu stays the bridge for everyone
+    and the only way to send workouts to the watch. B5 adds the Personal API for Oleksii's own
+    account only.
 
 ## Rules that apply to every slice
 
@@ -106,14 +109,13 @@ What exists today, checked 2026‑11‑20 on
   password and keep session tokens on our server: against Garmin's terms, and a real risk with
   family accounts. Not used.
 
-**Recommendation:** keep intervals.icu. It already reads Garmin (wellness, activities) and
-writes planned workouts to the watch, it is free, and family members set it up once with the
-existing sheet. Optional later: the Personal API as a *read-only* alternative for a person who
-does not want intervals.icu — but each person's key would pass through our server, which is the
-grey zone the FAQ names; ask Garmin first (developer forum / contact form) before building.
-Applying to the Business program would take: a short app description, a privacy policy page and
-terms (we would need to write both), a demo of the integration, a contact address, and waiting
-for review — worth it only if the app ever outgrows family use. (Open question 6.)
+**Decision:** intervals.icu stays the bridge for everyone. It reads Garmin (wellness,
+activities) and writes planned workouts to the watch, it is free, and family members set it up
+once with the existing sheet. **Oleksii uses the Personal API for his own account only** (slice
+B5): his own key, his own data, personal use — what the Personal API is for. It is not offered
+to other users (that would be the "multiple end users" case the FAQ excludes). No Business
+application now; it would need an app description, a privacy policy and terms, a demo and a
+review wait, and is worth it only if the app ever outgrows family use.
 
 ## Free hosting check
 
@@ -134,10 +136,11 @@ for review — worth it only if the app ever outgrows family use. (Open question
 
 | Migration | Slice | Tables / changes |
 |---|---|---|
-| `008_location_weather.sql` | B1 | `user_prefs.usual_training_time text` (e.g. `07:00`, null = unknown), `user_prefs.location_auto boolean default true` |
+| `008_location_weather.sql` | B1 | `user_prefs.usual_training_time`, `wake_time`, `bedtime` (text `HH:MM`, Settings only), `user_prefs.location_auto boolean default true` |
 | `009_calendar.sql` | B2 | `calendar_blocks`, `calendar_feeds`; `user_secrets.provider` check adds `'ical'` |
 | `010_labs.sql` | B3 | `lab_results` |
 | `011_money.sql` | B4 | `money_accounts`, `money_hooks`, `transactions` (receipts as rows with split lines), `merchant_rules`; `user_secrets.provider` check adds `'monobank'` |
+| `012_garmin.sql` | B5 | `garmin_daily`; `user_secrets.provider` check adds `'garmin'` |
 
 All tables: `user_id uuid not null references users on delete cascade`, an index starting with
 `user_id`. Deleting an account deletes everything (existing cascade).
@@ -220,7 +223,8 @@ Endpoints used (all free, no key; docs: <https://open-meteo.com/en/docs>,
   ("Air is poor at 18:00 — intervals indoors"). Tap → hourly strip (scrolls horizontally on
   375 px).
 - Settings → "Location": "Near Bucha · from your phone, 2 h ago · Update" or the city field;
-  "Update when I open the app" toggle (`location_auto`); "Usual training time" (time input).
+  "Update when I open the app" toggle (`location_auto`, default on); "Usual training time",
+  "Wake time", "Bedtime" (time inputs; Settings only, defaults 07:00 / 07:00 / 22:30).
 - Footer of Settings: "Weather data by Open-Meteo.com (CC BY 4.0), air quality by CAMS,
   place names © OpenStreetMap contributors".
 
@@ -253,7 +257,11 @@ coordinates.
 ### Migration `008_location_weather.sql`
 
 ```sql
-alter table user_prefs add column usual_training_time text;          -- 'HH:MM' local, null = unknown
+-- 'HH:MM' local times, set in Settings only (not on the welcome screen); defaults in code:
+-- training 07:00, wake 07:00, bedtime 22:30.
+alter table user_prefs add column usual_training_time text;
+alter table user_prefs add column wake_time text;
+alter table user_prefs add column bedtime text;
 alter table user_prefs add column location_auto boolean not null default true;
 ```
 
@@ -313,7 +321,7 @@ start leave too little sleep.
 | `calendar.fetch(url)` | code | the secret ICS URL (decrypted), `webcal://` → `https://` | raw ICS bytes; limits: 10 s timeout, ≤ 5 MB, `text/calendar` or ICS body check; HTTP errors kept as `last_error` |
 | `calendar.parse(ics, tz, start, end)` | code (`icalendar` + `recurring-ical-events`) | ICS, user time zone, window −1…+14 days | list of `Block{starts_at, ends_at (UTC), all_day, busy, title?}` |
 | `calendar.sync(user)` | code, in the tick | the above | replaces the user's `calendar_blocks` for the window in one transaction |
-| **C13 Day windows** `app/day_windows.py` | code | blocks for a day, `usual_wake`/`bedtime` prefs (or 07:00–22:30 default), sleep target (profile or 8 h), buffer (default 30 min around events, 60 min before the first event of the day for getting there) | `{"busy": [[start,end]…], "free": [[start,end,minutes]…], "longest_free_min", "bedtime_latest", "sleep_possible_h", "warnings": ["Only 6 h possible between the 23:00 event end and the 06:00 wake for the 07:00 flight"]}` |
+| **C13 Day windows** `app/day_windows.py` | code | blocks for a day, `wake_time`/`bedtime` prefs from Settings (default 07:00–22:30), sleep target (profile or 8 h), buffer (default 30 min around events, 60 min before the first event of the day for getting there) | `{"busy": [[start,end]…], "free": [[start,end,minutes]…], "longest_free_min", "bedtime_latest", "sleep_possible_h", "warnings": ["Only 6 h possible between the 23:00 event end and the 06:00 wake for the 07:00 flight"]}` |
 
 **Library choice.** Parsing ICS by hand is easy for single events but not for real calendars:
 recurring meetings (`RRULE` with `EXDATE`, moved single occurrences via `RECURRENCE-ID`),
@@ -526,8 +534,13 @@ decides "low/high".
 
 Saved without a confirmation step (like meals), then shown as an editable table: date, lab,
 marker, value, unit, range, flag; "Undo upload" removes the whole sheet. Duplicate upload (same
-date + same marker values) → "This sheet is already saved". The original file is **not** kept
-after extraction (open question 5); the row keeps `source_name` (file name) for reference.
+date + same marker values) → "This sheet is already saved".
+
+**The original stays in the chat, nowhere else.** Every upload, from the chat or from the
+Health page button, is posted as a chat message (like meal photos today: `chat_messages.
+attachments` keeps the thumbnail; a PDF shows as a file chip with its name), and the coach's
+reply is the extracted table. So "where did this come from?" is answered by scrolling the chat
+or by the row's `source_message_id` link. No separate file storage, no new bucket.
 
 ### How the coach uses it
 
@@ -550,8 +563,9 @@ after extraction (open question 5); the row keeps `source_name` (file name) for 
   row per marker: name, last value + unit, a sparkline with the reference band shaded, date of
   the last test. Tap → all values table. Mobile: one column; desktop: two.
 - Upload: "Add lab results" button on the section (file input, `accept="image/*,application/pdf"`,
-  `capture` not set so the gallery and files work) and in the chat (a photo of a lab sheet in
-  the chat is routed to C10 by the agent's tool choice).
+  `capture` not set so the gallery and files work) — it posts into the chat with the hint "lab
+  results", so both paths are one path; a lab-sheet photo sent in the chat directly is routed to
+  C10 by the agent's tool choice.
 - "Delete all lab results" in Settings → Data.
 
 ### Setup card and welcome
@@ -573,7 +587,8 @@ after extraction (open question 5); the row keeps `source_name` (file name) for 
 Lab results are special-category health data. Stored: per marker the value, unit, range, flag,
 test date, lab name, file name; **not** the image/PDF, not the patient name, birth date, order
 number or doctor printed on the sheet (the prompt says to ignore them and the model has no field
-for them). The page image is sent to the LLM through OpenRouter only when the person uploads it
+for them). The image/PDF itself lives only in the chat message, as every chat photo does;
+deleting that message removes it. The page image is sent to the LLM through OpenRouter only when the person uploads it
 (an explicit action); the Settings privacy text says so. Only the selected short list (above)
 reaches the coach context. "Delete all lab results" is immediate and irreversible (confirm
 dialog).
@@ -597,6 +612,7 @@ create table lab_results (
     ref_high numeric,
     flag text not null default 'unknown' check (flag in ('low', 'high', 'in', 'unknown')),
     source_name text,
+    source_message_id bigint references chat_messages on delete set null,  -- the chat upload
     edited boolean not null default false,
     created_at timestamptz not null default now()
 );
@@ -694,7 +710,7 @@ your usual while your goal is to cook", "this marathon has cost 9 400 ₴ so far
 | **Rules** `app/spend_rules.py` | code | `mcc`, `originalMcc`, normalised description, amount sign | category or `None` |
 | **C11 Spend category** `app/pipeline/spend.py` + `app/prompts/c11_spend.md` | LLM (`FAST_MODEL`), only when rules return `None` | **merchant description + MCC only** (no amount, no date, no account), de-duplicated per merchant, batched up to 30 per call | `{merchant: category}` from the fixed list, + `confidence`; cached in `merchant_rules` per user |
 | **Receipt extraction** (part of C11) `app/pipeline/receipt.py` + `app/prompts/c11_receipt.md` | LLM vision | a receipt photo the person sent (chat or Money page) | `Receipt{store, date, total, lines[{name, qty, price}]}`; each line → category via rules (product keywords) then C11; the receipt is matched to a Monobank transaction in code (same day ±1, total within 1 ₴) and *splits* it into categories, so nothing is counted twice |
-| **Insights** `app/money_stats.py` | code | the person's categorised transactions | per category: month-to-date, the same days of the previous 3 months on average, ratio, count; flags when ratio ≥ 1.5 and difference ≥ 500 ₴ (or ≤ 0.5 for "good" news); race cost = race entries + gear + sports nutrition since the race fact was added; top merchants by count (names stay on the page, see Privacy) |
+| **Insights** `app/money_stats.py` | code | the person's categorised transactions | per category: month-to-date, the same days of the previous 3 months on average, ratio, count; flags when ratio ≥ 1.5 and difference ≥ 500 ₴ (or ≤ 0.5 for "good" news); race cost = race entries + gear + sports nutrition since the race fact was added; top 3 merchants per category by count |
 
 **Categories (fixed list):** `groceries, eating_out, delivery, coffee, sports_nutrition,
 race_entries, sport_gear, gym_classes, medical, pharmacy, transport, taxi, fuel, home_bills,
@@ -724,8 +740,10 @@ merchant whose name contains the race or organiser name → `race_entries`, in c
 ### Where the sync runs
 
 - `push.tick()`: `mono.sync_step(user)` for each user with a `monobank` secret. **First import:
-  the last 3 months** (open question 7): 3 windows per account, one call per tick → a card with
-  2 accounts is complete after ~1.5 h; the Money page shows "Importing… 4 of 6 months-windows".
+  the person chooses how far back on the connect form: 1, 3, 6 (default) or 12 months.** Each
+  31-day window is one call, one call per user per tick (15 min): 6 months × 2 accounts = 12
+  windows ≈ 3 h; 12 months ≈ 6 h. The Money page shows "Importing… 7 of 12" with an estimate.
+  Choosing a longer period later ("Import older months") just moves `imported_from` back.
   Steady state: webhook for new items + one catch-up statement call per account every 6 h
   (covers a webhook that Monobank switched off after a cold start). If `client-info` (checked
   once a day) shows `webHookUrl` empty → set it again.
@@ -739,15 +757,25 @@ merchant whose name contains the race or organiser name → `race_entries`, in c
 ### How the coach uses it
 
 - **Only aggregates reach the coach LLM.** A tool `money_summary(month?)` returns code-computed
-  numbers: per-category totals for the month and the 3-month average, ratios, counts
-  ("delivery: 14 orders"), the insight flags, race cost. No rows, no merchant names (open
-  question 4), no account ids, no balances.
+  numbers (aggregates only): per-category totals for the month and the 3-month average, ratios, counts
+  ("delivery: 14 orders"), the top 3 merchants per category with count and total ("Glovo:
+  12 orders, 2 340 ₴"), the insight flags, race cost. No single transactions, no dates of
+  single purchases, no account ids, no balances, no transfer descriptions.
 - Agent context: at most 2 insight flags of the month as short facts, only if the person tracks
   money. The coach links them to goals in words (that's the LLM part): "your goal says cook more;
   delivery is 2.1× your usual".
 - Morning report: never money (keeps it a training report). Sunday weekly push: one line
   "Spent on food: 3 200 ₴ (delivery 1 100 ₴)" if tracked.
-- C9 day review: optionally "eating out" vs logged meals — out of scope here.
+- **Receipts → food log:** after a grocery, restaurant or café receipt, the coach's reply
+  offers "Log as a meal?" with the food lines (a button, like the existing one-tap actions).
+  Restaurant/café receipts: one tap logs them as a meal through C3 (the receipt lines are the
+  meal description; C3 estimates nutrition as for text). Grocery receipts are *not* a meal
+  (food bought ≠ food eaten), so for them the button is "Add to my pantry note" only if a later
+  plan adds a pantry; in this plan, groceries are offered only when the receipt is clearly a
+  ready-to-eat purchase (single-person sizes, ≤ 5 food lines, e.g. a sandwich and a drink) —
+  decided by a code rule on the line categories and count. Sports-nutrition lines (gels, bars)
+  are offered as "Log as race/training fuel". Nothing is logged without the tap.
+- C9 day review: unchanged (it already sees meals logged from receipts).
 
 ### UI
 
@@ -771,20 +799,22 @@ merchant whose name contains the race or organiser name → `race_entries`, in c
     money goes. It cannot move money. 1. On a computer (or a second phone), open
     api.monobank.ua. 2. A QR code appears. Open the Monobank app on your phone and scan it
     (in the app: the scanner icon on the main screen). 3. Confirm in the app. 4. The site shows
-    your token (a long line of letters). Copy it. 5. Paste it below and press Connect. Your first
-    3 months of purchases arrive within about 2 hours. You can revoke the token any time on
+    your token (a long line of letters). Copy it. 5. Paste it below, choose how many months to
+    import (6 is a good start) and press Connect. 6 months of purchases arrive within about
+    3 hours. You can revoke the token any time on
     the same site."
   - UA: "**Під'єднайте Monobank (лише читання).** Коуч бачить покупки з картки, щоб показати,
     куди йдуть гроші. Переказувати гроші він не може. 1. На комп'ютері (або другому телефоні)
     відкрийте api.monobank.ua. 2. З'явиться QR-код. Відкрийте застосунок Monobank і
     відскануйте його (значок сканера на головному екрані). 3. Підтвердіть у застосунку. 4. Сайт
     покаже ваш токен (довгий рядок літер). Скопіюйте його. 5. Вставте нижче й натисніть
-    «Під'єднати». Покупки за останні 3 місяці з'являться приблизно за 2 години. Відкликати
+    «Під'єднати», обравши, за скільки місяців завантажити (6 — добрий початок). Покупки за
+    6 місяців з'являться приблизно за 3 години. Відкликати
     токен можна будь-коли на тому ж сайті."
   - Steps 2–4 are checked against the live site at step B4.1 (the docs page only says "scan
     the QR code"); screenshots are not used (they'd show a real account).
   - Receipts without Monobank: the card's second button "I'll just send receipts" marks the
-    card done; receipts work for everyone (PrivatBank users included).
+    card done; receipts work for everyone, also without a Monobank card.
 
 ### Privacy
 
@@ -815,6 +845,7 @@ create table money_accounts (
     kind text not null,                -- black, white, fop, …
     currency int not null,
     last4 text,
+    import_since timestamptz not null, -- how far back the person chose (default 6 months)
     imported_from timestamptz,         -- oldest time imported so far
     synced_until timestamptz,          -- newest time covered by a statement call
     next_at timestamptz not null default now(),
@@ -899,6 +930,7 @@ via `parent_id`; no separate `receipts` table is needed. The image is not kept.)
 | Category accuracy, **rules + C11** | same | ≥ 0.90 |
 | C11 accuracy on the rule-unplaced subset only | same | ≥ 0.80 |
 | Receipt: total exact, line category accuracy, split matches the transaction | 10 synthetic receipts | 10/10, ≥ 0.85, 10/10 |
+| Receipt → meal offer: offered when it should be (restaurant/café/ready-to-eat), not for a weekly grocery shop | same 10 + 5 more | ≥ 0.9 accuracy |
 | Privacy check: C11 inputs contain no amount/date/account | logged C11 inputs in the run | 0 violations |
 
 The report shows the confusion matrix for the main confusions (eating_out vs delivery,
@@ -906,12 +938,97 @@ groceries vs sports_nutrition, gym_classes vs race_entries).
 
 ### Acceptance
 
-- [ ] Connect Monobank from the sheet; first 3 months imported within ~2 h, respecting 1 call /
+- [ ] Connect Monobank from the sheet; the chosen period (default 6 months) imported within ~3 h, respecting 1 call /
       60 s; new purchases appear within a minute through the webhook, or within 6 h without it.
 - [ ] Money page with categories, insights and corrections at 375/1280, light/dark, EN/UA.
 - [ ] Only aggregates reach the coach; the tool-output test proves it; token encrypted; no
       IBAN/comment/counterparty stored.
 - [ ] C11 rules-only vs rules+LLM recorded; ≥ 0.90 or the gap explained.
+
+---
+
+## B5. Garmin Personal API (Oleksii's own account, read-only)
+
+### Purpose
+
+Get the Garmin data that intervals.icu does not carry (to be confirmed in step 1; likely
+candidates: Body Battery, stress, sleep stages and sleep score details, respiration, training
+readiness) straight from Garmin, for Oleksii's own coaching. intervals.icu stays the source for
+everything it already provides and the only path for sending workouts to the watch.
+
+### What the API gives (checked 2026‑11‑20)
+
+<https://developer.garmin.com/gc-developer-program/personal/personal-faq/>: the key is created
+in Garmin Connect Web (Personal API Key page → Create Key → accept terms → expiry 30/90/180 days
+or 1 year → shown once). `POST https://personal.connectapi.garmin.com/personalapitoken-service/
+personal-api/personal-api-key/token` with `Authorization: ApiKey <key>` returns an access token
+valid 24 h (or until the key expires); no refresh tokens, just ask again. Activity (JSON, .FIT),
+Health (JSON), Women's Health (JSON); pull only. The endpoint list is in the "Personal API
+Swagger Docs" page (a JS app; read it in the browser at step 1).
+
+### Components
+
+| Component | Kind | Input | Output |
+|---|---|---|---|
+| `garmin.token(user)` | code | the encrypted personal key | a 24-h access token, kept in memory per process (re-requested on 401 or after 23 h) |
+| `garmin.sync(user, days)` (tick, hourly, like `health.maybe_sync`) | code | access token, last synced day | `garmin_daily(day, data jsonb)` rows for the chosen health summaries; first run 30 days back |
+| `health.day_snapshot` extension | code | `garmin_daily` + `wellness_daily` | the snapshot gains the extra fields when present (e.g. `body_battery_max`, `stress_avg`); intervals.icu values win where both exist |
+
+### Who can use it
+
+Only accounts in `ADMIN_EMAILS` (i.e. Oleksii) see the "Garmin (personal API)" block in
+Settings; the route checks the same. No setup card, no welcome track: this is personal use, not
+a feature for family members. Key expiry: a Settings line "Key expires on 12 May" and a push
+7 days before (Garmin also e‑mails).
+
+### How the coach uses it
+
+C5 day type and the morning report get the extra fields in the snapshot (`baseline_7d` for each
+too, computed in code like HRV today). The C5 prompt gets one line on how to read them (e.g.
+"low Body Battery at wake-up + high stress → lean towards recover"). No other component changes.
+
+### Migration `012_garmin.sql`
+
+```sql
+alter table user_secrets drop constraint user_secrets_provider_check;
+alter table user_secrets add constraint user_secrets_provider_check
+    check (provider in ('intervals', 'openrouter', 'ical', 'monobank', 'garmin'));
+
+create table garmin_daily (
+    user_id uuid not null references users on delete cascade,
+    day date not null,
+    data jsonb not null,               -- only the fields we map, not the full response
+    synced_at timestamptz not null default now(),
+    primary key (user_id, day)
+);
+```
+
+### Steps
+
+1. Read the Swagger docs in the browser; list endpoints, fields, rate limits; pick the fields
+   intervals.icu lacks; record them in `docs/report/02-data-understanding.md` → verify: a
+   one-off script with Oleksii's key (run locally, output not saved in git) prints one day.
+2. Migration 012; `app/garmin.py` (`token`, `sync`, field mapping) → verify: tests with
+   `httpx.MockTransport` and synthetic JSON fixtures (token reuse, 401 → new token, expired key
+   → clear error, missing fields).
+3. Settings block (admin only) + `POST /settings/garmin`, `DELETE /settings/garmin` → verify:
+   non-admin gets 403/404; isolation test.
+4. Snapshot + C5 prompt line → verify: `/eval c5` not lower (C5 cases get the new fields as
+   optional).
+5. Report note; deploy.
+
+### Evaluation
+
+The sync is a data component: metric = field-mapping tests pass (100 %) on synthetic fixtures,
+plus an agreement check on overlapping fields (resting HR, HRV, sleep hours) between Garmin and
+intervals.icu over Oleksii's last 30 days, run locally; only the agreement numbers (e.g. "RHR
+equal on 29/30 days") go into the report, never the data.
+
+### Acceptance
+
+- [ ] Oleksii's Settings shows the Garmin block; nobody else's does.
+- [ ] Extra fields appear in the Health page snapshot and in C5 inputs; C5 eval not lower.
+- [ ] Key encrypted, never logged; expiry reminder works.
 
 ---
 
@@ -929,6 +1046,7 @@ report section → deploy → short demo-script addition.
 | C13 Day windows + C6 (B2) | code + LLM | overlaps with busy blocks; fit rate; sleep-warning recall | 15 synthetic days | 0; ≥ 0.9; 1.0 |
 | C10 Lab extraction (B3) | LLM + code | marker F1; value exact; unit+range exact; flag accuracy; leaks | 15 synthetic sheets (PNG, photo-like, PDF) | ≥ 0.9; ≥ 0.95; ≥ 0.9; ≥ 0.95; 0 |
 | C11 Spend category (B4) | rules + LLM | accuracy rules-only vs rules+C11; receipt totals/lines | 150 synthetic transactions, 10 receipts | ≥ 0.9 with C11 |
+| Garmin sync (B5) | code | mapping tests; agreement with intervals.icu | synthetic fixtures; own data locally | 100 %; reported |
 | C6, C7, C9 (existing) | — | existing metrics must not drop; + new cases | existing + new cases | no drop |
 
 Each new eval is a `evals/run_cNN.py` registered in `evals/run_all.py`, writing
@@ -939,7 +1057,7 @@ explanation of misses.
 
 - Two-user isolation for every new route: `/location`, `/settings/location-auto`,
   `/settings/training-time`, `/calendar` (POST/DELETE), `/calendar/titles`, `/labs*`,
-  `/money*`, plus the webhook (user A's token cannot write to user B's accounts).
+  `/money*`, `/settings/garmin`, plus the webhook (user A's token cannot write to user B's accounts).
 - `test_routes_protected` (existing) must pass with the one new public prefix `/hooks/mono/`.
 - Secrets: ICS URL and Monobank token never appear in logs (caplog test) or in LLM inputs
   (assert on the traced inputs in the eval runs).
@@ -950,32 +1068,28 @@ explanation of misses.
 - [ ] Each slice has a setup card with EN/UA steps, a welcome "what to track" option, a sync in
       the cron tick where needed, an eval with a recorded result, a report section, and is
       deployed.
-- [ ] Only aggregates of money data reach the coach LLM; C11 sees merchant names + MCC only;
+- [ ] Only aggregates of money data (category totals, top merchants) reach the coach LLM; C11
+      sees merchant names + MCC only;
       tokens and the ICS URL encrypted; two-user isolation tests for every new endpoint.
 - [ ] `/ui-check` at 375/1280, light/dark, EN/UA for every changed page; `i18n_check` 0 missing.
 - [ ] Hosting stays free: request-based Cloud Run, no min instances, no new scheduler job, no
       paid API.
 
-## Open questions for Oleksii
+## Decisions (Oleksii, 2026‑11‑20)
 
-1. **Order** B1 → B2 → B3 → B4 — OK, or money before calendar?
-2. **Calendar titles:** default "busy only" with an opt-in toggle to show event names to the
-   coach — OK? (Titles would go to the LLM when on.)
-3. **Location refresh:** update silently on app open when the browser permission is already
-   granted and the location is > 6 h old (default on, toggle in Settings) — OK, or button only?
-4. **Money and the LLM:** may unknown *merchant names* (no amounts, dates or accounts) go to C11
-   for categorising? And may the coach see the top 3 merchants per category ("Glovo 12×"), or
-   strictly category totals only (the plan's default)?
-5. **Lab files:** delete the photo/PDF right after extraction (plan's default), or keep it so
-   you can re-open the original?
-6. **Garmin:** keep intervals.icu only (recommended), or ask Garmin whether the new Personal API
-   may be used by a family app where each person pastes their own key (read-only; no workout
-   upload)? Apply to the Business program now or not at all?
-7. **Monobank first import:** last 3 months (≈1.5 h at 1 call/min/tick), or 12 months
-   (≈6 h per card)?
-8. **Receipts → food log:** when a grocery/restaurant receipt is sent, also offer to log the
-   food lines as a meal, or keep money and food separate?
-9. **PrivatBank:** add a Privat24 statement file upload (CSV/XLS) as B4b after this plan, or
-   receipts are enough for Privat users in your family?
-10. **Usual training time / wake / bedtime:** ask in the welcome screen (one more field) or
-    only in Settings with defaults 07:00 / 07:00 / 22:30?
+1. Order B1 → B2 → B3 → B4 kept; B5 (Garmin, own account) after B4, or earlier if convenient —
+   it is independent.
+2. Calendar: busy-only by default, opt-in toggle to show event names to the coach.
+3. Location: silent update on app open when permission is granted and the location is > 6 h
+   old; default on, toggle in Settings.
+4. Unknown merchant names (no amounts/dates/accounts) may go to C11, and the coach may see the
+   top 3 merchants per category.
+5. Lab photos/PDFs stay only in the chat (as chat attachments); no separate file storage.
+6. Garmin Personal API for Oleksii's own account only (B5); intervals.icu for everyone else and
+   for workouts to the watch; no Business application.
+7. Monobank first import: the person chooses 1/3/6/12 months; default 6.
+8. Receipts → food log: yes, offered with one tap (restaurant/café/ready-to-eat and sports
+   fuel; not a weekly grocery shop).
+9. PrivatBank dropped entirely; Monobank + receipts only.
+10. Usual training time, wake time and bedtime are set in Settings only (defaults 07:00 /
+    07:00 / 22:30).
