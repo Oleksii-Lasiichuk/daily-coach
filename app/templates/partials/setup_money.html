@@ -1,0 +1,13 @@
+{# Sheet: connect Monobank with a personal read-only token (plan 11 B4). #}
+<h2 id="sheet-title">{{ _("Connect Monobank (read-only)") }}</h2>
+<p class="small muted" style="margin-top:4px">{{ _("The coach sees your card purchases to show where money goes. It cannot move money.") }}</p>
+<ol class="steps-num small">
+  <li>{{ _("On a computer (or a second phone), open") }} <a href="https://api.monobank.ua/" target="_blank" rel="noopener">api.monobank.ua</a>.</li>
+  <li>{{ _("A QR code appears. Open the Monobank app on your phone and scan it (in the app: the scanner icon on the main screen).") }}</li>
+  <li>{{ _("Confirm in the app.") }}</li>
+  <li>{{ _("The site shows your token (a long line of letters). Copy it.") }}</li>
+  <li>{{ _("Paste it below, choose how many months to import (6 is a good start) and press Connect. 6 months of purchases arrive within about 3 hours.") }}</li>
+</ol>
+<p class="tiny muted">{{ _("You can revoke the token any time on the same site.") }}</p>
+{% include "partials/money_connect.html" %}
+<div class="row" style="margin-top:10px"><button type="button" class="btn sm ghost" onclick="const c = document.querySelector('[data-dismiss=setup-money]'); if (c) dismissFor(c, 3650); this.closest('dialog').close()">{{ _("I'll just send receipts") }}</button></div>

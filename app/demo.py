@@ -235,6 +235,7 @@ def seed() -> str:
         store.save_assessment(user, d, kind, 0.75, reasons,
                               {"summary": f"{kind.capitalize()} day from sleep and HRV."}, None)
     _labs(user, today)
+    seed_money(user, today)
     store.set_setup_step(user, 6)
     return user
 
@@ -255,6 +256,43 @@ def _labs(user: str, today: date) -> None:
             for n, v, u, r in rows])
         labs.save(user, sheet, labs.normalise(sheet), today - timedelta(days=days_ago),
                   "demo-lab.pdf", None)
+# Synthetic card payments (plan 11 B4): fake merchants and amounts, ~4 months, with delivery
+# about 2× the usual this month so the Money page and the coach have a flag to show.
+DEMO_MERCHANTS = [("Сільпо", 5411, 650, 9), ("ATB", 5411, 280, 6), ("Glovo", 5814, 390, 3),
+                  ("Aroma Kava", 5814, 85, 10), ("Puzata Khata", 5812, 240, 3),
+                  ("Bolt", 4121, 160, 3), ("Аптека Доброго Дня", 5912, 310, 1),
+                  ("Kyivstar", 4814, 250, 1), ("Netflix.com", 4899, 249, 1),
+                  ("Sportpit Lviv", 5499, 520, 1), ("WOG", 5541, 1200, 1)]
+
+
+def seed_money(user: str, today: date) -> None:
+    from app import money, store
+    r = random.Random(11)
+    start = (today.replace(day=1) - timedelta(days=95)).replace(day=1)
+    rows, d = [], start
+    while d <= today:
+        for name, mcc, avg, per_month in DEMO_MERCHANTS:
+            boost = 2.2 if name == "Glovo" and d.month == today.month else 1
+            if r.random() < per_month * boost / 30:
+                amount = round(avg * r.uniform(0.6, 1.4) * 100)
+                at = datetime.combine(d, datetime.min.time(), TZ).replace(
+                    hour=r.randint(8, 21), minute=r.randint(0, 59)).astimezone(UTC)
+                rows.append((name, mcc, -amount, at))
+        if d.day == 5:
+            rows.append(("Salary", 4829, 4_500_000, datetime.combine(d, datetime.min.time(),
+                                                                       TZ).astimezone(UTC)))
+        d += timedelta(days=1)
+    rows.append(("Lviv Half Marathon registration", 7941, -90000,
+                 datetime.now(UTC) - timedelta(days=20)))
+    for i, (name, mcc, amount, at) in enumerate(rows):
+        money.upsert_monobank(user, {"ext_id": f"demo-{i}", "account_id": "demo-black",
+                                     "at": at, "amount_minor": amount, "currency": 980,
+                                     "mcc": None if amount > 0 else mcc, "original_mcc": None,
+                                     "description": "Transfer" if amount > 0 else name,
+                                     "hold": False})
+    money.categorise_pending(user, limit=2000)
+    u = store.get_user(user)
+    store.set_tracks(user, sorted(set(u.tracks or []) | {"training", "money"}))
 
 
 def user_id() -> str | None:

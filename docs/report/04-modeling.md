@@ -207,3 +207,32 @@ data says so and has "Delete all lab results".
 "points to hypothyroidism" and once giving no training advice. The coach prompt now says: name
 the value as below/above the lab's range, suggest a doctor, never name a condition or a dose,
 and always add one or two training-safe tips.
+## B4 (2026-11-20): money — rules first, C11 for the rest (plan 11)
+
+- **Code for numbers, LLM for language.** `app/spend_rules.py` places a payment by sign/type
+  (income, transfers, cash), then merchant-name rules on a normalised name (lowercase,
+  Cyrillic transliterated, punctuation dropped, so "СІЛЬПО" = "Silpo"), then an MCC table.
+  A person's corrections become per-user `merchant_rules` and win over the built-in rules.
+  A payment within 120 days before a race fact to a merchant named like the race →
+  `race_entries` (code).
+- **C11** (`app/pipeline/spend.py`, prompt `c11_spend.md`, Flash-Lite): only the merchants the
+  rules can't place, de-duplicated, ≤ 30 per call, **merchant name + MCC only** (no amounts,
+  dates, accounts, never transfers). The answer is cached per user in `merchant_rules`, so a
+  merchant is asked about once.
+- **Receipts** (`app/pipeline/receipt.py`, prompt `c11_receipt.md`, vision): the LLM only reads
+  the photo into `Receipt{store, date, total, kind, lines}`. Code sets each line's category
+  (product keywords, else the receipt kind's default), adds a remainder line so lines add up to
+  the total, matches the receipt to a card payment (same day ±1, total within 1 ₴) and splits it,
+  and decides the meal offer (restaurant/café, a small ready-to-eat purchase, or sports fuel;
+  never a weekly grocery shop). Nothing is logged without the person's tap.
+  *Deviation from the plan:* receipt lines don't go to C11; the kind default was enough on the
+  eval set and saves a call.
+- **Insights** (`app/money_stats.py`, code): per category this month so far vs the same days of
+  the previous 3 months with data; flag at ratio ≥ 1.5 and ≥ 500 ₴ difference (or ≤ 0.5);
+  top 3 merchants; race cost since the race was added. The coach gets this only through the
+  `money_summary` tool and at most 2 flags in its context — aggregates only (a test asserts the
+  keys).
+- **Sync:** `mono.sync_step` in the 15-minute tick makes at most one Monobank call per user per
+  tick (backfill: the oldest missing 31-day window; then a catch-up every 6 h); the public
+  webhook `/hooks/mono/{token}` does one lookup and one insert. Free hosting unchanged: no new
+  scheduler job, no min instances.

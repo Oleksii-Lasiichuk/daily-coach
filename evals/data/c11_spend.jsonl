@@ -1,0 +1,161 @@
+{"id": "t000", "description": "СІЛЬПО", "mcc": 5411, "amount_minor": -121588, "label": "groceries"}
+{"id": "t001", "description": "Silpo Kyiv", "mcc": 5411, "amount_minor": -229949, "label": "groceries"}
+{"id": "t002", "description": "ATB-Market", "mcc": 5411, "amount_minor": -149740, "label": "groceries"}
+{"id": "t003", "description": "АТБ 1123", "mcc": 5411, "amount_minor": -227621, "label": "groceries"}
+{"id": "t004", "description": "NOVUS", "mcc": 5411, "amount_minor": -245276, "label": "groceries"}
+{"id": "t005", "description": "Фора", "mcc": 5411, "amount_minor": -207791, "label": "groceries"}
+{"id": "t006", "description": "VARUS", "mcc": 5411, "amount_minor": -125067, "label": "groceries"}
+{"id": "t007", "description": "METRO Cash&Carry", "mcc": 5411, "amount_minor": -121445, "label": "groceries"}
+{"id": "t008", "description": "Ашан Петрівка", "mcc": 5411, "amount_minor": -136127, "label": "groceries"}
+{"id": "t009", "description": "Lidl Krakow", "mcc": 5411, "amount_minor": -227145, "label": "groceries"}
+{"id": "t010", "description": "Овочева лавка Марти", "mcc": 5499, "amount_minor": -156979, "label": "groceries"}
+{"id": "t011", "description": "Пекарня Хлібна Хата", "mcc": 5462, "amount_minor": -52781, "label": "groceries"}
+{"id": "t012", "description": "М'ясна крамниця", "mcc": 5422, "amount_minor": -51407, "label": "groceries"}
+{"id": "t013", "description": "Biedronka", "mcc": 5411, "amount_minor": -213737, "label": "groceries"}
+{"id": "t014", "description": "Еко маркет", "mcc": 5411, "amount_minor": -137193, "label": "groceries"}
+{"id": "t015", "description": "Таврія В", "mcc": 5411, "amount_minor": -127718, "label": "groceries"}
+{"id": "t016", "description": "Сирна лавка на Подолі", "mcc": 5451, "amount_minor": -168119, "label": "groceries"}
+{"id": "t017", "description": "Market Bazar Lviv", "mcc": 5499, "amount_minor": -163945, "label": "groceries"}
+{"id": "t018", "description": "McDonald's", "mcc": 5814, "amount_minor": -210874, "label": "eating_out"}
+{"id": "t019", "description": "Пузата Хата", "mcc": 5812, "amount_minor": -51804, "label": "eating_out"}
+{"id": "t020", "description": "KFC Ocean Plaza", "mcc": 5814, "amount_minor": -27673, "label": "eating_out"}
+{"id": "t021", "description": "Domino's Pizza", "mcc": 5814, "amount_minor": -120071, "label": "eating_out"}
+{"id": "t022", "description": "Sushi Master", "mcc": 5812, "amount_minor": -82534, "label": "eating_out"}
+{"id": "t023", "description": "Ресторан Кримська", "mcc": 5812, "amount_minor": -40170, "label": "eating_out"}
+{"id": "t024", "description": "Бістро Зелений Кіт", "mcc": 5812, "amount_minor": -26768, "label": "eating_out"}
+{"id": "t025", "description": "Burger Club", "mcc": 5814, "amount_minor": -144215, "label": "eating_out"}
+{"id": "t026", "description": "Pivnytsia 3 Bochky", "mcc": 5813, "amount_minor": -215243, "label": "eating_out"}
+{"id": "t027", "description": "Їдальня Студентська", "mcc": 5812, "amount_minor": -236407, "label": "eating_out"}
+{"id": "t028", "description": "Varenychna Katerynka", "mcc": 5812, "amount_minor": -184780, "label": "eating_out"}
+{"id": "t029", "description": "Шаурма Кінг", "mcc": 5814, "amount_minor": -169317, "label": "eating_out"}
+{"id": "t030", "description": "Mafia Pizza", "mcc": 5812, "amount_minor": -13978, "label": "eating_out"}
+{"id": "t031", "description": "Cafe Gorgany", "mcc": 5812, "amount_minor": -159090, "label": "eating_out"}
+{"id": "t032", "description": "Хінкальня", "mcc": 5812, "amount_minor": -106850, "label": "eating_out"}
+{"id": "t033", "description": "LIQPAY*Ресторан Острів", "mcc": 7399, "amount_minor": -121749, "label": "eating_out"}
+{"id": "t034", "description": "Glovo", "mcc": 5814, "amount_minor": -174421, "label": "delivery"}
+{"id": "t035", "description": "GLOVO*Kyiv", "mcc": 4215, "amount_minor": -196702, "label": "delivery"}
+{"id": "t036", "description": "Bolt Food", "mcc": 5814, "amount_minor": -164366, "label": "delivery"}
+{"id": "t037", "description": "Wolt", "mcc": 5814, "amount_minor": -173412, "label": "delivery"}
+{"id": "t038", "description": "Rocket Delivery", "mcc": 5814, "amount_minor": -44286, "label": "delivery"}
+{"id": "t039", "description": "Uklon Delivery", "mcc": 4121, "amount_minor": -166349, "label": "delivery"}
+{"id": "t040", "description": "Uber Eats", "mcc": 5814, "amount_minor": -6932, "label": "delivery"}
+{"id": "t041", "description": "Zakaz.ua", "mcc": 5411, "amount_minor": -221025, "label": "delivery"}
+{"id": "t042", "description": "Silpo Delivery", "mcc": 5411, "amount_minor": -141511, "label": "delivery"}
+{"id": "t043", "description": "Raketa", "mcc": 5814, "amount_minor": -19558, "label": "delivery"}
+{"id": "t044", "description": "Aroma Kava", "mcc": 5814, "amount_minor": -18610, "label": "coffee"}
+{"id": "t045", "description": "Lviv Croissants", "mcc": 5814, "amount_minor": -12346, "label": "coffee"}
+{"id": "t046", "description": "Starbucks Warsaw", "mcc": 5814, "amount_minor": -52861, "label": "coffee"}
+{"id": "t047", "description": "One Love Coffee", "mcc": 5814, "amount_minor": -233572, "label": "coffee"}
+{"id": "t048", "description": "Кав'ярня Ранок", "mcc": 5814, "amount_minor": -66423, "label": "coffee"}
+{"id": "t049", "description": "Black Honey", "mcc": 5812, "amount_minor": -160186, "label": "coffee"}
+{"id": "t050", "description": "Takava", "mcc": 5814, "amount_minor": -10885, "label": "coffee"}
+{"id": "t051", "description": "Coffee Point Vokzal", "mcc": 5499, "amount_minor": -206976, "label": "coffee"}
+{"id": "t052", "description": "White Rabbit Coffee", "mcc": 5812, "amount_minor": -124617, "label": "coffee"}
+{"id": "t053", "description": "Kavovyi kiosk Arsenalna", "mcc": 5999, "amount_minor": -88535, "label": "coffee"}
+{"id": "t054", "description": "MyProtein", "mcc": 5499, "amount_minor": -118482, "label": "sports_nutrition"}
+{"id": "t055", "description": "Maurten AB", "mcc": 5499, "amount_minor": -157916, "label": "sports_nutrition"}
+{"id": "t056", "description": "SportPit Shop", "mcc": 5499, "amount_minor": -223837, "label": "sports_nutrition"}
+{"id": "t057", "description": "Powerbar Online", "mcc": 5969, "amount_minor": -54202, "label": "sports_nutrition"}
+{"id": "t058", "description": "Nutrend UA", "mcc": 5499, "amount_minor": -139085, "label": "sports_nutrition"}
+{"id": "t059", "description": "Science in Sport", "mcc": 5969, "amount_minor": -64248, "label": "sports_nutrition"}
+{"id": "t060", "description": "Енергетичні гелі Біг", "mcc": 5499, "amount_minor": -170848, "label": "sports_nutrition"}
+{"id": "t061", "description": "Ізотонік маркет", "mcc": 5999, "amount_minor": -80110, "label": "sports_nutrition"}
+{"id": "t062", "description": "Wizz Marathon Kyiv", "mcc": 7941, "amount_minor": -134012, "label": "race_entries"}
+{"id": "t063", "description": "Nova Poshta Marathon", "mcc": 7999, "amount_minor": -4204, "label": "race_entries"}
+{"id": "t064", "description": "Ahotu Events", "mcc": 7999, "amount_minor": -176657, "label": "race_entries"}
+{"id": "t065", "description": "Run Ukraine Реєстрація", "mcc": 8699, "amount_minor": -25279, "label": "race_entries"}
+{"id": "t066", "description": "UTMB World Series", "mcc": 7941, "amount_minor": -122886, "label": "race_entries"}
+{"id": "t067", "description": "Gorgany Race Registration", "mcc": 7999, "amount_minor": -174652, "label": "race_entries"}
+{"id": "t068", "description": "Ironman Europe", "mcc": 7941, "amount_minor": -75918, "label": "race_entries"}
+{"id": "t069", "description": "Трейл Карпати забіг", "mcc": 7999, "amount_minor": -109634, "label": "race_entries"}
+{"id": "t070", "description": "Harpia Ultra Trail", "mcc": 7999, "amount_minor": -147511, "label": "race_entries"}
+{"id": "t071", "description": "Lviv Half Marathon", "mcc": 7941, "amount_minor": -247235, "label": "race_entries"}
+{"id": "t072", "description": "Decathlon", "mcc": 5941, "amount_minor": -223257, "label": "sport_gear"}
+{"id": "t073", "description": "Intersport", "mcc": 5655, "amount_minor": -24811, "label": "sport_gear"}
+{"id": "t074", "description": "MEGASPORT", "mcc": 5941, "amount_minor": -188548, "label": "sport_gear"}
+{"id": "t075", "description": "Runners Club Kyiv", "mcc": 5941, "amount_minor": -69583, "label": "sport_gear"}
+{"id": "t076", "description": "Garmin Store", "mcc": 5732, "amount_minor": -85648, "label": "sport_gear"}
+{"id": "t077", "description": "Salomon Store", "mcc": 5661, "amount_minor": -201702, "label": "sport_gear"}
+{"id": "t078", "description": "ASICS Outlet", "mcc": 5661, "amount_minor": -63205, "label": "sport_gear"}
+{"id": "t079", "description": "Велосклад", "mcc": 5940, "amount_minor": -137449, "label": "sport_gear"}
+{"id": "t080", "description": "Sport Life", "mcc": 7997, "amount_minor": -78770, "label": "gym_classes"}
+{"id": "t081", "description": "Apollo Fitness", "mcc": 7997, "amount_minor": -10799, "label": "gym_classes"}
+{"id": "t082", "description": "CrossFit Box Lviv", "mcc": 7997, "amount_minor": -21408, "label": "gym_classes"}
+{"id": "t083", "description": "Yoga Studio Lotus", "mcc": 7997, "amount_minor": -150624, "label": "gym_classes"}
+{"id": "t084", "description": "Басейн Олімпійський", "mcc": 7997, "amount_minor": -203877, "label": "gym_classes"}
+{"id": "t085", "description": "Climbing Wall Bigwall", "mcc": 7941, "amount_minor": -31292, "label": "gym_classes"}
+{"id": "t086", "description": "Танцювальна студія Ритм", "mcc": 7911, "amount_minor": -107962, "label": "gym_classes"}
+{"id": "t087", "description": "Synevo", "mcc": 8071, "amount_minor": -31259, "label": "medical"}
+{"id": "t088", "description": "Діла лабораторія", "mcc": 8071, "amount_minor": -224926, "label": "medical"}
+{"id": "t089", "description": "Dobrobut Clinic", "mcc": 8062, "amount_minor": -79258, "label": "medical"}
+{"id": "t090", "description": "Стоматологія Посмішка", "mcc": 8021, "amount_minor": -104322, "label": "medical"}
+{"id": "t091", "description": "Into-Sana", "mcc": 8011, "amount_minor": -20518, "label": "medical"}
+{"id": "t092", "description": "Esculab", "mcc": 8071, "amount_minor": -7427, "label": "medical"}
+{"id": "t093", "description": "Аптека Доброго Дня", "mcc": 5912, "amount_minor": -225117, "label": "pharmacy"}
+{"id": "t094", "description": "Подорожник", "mcc": 5912, "amount_minor": -182541, "label": "pharmacy"}
+{"id": "t095", "description": "АНЦ аптека", "mcc": 5912, "amount_minor": -3142, "label": "pharmacy"}
+{"id": "t096", "description": "Apteka 3i", "mcc": 5912, "amount_minor": -58968, "label": "pharmacy"}
+{"id": "t097", "description": "Бажаємо здоров'я", "mcc": 5912, "amount_minor": -57976, "label": "pharmacy"}
+{"id": "t098", "description": "Pharmacy Warsaw", "mcc": 5912, "amount_minor": -246018, "label": "pharmacy"}
+{"id": "t099", "description": "Kyiv Metro", "mcc": 4111, "amount_minor": -241622, "label": "transport"}
+{"id": "t100", "description": "Ukrzaliznytsia", "mcc": 4112, "amount_minor": -16716, "label": "transport"}
+{"id": "t101", "description": "Kyivpastrans", "mcc": 4131, "amount_minor": -126204, "label": "transport"}
+{"id": "t102", "description": "FlixBus", "mcc": 4131, "amount_minor": -101425, "label": "travel"}
+{"id": "t103", "description": "Bolt", "mcc": 4121, "amount_minor": -188833, "label": "taxi"}
+{"id": "t104", "description": "Uklon", "mcc": 4121, "amount_minor": -107182, "label": "taxi"}
+{"id": "t105", "description": "Uber Trip", "mcc": 4121, "amount_minor": -113045, "label": "taxi"}
+{"id": "t106", "description": "838 Taxi", "mcc": 4121, "amount_minor": -22146, "label": "taxi"}
+{"id": "t107", "description": "WOG", "mcc": 5541, "amount_minor": -151436, "label": "fuel"}
+{"id": "t108", "description": "OKKO", "mcc": 5542, "amount_minor": -168007, "label": "fuel"}
+{"id": "t109", "description": "SOCAR", "mcc": 5541, "amount_minor": -55032, "label": "fuel"}
+{"id": "t110", "description": "UPG", "mcc": 5541, "amount_minor": -207081, "label": "fuel"}
+{"id": "t111", "description": "Kyivstar", "mcc": 4814, "amount_minor": -179923, "label": "home_bills"}
+{"id": "t112", "description": "Vodafone UA", "mcc": 4814, "amount_minor": -73720, "label": "home_bills"}
+{"id": "t113", "description": "lifecell", "mcc": 4814, "amount_minor": -91314, "label": "home_bills"}
+{"id": "t114", "description": "YASNO", "mcc": 4900, "amount_minor": -25844, "label": "home_bills"}
+{"id": "t115", "description": "Нафтогаз", "mcc": 4900, "amount_minor": -84581, "label": "home_bills"}
+{"id": "t116", "description": "Triolan", "mcc": 4899, "amount_minor": -90185, "label": "home_bills"}
+{"id": "t117", "description": "Netflix.com", "mcc": 4899, "amount_minor": -6971, "label": "subscriptions"}
+{"id": "t118", "description": "Spotify", "mcc": 5815, "amount_minor": -110492, "label": "subscriptions"}
+{"id": "t119", "description": "YouTube Premium", "mcc": 5815, "amount_minor": -201715, "label": "subscriptions"}
+{"id": "t120", "description": "Google One", "mcc": 5818, "amount_minor": -244918, "label": "subscriptions"}
+{"id": "t121", "description": "Strava", "mcc": 5818, "amount_minor": -33930, "label": "subscriptions"}
+{"id": "t122", "description": "Apple.com/bill", "mcc": 5818, "amount_minor": -38283, "label": "subscriptions"}
+{"id": "t123", "description": "MEGOGO", "mcc": 4899, "amount_minor": -67589, "label": "subscriptions"}
+{"id": "t124", "description": "Zwift", "mcc": 5816, "amount_minor": -188340, "label": "subscriptions"}
+{"id": "t125", "description": "Rozetka", "mcc": 5732, "amount_minor": -29488, "label": "shopping"}
+{"id": "t126", "description": "Prom.ua", "mcc": 5399, "amount_minor": -5871, "label": "shopping"}
+{"id": "t127", "description": "Comfy", "mcc": 5732, "amount_minor": -18700, "label": "shopping"}
+{"id": "t128", "description": "Епіцентр", "mcc": 5200, "amount_minor": -124881, "label": "shopping"}
+{"id": "t129", "description": "ZARA", "mcc": 5651, "amount_minor": -211934, "label": "shopping"}
+{"id": "t130", "description": "AliExpress", "mcc": 5999, "amount_minor": -130617, "label": "shopping"}
+{"id": "t131", "description": "EVA", "mcc": 5977, "amount_minor": -49577, "label": "shopping"}
+{"id": "t132", "description": "Multiplex", "mcc": 7832, "amount_minor": -181802, "label": "entertainment"}
+{"id": "t133", "description": "Планета Кіно", "mcc": 7832, "amount_minor": -149615, "label": "entertainment"}
+{"id": "t134", "description": "Karabas.com", "mcc": 7922, "amount_minor": -52384, "label": "entertainment"}
+{"id": "t135", "description": "Steam", "mcc": 5816, "amount_minor": -120289, "label": "entertainment"}
+{"id": "t136", "description": "Театр Франка", "mcc": 7922, "amount_minor": -136396, "label": "entertainment"}
+{"id": "t137", "description": "Booking.com", "mcc": 4722, "amount_minor": -52986, "label": "travel"}
+{"id": "t138", "description": "Airbnb", "mcc": 7011, "amount_minor": -194861, "label": "travel"}
+{"id": "t139", "description": "Ryanair", "mcc": 3246, "amount_minor": -204725, "label": "travel"}
+{"id": "t140", "description": "Hotel Dnipro", "mcc": 7011, "amount_minor": -37332, "label": "travel"}
+{"id": "t141", "description": "SkyUp", "mcc": 4511, "amount_minor": -112898, "label": "travel"}
+{"id": "t142", "description": "Glovo", "mcc": 5411, "amount_minor": -171746, "label": "delivery"}
+{"id": "t143", "description": "Decathlon", "mcc": 5411, "amount_minor": -103598, "label": "sport_gear"}
+{"id": "t144", "description": "Аптека Доброго Дня", "mcc": 5411, "amount_minor": -33541, "label": "pharmacy"}
+{"id": "t145", "description": "Aroma Kava", "mcc": 5411, "amount_minor": -106508, "label": "coffee"}
+{"id": "t146", "description": "Wizz Marathon Kyiv", "mcc": 7997, "amount_minor": -113298, "label": "race_entries"}
+{"id": "t147", "description": "ФОП Коваленко О.В.", "mcc": 5812, "amount_minor": -58801, "label": "eating_out"}
+{"id": "t148", "description": "Пельменна на Валах", "mcc": 5812, "amount_minor": -3123, "label": "eating_out"}
+{"id": "t149", "description": "Смаколик", "mcc": 5411, "amount_minor": -73725, "label": "groceries"}
+{"id": "t150", "description": "Лавка Бабусі", "mcc": 5499, "amount_minor": -229579, "label": "groceries"}
+{"id": "t151", "description": "Кавовий куточок", "mcc": 5814, "amount_minor": -213609, "label": "coffee"}
+{"id": "t152", "description": "Piazza Italia trattoria", "mcc": 5812, "amount_minor": -158383, "label": "eating_out"}
+{"id": "t153", "description": "Кіоск Преса", "mcc": 5994, "amount_minor": -82729, "label": "other"}
+{"id": "t154", "description": "ФОП Шевчук ремонт взуття", "mcc": 7251, "amount_minor": -234962, "label": "other"}
+{"id": "t155", "description": "Transfer", "mcc": 4829, "amount_minor": -50000, "label": "transfers"}
+{"id": "t156", "description": "Transfer", "mcc": 4829, "amount_minor": -12000, "label": "transfers"}
+{"id": "t157", "description": "Transfer", "mcc": 6538, "amount_minor": -30000, "label": "transfers"}
+{"id": "t158", "description": "Банкомат ПриватБанк", "mcc": 6011, "amount_minor": -100000, "label": "cash"}
+{"id": "t159", "description": "Transfer", "mcc": 4829, "amount_minor": 250000, "label": "income"}
+{"id": "t160", "description": "Кешбек", "mcc": 0, "amount_minor": 4500, "label": "income"}

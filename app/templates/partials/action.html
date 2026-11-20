@@ -1,3 +1,4 @@
 {% from "_icons.html" import icon with context %}
 <div class="act {{ 'undone' if a.undone }}">{{ icon("check") }}<span>{{ a.summary }}</span>
-  {% if a.undo and not a.undone %}<button class="link undo" hx-post="/actions/{{ a.id }}/undo" hx-target="closest .act" hx-swap="outerHTML">{{ _("Undo") }}</button>{% endif %}</div>
+  {% if a.undo and a.undo.op == "offer_meal" %}<span><button class="link" hx-post="/money/receipt/{{ a.undo.id }}/meal" hx-target="this" hx-swap="outerHTML">{{ _("Log it") }}</button></span>
+  {% elif a.undo and not a.undone %}<button class="link undo" hx-post="/actions/{{ a.id }}/undo" hx-target="closest .act" hx-swap="outerHTML">{{ _("Undo") }}</button>{% endif %}</div>

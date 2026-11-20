@@ -29,6 +29,7 @@ TRACKS = [("training", "watch", "Training from my watch",
           ("reminders", "bell", "Reminders", "Meals, sleep, medication")]
 TRACKS.append(("calendar", "calendar", "My calendar", "So training fits my day"))  # B2
 TRACKS.append(("labs", "droplet", "Lab results", "Blood tests and their trends"))  # B3
+TRACKS += [("money", "wallet", "Spending", "Monobank and receipts")]  # plan 11 B4
 
 
 @router.get("/welcome", response_class=HTMLResponse)
@@ -96,6 +97,8 @@ def setup_cards(user: store.User, has_push: bool, profile: dict) -> list[str]:
             cards.append("labs")
     if user.tracks and interview.missing_slots(profile, store.list_facts(user.id)):
         cards.append("questions")  # only for people who signed up through the new screen
+    if "money" in user.tracks and not store.get_secret(user.id, "monobank"):
+        cards.append("money")  # plan 11 B4
     return cards
 
 

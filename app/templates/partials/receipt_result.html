@@ -1,0 +1,6 @@
+{% from "_icons.html" import icon with context %}
+<div class="card" style="margin-top:10px"><p class="small"><b>{{ r.store or _("Receipt") }}</b> · {{ r.total | round | int }} ₴ · {{ _("matched to a card payment") if r.matched else _("saved as a separate purchase") }}</p>
+  <ul class="list small" style="margin-top:6px">{% for ln in r.lines %}<li class="row between"><span>{{ ln.name }}</span><span><span class="badge">{{ _(cat_name(ln.category)) }}</span> {{ ln.amount | round | int }} ₴</span></li>{% endfor %}</ul>
+  <div class="row" style="margin-top:8px">
+    {% if r.offer %}<button class="btn sm ink" hx-post="/money/receipt/{{ r.id }}/meal" hx-swap="outerHTML">{{ _("Log as a meal") if r.offer == "meal" else _("Log as race/training fuel") }}</button>{% endif %}
+    <a class="btn sm ghost" href="/money">{{ _("Done") }}</a></div></div>

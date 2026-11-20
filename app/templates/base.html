@@ -15,7 +15,7 @@
   </script>
   <meta name="theme-color" content="#FAF8F5">
   <link rel="preload" href="/static/fonts/FixelText-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/static/css/app.css?v=10">
+  <link rel="stylesheet" href="/static/css/app.css?v=11">
   <link rel="manifest" href="/static/manifest.webmanifest">
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/static/icon.svg">
@@ -25,6 +25,7 @@
 {% block body %}
 {% set nav = [("/", "Today", "chat"), ("/training", "Training", "run"), ("/nutrition", "Nutrition", "apple"),
               ("/health", "Health", "heart"), ("/day", "Days", "calendar"), ("/memory", "Memory", "brain")] %}
+{% if user and "money" in (user.tracks or []) %}{% set nav = nav + [("/money", "Money", "wallet")] %}{% endif %}
 <div class="shell {% if has_rail %}has-rail{% endif %}" id="shell">
   <aside class="side" aria-label="{{ _('Main menu') }}">
     <a class="brand" href="/"><span class="mark">{{ icon("activity") }}</span>Daily Coach</a>
@@ -48,7 +49,7 @@
 </div>
 <nav class="tabs" aria-label="{{ _('Main menu') }}">
   {% for href, label, ic in [("/", "Today", "chat"), ("/training", "Training", "run"), ("/nutrition", "Nutrition", "apple"), ("/health", "Health", "heart"), ("/more", "More", "more")] %}
-  <a href="{{ href }}" {% if active == href or (href == "/more" and active in ["/memory", "/day", "/settings", "/more"]) %}aria-current="page"{% endif %}>{{ icon(ic) }}{{ _(label) }}</a>
+  <a href="{{ href }}" {% if active == href or (href == "/more" and active in ["/memory", "/day", "/settings", "/more", "/money"]) %}aria-current="page"{% endif %}>{{ icon(ic) }}{{ _(label) }}</a>
   {% endfor %}
 </nav>
 {% block modal %}{% endblock %}

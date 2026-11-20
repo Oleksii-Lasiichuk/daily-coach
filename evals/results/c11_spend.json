@@ -1,0 +1,131 @@
+{
+ "component": "c11_spend",
+ "metrics": {
+  "n": 161,
+  "rules_accuracy": 0.944,
+  "rules_coverage": 0.957,
+  "accuracy_with_c11": 0.981,
+  "n_unplaced": 7,
+  "c11_accuracy_on_unplaced": 0.857,
+  "privacy_violations": 0,
+  "pair_confusions": {
+   "eating_out/delivery": 0,
+   "groceries/sports_nutrition": 1,
+   "gym_classes/race_entries": 0,
+   "coffee/eating_out": 1
+  },
+  "receipts_n": 15,
+  "receipt_errors": 0,
+  "receipt_total_exact": "10/10",
+  "receipt_line_accuracy": 1.0,
+  "receipt_split_ok": "10/10",
+  "meal_offer_accuracy": 1.0
+ },
+ "n_failures": 9,
+ "failures": [
+  {
+   "id": "t053",
+   "description": "Kavovyi kiosk Arsenalna",
+   "mcc": 5999,
+   "gold": "coffee",
+   "rules": null,
+   "final": "coffee"
+  },
+  {
+   "id": "t060",
+   "description": "Енергетичні гелі Біг",
+   "mcc": 5499,
+   "gold": "sports_nutrition",
+   "rules": "groceries",
+   "final": "groceries"
+  },
+  {
+   "id": "t061",
+   "description": "Ізотонік маркет",
+   "mcc": 5999,
+   "gold": "sports_nutrition",
+   "rules": null,
+   "final": "sports_nutrition"
+  },
+  {
+   "id": "t069",
+   "description": "Трейл Карпати забіг",
+   "mcc": 7999,
+   "gold": "race_entries",
+   "rules": null,
+   "final": "race_entries"
+  },
+  {
+   "id": "t079",
+   "description": "Велосклад",
+   "mcc": 5940,
+   "gold": "sport_gear",
+   "rules": null,
+   "final": "sport_gear"
+  },
+  {
+   "id": "t128",
+   "description": "Епіцентр",
+   "mcc": 5200,
+   "gold": "shopping",
+   "rules": null,
+   "final": "shopping"
+  },
+  {
+   "id": "t151",
+   "description": "Кавовий куточок",
+   "mcc": 5814,
+   "gold": "coffee",
+   "rules": "eating_out",
+   "final": "eating_out"
+  },
+  {
+   "id": "t153",
+   "description": "Кіоск Преса",
+   "mcc": 5994,
+   "gold": "other",
+   "rules": null,
+   "final": "shopping"
+  },
+  {
+   "id": "t154",
+   "description": "ФОП Шевчук ремонт взуття",
+   "mcc": 7251,
+   "gold": "other",
+   "rules": null,
+   "final": "other"
+  }
+ ],
+ "c11_inputs": [
+  [
+   {
+    "merchant": "kavovyi kiosk arsenalna",
+    "mcc": 5999
+   },
+   {
+    "merchant": "izotonik market",
+    "mcc": 5999
+   },
+   {
+    "merchant": "treil karpaty zabih",
+    "mcc": 7999
+   },
+   {
+    "merchant": "velosklad",
+    "mcc": 5940
+   },
+   {
+    "merchant": "epitsentr",
+    "mcc": 5200
+   },
+   {
+    "merchant": "kiosk presa",
+    "mcc": 5994
+   },
+   {
+    "merchant": "fop shevchuk remont vzuttia",
+    "mcc": 7251
+   }
+  ]
+ ]
+}
