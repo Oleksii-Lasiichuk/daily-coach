@@ -144,6 +144,32 @@ def write(name, rows):
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
 
+# B1: three weather cases (C12 advice in the input) on a normal running day.
+_normal = next(x for x in c6 if x["inputs"]["day_type"] == "normal")
+
+
+def _wx(flags, facts, heat, band):
+    return {"day": {"t_max": 31 if heat != "none" else 8, "t_min": 18 if heat != "none" else 2,
+                    "sunrise": "05:10", "sunset": "21:00", "air": "very poor" if
+                    "indoors_aqi" in flags else "fair", "place": "Kyiv"},
+            "session_hours": "18:00–19:00",
+            "advice": {"pace_slower_pct": band, "heat_level": heat, "flags": flags,
+                       "clothing": ["singlet", "shorts", "cap"], "best_hour": None,
+                       "facts": facts}}
+
+
+for _flags, _facts, _heat, _band, _expect in [
+        (["indoors_aqi"], ["Air is very poor (European AQI above 80): intense sessions indoors, "
+                           "or easy only."], "none", [0.0, 0.0],
+         "indoor (treadmill/strength) or easy only; says the air is very poor"),
+        (["storm"], ["Thunderstorm forecast: train indoors or move the session."], "none",
+         [0.0, 0.0], "indoor option or moved session; mentions the thunderstorm"),
+        ([], ["Heat and humidity slow running pace by about 4.5–6 %.", "Wear: singlet, shorts, "
+              "cap."], "high", [4.5, 6.0],
+         "easier or shorter, by HR not pace; mentions heat and the slower pace")]:
+    c6.append({"inputs": _normal["inputs"] | {"weather": _wx(_flags, _facts, _heat, _band),
+                                               "request": "What should I do today?"},
+               "expect": _expect})
 write("c6_planner.jsonl", [{"id": i, **x} for i, x in enumerate(c6)])
 write("c0_interview.jsonl", athletes)
 write("c8_reply.jsonl", [{"question": q, "expected": a, "type": t} for q, a, t in c8])
