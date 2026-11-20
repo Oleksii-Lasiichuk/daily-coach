@@ -23,7 +23,19 @@ MAX_SIDE = 2000
 
 
 class FileError(ValueError):
-    """The upload can't be read (shown to the person)."""
+    """The upload can't be read; the code is shown to the person as MESSAGES[code]."""
+
+
+MESSAGES = {
+    "empty": "The file is empty.",
+    "big": "The file is larger than 10 MB.",
+    "pdf": "Couldn't read this PDF.",
+    "scan": "This PDF is a scan without text. Please send a photo of the page instead.",
+    "unreadable": "This file is not a photo or a PDF we can read.",
+    "nothing": "No lab values found on this page.",
+    "ai": "The coach couldn't read the sheet this time. Try again.",
+    "duplicate": "This sheet is already saved.",
+}
 
 
 class PrintedRow(BaseModel):
@@ -44,9 +56,9 @@ class LabSheet(BaseModel):
 def read_file(raw: bytes, filename: str = "") -> dict:
     """{"images": [jpeg bytes]} for a photo, {"text": str} for a PDF with a text layer."""
     if not raw:
-        raise FileError("The file is empty.")
+        raise FileError("empty")
     if len(raw) > MAX_BYTES:
-        raise FileError("The file is larger than 10 MB.")
+        raise FileError("big")
     if raw[:5] == b"%PDF-" or filename.lower().endswith(".pdf"):
         return {"text": pdf_text(raw)}
     return {"images": [shrink(raw)]}
@@ -58,10 +70,9 @@ def pdf_text(raw: bytes) -> str:
         pages = PdfReader(io.BytesIO(raw)).pages[:4]
         text = "\n\n".join((p.extract_text() or "") for p in pages).strip()
     except Exception as e:  # broken or encrypted PDF
-        raise FileError("Couldn't read this PDF.") from e
+        raise FileError("pdf") from e
     if len(text) < 40:
-        raise FileError("This PDF is a scan without text. Please send a photo of the page "
-                        "instead.")
+        raise FileError("scan")
     return text[:20000]
 
 
@@ -71,7 +82,7 @@ def shrink(raw: bytes) -> bytes:
     try:
         img = ImageOps.exif_transpose(Image.open(io.BytesIO(raw))).convert("RGB")
     except Exception as e:
-        raise FileError("This file is not a photo or a PDF we can read.") from e
+        raise FileError("unreadable") from e
     img.thumbnail((MAX_SIDE, MAX_SIDE))
     out = io.BytesIO()
     img.save(out, "JPEG", quality=85)
@@ -244,7 +255,7 @@ def ingest(user_id: str, raw: bytes, filename: str, message_id: int | None,
         rows = normalise(sheet)
         root.update(output={"lab": sheet.lab, "taken_on": sheet.taken_on, "rows": rows})
     if not rows:
-        raise FileError("No lab values found on this page.")
+        raise FileError("nothing")
     taken = parse_date(sheet.taken_on)
     taken = taken if taken and taken <= today else today
     out = save(user_id, sheet, rows, taken, filename, message_id)
@@ -325,7 +336,8 @@ def trend(user_id: str, marker: str) -> dict | None:
             "points": [{"date": r["taken_on"], "value": _f(r["value"]),
                         "qualifier": r["qualifier"], "text": r["value_text"],
                         "ref_low": _f(r["ref_low"]), "ref_high": _f(r["ref_high"]),
-                        "flag": r["flag"], "id": r["id"], "lab": r["lab"]} for r in rows],
+                        "flag": r["flag"], "id": r["id"], "lab": r["lab"],
+                        "upload_id": str(r["upload_id"])} for r in rows],
             "last": _f(last["value"]), "last_date": last["taken_on"], "last_flag": last["flag"],
             "change_vs_previous": change,
             "times_out_of_range": sum(r["flag"] in ("low", "high") for r in rows)}

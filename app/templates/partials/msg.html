@@ -1,6 +1,6 @@
 {% from "_icons.html" import icon with context %}
 {% if m.role == "user" %}
-<div class="msg you">{% for a in m.attachments or [] %}{% if a.thumb %}<img src="{{ a.thumb }}" alt="{{ _('Photo you sent') }}">{% endif %}{% endfor %}{{ m.content if m.content != "(photo)" }}</div>
+<div class="msg you">{% for a in m.attachments or [] %}{% if a.thumb %}<img src="{{ a.thumb }}" alt="{{ _('Photo you sent') }}">{% elif a.type == "file" %}<span class="file-chip">{{ icon("file") }} {{ a.name }}</span>{% endif %}{% endfor %}{{ m.content if m.content != "(photo)" }}</div>
 {% else %}
 <div class="msg coach">
   <div class="who"><span class="mark">{{ icon("activity") }}</span>{{ _("Coach") }}{% if m.created_at %} · {{ m.created_at | local_time(user.time_zone) }}{% endif %}{% if (m.attachments or []) | selectattr("type", "equalto", "report") | list %} <span class="report-tag">{{ _("Morning report") }}</span>{% endif %}

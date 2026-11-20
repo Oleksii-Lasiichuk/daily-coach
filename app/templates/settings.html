@@ -64,6 +64,11 @@
             <div class="row" style="gap:8px;flex-wrap:nowrap"><input name="times" placeholder="08:00, 20:00" required aria-label="{{ _('Times') }}"><input name="until" type="date" aria-label="{{ _('Until') }}" style="width:auto"><button class="btn sm">{{ _("Add") }}</button></div>
           </form></details>
       </div>
+      <div class="card" id="data"><h2>{{ _("Your data") }}</h2>
+        <h3 style="margin-top:8px">{{ _("Lab results") }}</h3>
+        <p class="small muted" style="margin-top:4px">{{ _("A lab sheet you upload is sent to the AI model (through OpenRouter) once, to read the values. Saved: each value with its unit, range and test date, the lab's name and the file name. Not saved: your name, birth date, order number or doctor from the sheet. The photo or PDF stays only in the chat message.") }}</p>
+        <button type="button" class="btn sm danger-t" style="margin-top:8px" hx-delete="/labs" hx-confirm="{{ _('Delete all lab results? This cannot be undone.') }}">{{ icon("trash") }} {{ _("Delete all lab results") }}</button>
+      </div>
       <details class="card adv" id="advanced"><summary><h2 style="display:inline">{{ _("Advanced") }}</h2> <span class="small muted">· {{ _("AI models, your own key, cost") }}</span></summary>
         <form method="post" action="/profile/models" class="row" style="gap:10px;align-items:flex-end;margin-top:12px">
           <div class="grow"><label for="md">{{ _("Everyday model") }}</label><select id="md" name="model_default">{% for m, lab in models.items() %}<option value="{{ m }}" {{ "selected" if p.model_default == m }}>{{ lab }}</option>{% endfor %}</select></div>

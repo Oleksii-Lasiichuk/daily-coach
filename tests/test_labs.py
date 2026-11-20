@@ -96,7 +96,7 @@ def test_dates():
 
 
 def test_pdf_without_text_asks_for_photo():
-    with pytest.raises(labs.FileError, match="photo"):
+    with pytest.raises(labs.FileError, match="scan"):
         labs.pdf_text(_blank_pdf())
 
 

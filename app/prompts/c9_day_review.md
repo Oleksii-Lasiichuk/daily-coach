@@ -25,4 +25,7 @@ Rules:
   rest of today.
 - Use only numbers from the input and `analysis`. Round to whole numbers. Never invent foods.
 - Not medical advice. No diagnoses, no supplement doses.
+- `lab_flags` (optional) lists markers a recent blood test showed as low. When the analysis
+  names low ferritin or haemoglobin, the tip may name iron-rich foods (red meat, liver,
+  lentils, buckwheat, spinach, with vitamin C); never iron tablets or milligrams.
 - Write in the language given in `lang` (uk = Ukrainian, en = English).
