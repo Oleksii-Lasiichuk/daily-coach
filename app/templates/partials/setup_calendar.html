@@ -1,0 +1,34 @@
+{# Sheet: connect a calendar through its iCal (ICS) link, for a non-technical reader. Three tabs. #}
+<h2 id="sheet-title">{{ _("Connect your calendar") }}</h2>
+<p class="small muted" style="margin-top:4px">{{ _("The coach reads when you're busy, never changes anything. 3 minutes.") }}</p>
+<div class="cal-tabs" style="margin-top:10px">
+  <div class="seg" role="radiogroup" aria-label="{{ _('Your calendar') }}">
+    <label style="margin:0"><input type="radio" name="cal-tab" id="ct-g" class="sr" checked><span>Google</span></label>
+    <label style="margin:0"><input type="radio" name="cal-tab" id="ct-i" class="sr"><span>{{ _("iPhone / iCloud") }}</span></label>
+    <label style="margin:0"><input type="radio" name="cal-tab" id="ct-o" class="sr"><span>Outlook</span></label>
+  </div>
+  <ol class="steps-num small ct ct-g">
+    <li>{{ _("On a computer, open calendar.google.com (this setting is not in the phone app).") }}</li>
+    <li>{{ _("Gear at the top → Settings.") }}</li>
+    <li>{{ _("On the left, under “Settings for my calendars”, click your calendar.") }}</li>
+    <li>{{ _("Click “Integrate calendar”.") }}</li>
+    <li>{{ _("Copy the “Secret address in iCal format” (it ends in .ics).") }}</li>
+    <li>{{ _("Paste it below and press Connect.") }}</li>
+  </ol>
+  <p class="tiny muted ct ct-g">{{ _("If you can't find it on a work account, your administrator turned it off — use your personal calendar. If the link ever leaks, press “Reset” there and paste the new one.") }} <a href="https://support.google.com/calendar/answer/37648" target="_blank" rel="noopener">{{ _("Google help") }}</a></p>
+  <ol class="steps-num small ct ct-i">
+    <li>{{ _("On a computer or iPad open icloud.com/calendar and sign in.") }}</li>
+    <li>{{ _("Next to your calendar press the ⓘ (Calendar Info) button.") }}</li>
+    <li>{{ _("Turn on “Public Calendar”.") }}</li>
+    <li>{{ _("Press “Copy” and paste the link below.") }}</li>
+  </ol>
+  <p class="tiny muted ct ct-i">{{ _("Anyone with this link can see the events, so don't share it.") }} <a href="https://support.apple.com/guide/icloud/share-a-calendar-mm6b1a9479/icloud" target="_blank" rel="noopener">{{ _("Apple help") }}</a></p>
+  <ol class="steps-num small ct ct-o">
+    <li>{{ _("Open outlook.com → Settings → Calendar → Shared calendars.") }}</li>
+    <li>{{ _("Under “Publish a calendar” choose the calendar and “Can view when I'm busy”, then press Publish.") }}</li>
+    <li>{{ _("Copy the ICS link and paste it below.") }}</li>
+  </ol>
+  <p class="tiny muted ct ct-o">{{ _("“Busy only” is the most private choice and is enough for the coach.") }} <a href="https://support.microsoft.com/en-us/office/introduction-to-publishing-internet-calendars-a25e68d6-695a-41c6-a701-103d44ba151d" target="_blank" rel="noopener">{{ _("Microsoft help") }}</a></p>
+</div>
+<div style="margin-top:12px">{% include "partials/calendar.html" %}</div>
+<script>document.body.addEventListener("calendarChanged", () => setTimeout(() => location.reload(), 1800), { once: true });</script>

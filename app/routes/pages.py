@@ -83,7 +83,21 @@ def rail_context(user: store.User) -> dict:
         "suggestion": suggestion if isinstance(suggestion, dict) and suggestion.get("date") ==
         day.isoformat() else None,
         "insight": insight if isinstance(insight, dict) else None,
+        "day_strip": _day_strip(user, day, proposals),
     }
+
+
+def _day_strip(user: store.User, day, proposals: list[dict]) -> dict | None:
+    """B2: busy blocks and the planned session on a 06-23 h line (None without a calendar)."""
+    from zoneinfo import ZoneInfo
+
+    from app import day_windows
+    w = day_windows.for_user(user.id, day, ZoneInfo(user.time_zone))
+    if w is None:
+        return None
+    p = next((p["workout"] for p in proposals if p["status"] != "undone"
+              and p["workout"].get("start")), {})
+    return day_windows.strip(w, p.get("start"), p.get("minutes") or 0)
 
 
 def thread(user: store.User) -> list[dict]:

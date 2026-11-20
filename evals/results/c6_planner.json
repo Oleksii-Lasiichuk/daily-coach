@@ -5,13 +5,13 @@
   "errors": 0,
   "valid_first_try": 1,
   "valid_after_retry": 1,
-  "judge_safety_fit": 4.8,
-  "judge_plan_respect": 4.2,
-  "judge_specificity": 3.6,
-  "judge_rationale": 4,
-  "judge_mean": 4.15
+  "judge_safety_fit": 4.65,
+  "judge_plan_respect": 4.1,
+  "judge_specificity": 3.55,
+  "judge_rationale": 3.55,
+  "judge_mean": 3.96
  },
- "n_failures": 9,
+ "n_failures": 13,
  "failures": [
   {
    "id": 0,
@@ -23,13 +23,32 @@
    "action": "replace",
    "sport": "Walk",
    "minutes": 30.0,
-   "text": "Warmup\n- Easy stroll to loosen up stiff muscles 5m Z1 HR\n\nMain Set\n- Gentle walking at an effortless conversa 20m Z1 HR\n\nCooldown\n- Wind down stroll and deep breathing 5m Z1 HR",
+   "text": "Main set\n- Easy conversational walk keep effort 30m Z1 HR",
    "grade": {
     "safety_fit": 5,
-    "plan_respect": 3,
+    "plan_respect": 2,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Correctly drops the 6x800 m intervals after 4 h sleep and 4 beers, and keeps everything in Z1 for 30 min, which fits the expected rest or <=40 min Z1-2 answer. It replaces the planned run with a walk without much justification for the sport change; a shorter easy run or a rest day would also have fit and kept more of the plan. Steps are concrete with HR zones and warmup/cooldown, though the Z1 HR target lacks numeric bounds. Rationale cites sleep, alcohol, and recover day, but does not mention hydration or the recent load trend in depth."
+    "comment": "Correctly drops the 6x800m intervals on a recover day after 4 h sleep and 4 beers, and the 30 min Z1 walk sits within the expected rest or easy range. Plan respect is weak because it replaces the planned session outright rather than offering a shorter easy run or a rest option, and the reason for replacing rather than cancelling is not explained. Specificity is good with zone and duration, though the walk has no warmup or cooldown and the text field is terse. Rationale cites the real evidence (sleep, alcohol, day type) concisely."
+   }
+  },
+  {
+   "id": 2,
+   "day_type": "normal",
+   "expect": "keep the intervals",
+   "first_ok": true,
+   "final_ok": true,
+   "violations": [],
+   "action": "keep",
+   "sport": "Run",
+   "minutes": 73.2,
+   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n- Dynamic drills and x strides 5m\n\nIntervals 6x\n- at Zone VO max 800mtr Z5 Pace\n- Jog or walk recovery 400mtr Z1 HR\n\nCooldown\n- Easy conversational jog to flush the 10m Z1 HR",
+   "grade": {
+    "safety_fit": 4,
+    "plan_respect": 5,
+    "specificity": 4,
+    "rationale": 2,
+    "comment": "Keeps the athlete's planned 6x800m at 4:00/km, as expected, and the warmup, recovery, and cooldown are concrete. Safety is reasonable for a normal day, though the rationale wrongly says yesterday was a rest day when the logs show no activity on Nov 13 and a run on Nov 12. The text output also has a minor inconsistency: 'x strides' omits the count stated in the cue."
    }
   },
   {
@@ -39,16 +58,35 @@
    "first_ok": true,
    "final_ok": true,
    "violations": [],
-   "action": "modify",
+   "action": "replace",
    "sport": "Run",
    "minutes": 50.0,
-   "text": "Warmup\n- Easy jog building into zone 12m Z1 HR\n\nThreshold Repeats 4x\n- Threshold pace around stay controlled in 6m Z4 HR\n- Light jogging recovery 2m Z1 HR\n\nCooldown\n- Easy jog and walk down to rest 6m Z1 HR",
+   "text": "Warmup\n- Easy conversational jog 15m Z1 HR\n\nThreshold intervals 2x\n- Half marathon effort near threshold pace 8m Z4 HR\n- Jog easily to lower HR 3m Z1 HR\n\nCooldown\n- Easy jog and walk shakeout 13m Z1 HR",
    "grade": {
     "safety_fit": 4,
     "plan_respect": 3,
     "specificity": 3,
     "rationale": 4,
-    "comment": "Moderate threshold work is a reasonable answer given HRV, sleep, and fresh legs, and the 2-day gap from the 55-min run on Nov 12 is adequate. It replaces the planned easy run rather than adding to it, and the change is justified only by recovery markers. The step structure and HR zones are concrete, but the generated text line 'Threshold pace around stay controlled in 6m Z4 HR' is garbled. The rationale cites real evidence but is thin on why swapping rather than adding quality."
+    "comment": "Adding two 8-min threshold reps is reasonable given good HRV, 8 h sleep, and a 95-load run five days ago, and it matches the expected moderate-quality answer. Replacing the planned easy 40 min run is a bigger change than needed; a lighter tweak to the planned run would respect the plan more. Targets are given as HR zones with no bpm ranges, though the pace cue helps. The rationale cites the real evidence and is short."
+   }
+  },
+  {
+   "id": 4,
+   "day_type": "easy",
+   "expect": "no running quality; swim or easy non-impact Z1-2",
+   "first_ok": true,
+   "final_ok": true,
+   "violations": [],
+   "action": "replace",
+   "sport": "Swim",
+   "minutes": 40.0,
+   "text": "Warmup\n- Easy swim relaxed stroke focus on 10m Z1 Pace\n\nMain Set\n- Aerobic swim pull buoy preferred to 25m Z1 Pace\n\nCooldown\n- Very easy backstroke or freestyle 5m Z1 Pace",
+   "grade": {
+    "safety_fit": 5,
+    "plan_respect": 4,
+    "specificity": 3,
+    "rationale": 4,
+    "comment": "Correctly drops the tempo run for an easy non-impact swim given 3/10 left knee pain, matching the expected answer. Replacement is justified by the injury and easy day type. Specificity is weaker: the main set has no distance or explicit zone HR targets, the text has a typo (\"25m\" should read \"25 min\"), and the 10 min warmup and 5 min cooldown are fine but the 25 min main set lacks structure. Rationale cites the knee and day type clearly but does not mention the recent load or the upcoming April goal."
    }
   },
   {
@@ -66,8 +104,8 @@
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 3,
-    "rationale": 5,
-    "comment": "Full rest is the correct call with fever 38.1 C and flu, and the rationale cites the fever and red flag accurately. Plan respect is good since replacing the 18 km long run is justified by illness. Specificity is limited: a rest day has no blocks, but the proposal could have given return-to-training guidance such as waiting until fever-free 24 h and easing back with short easy runs."
+    "rationale": 4,
+    "comment": "Rest is clearly the safe call with fever 38.1 C, flu, and a red flag, and it correctly cancels the 18 km long run. Plan respect is slightly reduced because the planned workout is dropped outright rather than noting it can be rescheduled once symptom-free. Specificity is weak: no return-to-training guidance such as waiting for fever-free days or easing back in. Rationale cites the fever, red flag, and flu, which is adequate but could mention the recent load and recovery timeline."
    }
   },
   {
@@ -80,32 +118,32 @@
    "action": "add",
    "sport": "Swim",
    "minutes": 45.0,
-   "text": "Warmup\n- Easy swim mix of freestyle and backstrok 8m Z1 Pace\n- Drills catch up and fingertip drag with  7m Z1 Pace\n\nMain Set 5x\n- Moderate aerobic freestyle Zone 210s Z2 Pace\n- Easy sculling or gentle kick recovery 90s Z1 Pace\n\nCooldown\n- Easy backstroke and relaxed cooldown 5m Z1 Pace",
-   "grade": {
-    "safety_fit": 5,
-    "plan_respect": 5,
-    "specificity": 3,
-    "rationale": 4,
-    "comment": "Safe, appropriate normal-day swim that fulfills the explicit request, with no planned workout to override and total time of 45 minutes that adds up. Specificity is weaker: steps give durations and Zone labels but no distances or swim-pace targets tied to the 2:00/100m threshold, and the stated 2:05-2:15/100m range isn't in the steps. The text also has typos (backstrok, Zone 210s). Rationale cites the request and day type, but 'recent load balanced' is only loosely supported by the 95-load run two days earlier."
-   }
-  },
-  {
-   "id": 7,
-   "day_type": "easy",
-   "expect": "<=30 min easy",
-   "first_ok": true,
-   "final_ok": true,
-   "violations": [],
-   "action": "add",
-   "sport": "Run",
-   "minutes": 30.0,
-   "text": "Warmup\n- Gentle jog gradually settling into an ea 5m Z1 HR\n\nSteady aerobic\n- Easy aerobic running conversational effo 20m Z1 HR\n\nCooldown\n- Very easy jog and walking cooldown 5m Z1 HR",
+   "text": "Warmup\n- Easy swim mix of freestyle and 8m Z1 Pace\n\nDrills & Technique\n- Drill catch up and fingertip drag drills 6m\n\nMain Set: Aerobic Intervals 5x\n- Steady freestyle with pull buoy at 4m Z2 Pace\n- Rest at pool wall shake arms 1m\n\nCooldown\n- Very easy choice stroke cool down 6m Z1 Pace",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
     "specificity": 3,
     "rationale": 3,
-    "comment": "Fits the easy day, the HRV dip and the 30-minute request, and nothing is planned today so adding is appropriate. Specificity is weakened by Z1 targets with no HR ceiling even though LTHR 185 is on file. The rationale says zone 1 to 2 while the blocks prescribe only zone 1, which is inconsistent."
+    "comment": "Appropriate 45 min swim on a normal day after moderate recent load, and it fulfills the swim request. Structure and timing add up. Specificity is weakened by missing distances and by calling the main set threshold pace while labeling it Zone 2. The rationale says zone 2-3 and cites only three thin evidence items, so it is less precise than it should be."
+   }
+  },
+  {
+   "id": 9,
+   "day_type": "push",
+   "expect": "quality run (threshold), specific to the half marathon",
+   "first_ok": true,
+   "final_ok": true,
+   "violations": [],
+   "action": "add",
+   "sport": "Run",
+   "minutes": 50.0,
+   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n\nThreshold intervals 3x\n- Threshold pace target around HR zone – 8m Z4 Pace\n- Easy jog recovery 2m Z1 HR\n\nCooldown\n- Light jogging and walking cool down 5m Z1 HR",
+   "grade": {
+    "safety_fit": 4,
+    "plan_respect": 4,
+    "specificity": 3,
+    "rationale": 3,
+    "comment": "Threshold run fits the half marathon goal and the expected quality session, and nothing is planned today, so adding it is reasonable. Three days after a 16 km run with a rest day in between makes 50 min at threshold acceptable. Specificity is weakened by the conflicting target: the work cue says HR zone 4 (175-185 bpm) while the target is set to Pace, the text line reads garbled ('HR zone - 8m Z4 Pace'), and the warmup has no upper zone bound. The rationale leans on 'push day', which is a weights label and does not match a run, and 'rest yesterday' is inferred since no activity is logged for 11-13."
    }
   },
   {
@@ -118,13 +156,13 @@
    "action": "add",
    "sport": "Walk",
    "minutes": 25.0,
-   "text": "Recovery Walk\n- Easy relaxed stroll to boost circulation 25m Z1 HR",
+   "text": "Main\n- Gentle relaxed stroll to shake out the 25m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
     "specificity": 3,
     "rationale": 4,
-    "comment": "Day is recover with 3.5 h sleep and exhaustion; a 25 min Zone 1 walk sits within the expected rest-or-<=40-min-easy answer and avoids running. Specificity is limited: no warmup/cooldown, and the HR zone 1 target lacks a stated bpm range even though lthr 185 is available. Rationale is clear and cites the sleep, exhaustion, and recover day, though it could note the recent 16 km run on Nov 9 as load context."
+    "comment": "Good fit: 25 min Z1 walk is within the recover-day 40 min cap and matches the 'rest or <=40 min Z1 walk/easy' expectation given 3.5 h sleep and exhaustion. Plan respect is fine since no planned workout was stated. Specificity is weaker: no warmup/cooldown, no HR ceiling number despite zone 1 target, and the text line has a garbled 'shake out the 25m Z1 HR'. Rationale cites sleep, exhaustion and the recover cap clearly and briefly."
    }
   },
   {
@@ -136,14 +174,33 @@
    "violations": [],
    "action": "keep",
    "sport": "Run",
-   "minutes": 105.0,
-   "text": "Warmup\n- Easy jog building into Zone conversation 15m Z1 HR\n\nSteady aerobic endurance\n- Hold steady Zone endurance pace relaxed  80m Z2 HR\n\nCooldown\n- Easy recovery jog and walk to wind down 10m Z1 HR",
+   "minutes": 110.0,
+   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n\nSteady aerobic endurance\n- Steady aerobic pace keep conversational 85m Z2 HR\n\nCooldown\n- Gentle jog and walking cool down 10m Z1 HR",
+   "grade": {
+    "safety_fit": 4,
+    "plan_respect": 5,
+    "specificity": 3,
+    "rationale": 3,
+    "comment": "Keeps the planned 20 km long run on Saturday within the 180 min cap and the normal day type, which is correct. Specificity is weakened by an upper HR of 162 bpm (about 88% of LTHR 185), which is above true zone 2, and by no distance or pace target for the 20 km. Rationale cites the plan and availability but ignores recent load (16 km on Nov 9)."
+   }
+  },
+  {
+   "id": 14,
+   "day_type": "normal",
+   "expect": "keep bike intervals (Ride)",
+   "first_ok": true,
+   "final_ok": true,
+   "violations": [],
+   "action": "keep",
+   "sport": "Ride",
+   "minutes": 75.0,
+   "text": "Warmup\n- Gradual spin to elevate heart rate 15m Z1 HR\n\nSweet Spot Repeats 3x\n- Sustained sweet spot effort at high Zone 12m Z3 HR\n- Easy spinning recovery 4m Z1 HR\n\nCooldown\n- Light spin down 12m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
-    "specificity": 3,
-    "rationale": 4,
-    "comment": "Keeps the planned 20 km long run within the 2 h Saturday slot and the 180 min cap, with no reason to change it on a normal day. Blocks are structured with warmup and cooldown, but Zone 2 has no upper bound, the 105 min duration is not tied to the 20 km distance, and the text has a garbled cue ('Zone conversation'). The rationale is short but leans on 'healthy recovery status' when the only reason given is 'OK'."
+    "specificity": 4,
+    "rationale": 3,
+    "comment": "Keeps the planned sweet spot ride as expected, with a normal day and no red flags, and the intervals fit the recent load. Warmup, repeats, and cooldown are concrete with HR zones. Minor issues: the rationale says 'rest day yesterday' though the log shows a run on 11-12 and a swim on 11-10 with no rest on 11-13 listed, and the sweet spot target is given as HR zone 3 rather than a power or RPE cue, with no reference to the athlete's bike settings."
    }
   },
   {
@@ -153,35 +210,54 @@
    "first_ok": true,
    "final_ok": true,
    "violations": [],
-   "action": "rest",
-   "sport": "Run",
-   "minutes": 0.0,
-   "text": "",
+   "action": "replace",
+   "sport": "Swim",
+   "minutes": 30.0,
+   "text": "Warmup\n- Easy freestyle swim very gentle kicking 6m Z1 Pace\n\nMain set\n- Pull buoy only arms only focus on 18m Z1 Pace\n\nCooldown\n- Very easy backstroke or freestyle 6m Z1 Pace",
    "grade": {
-    "safety_fit": 5,
-    "plan_respect": 2,
+    "safety_fit": 3,
+    "plan_respect": 3,
     "specificity": 3,
-    "rationale": 4,
-    "comment": "Rest with no running is the correct and safe call given a 6/10 calf strain that hurts walking, and it matches the expected answer. Plan respect is weak because the athlete's planned easy run was dropped without offering a non-weight-bearing alternative such as swimming or upper body work, and the reasoning does not mention checking whether the planned run could be swapped to an allowed activity. Specificity is limited since the rest proposal gives no guidance on icing, elevation, when to reassess, or return-to-run criteria. Rationale cites the real evidence (pain score, walking pain, recover day, injury) and is clear and short."
+    "rationale": 3,
+    "comment": "Replacing the run with a pull-buoy swim is a reasonable way to avoid calf loading, but the athlete has 6/10 pain while walking and the expected answer is rest with no running. The warmup and cooldown call for kicking, which contradicts the 'completely offload the lower leg' rationale. The zone 1 pace is given only as a loose range with no explicit target, and the rationale is short but does not clearly state a return-to-run criterion."
    }
   },
   {
-   "id": 16,
+   "id": 18,
+   "day_type": "push",
+   "expect": "interval session with warmup and cooldown",
+   "first_ok": true,
+   "final_ok": true,
+   "violations": [],
+   "action": "add",
+   "sport": "Run",
+   "minutes": 70.0,
+   "text": "Warmup\n- Easy jog building up 15m Z1 HR\n- Dynamic drills and strides 5m\n\n1000m Intervals 5x\n- at pace Zone 1000mtr Z5 Pace\n- walking and easy jog recovery 2m Z1 HR\n\nCooldown\n- Easy jog and walk shakeout 10m Z1 HR",
+   "grade": {
+    "safety_fit": 4,
+    "plan_respect": 4,
+    "specificity": 3,
+    "rationale": 3,
+    "comment": "Good fit for a fresh, high-HRV athlete who asked for a hard session, and it matches the expected interval format with warmup and cooldown. Specificity is weakened by a duration conflict (minutes 70 vs. a stated ~50 min), a garbled step cue ('at pace Zone 1000mtr Z5 Pace'), and a Zone 5 target with no HR ceiling. The rationale cites real evidence but misstates the duration."
+   }
+  },
+  {
+   "id": 19,
    "day_type": "easy",
-   "expect": "easy Z1-2, shorter",
+   "expect": "easy, shorter run",
    "first_ok": true,
    "final_ok": true,
    "violations": [],
    "action": "replace",
    "sport": "Run",
-   "minutes": 35.0,
-   "text": "Warmup\n- Gentle jog ease into the run 5m Z1 HR\n\nMain set\n- Relaxed conversational pace keep HR in z 25m Z1 HR\n\nCooldown\n- Very easy jog followed by a short walk 5m Z1 HR",
+   "minutes": 40.0,
+   "text": "Warmup\n- Gentle jog to ease into the run 5m Z1 HR\n\nSteady aerobic\n- Comfortable conversational pace in Zone 30m Z2 HR\n\nCooldown\n- Easy jog and walking cooldown 5m Z1 HR",
    "grade": {
-    "safety_fit": 4,
+    "safety_fit": 5,
     "plan_respect": 4,
-    "specificity": 3,
-    "rationale": 4,
-    "comment": "Swapping the planned 5x1 km intervals for an easy Z1-2 run fits a mild runny nose with no fever on an easy day, and the swap is explained. Specificity is weaker because the main set says zone 1-2 but only sets zone_low=1 with no upper zone, and the steps carry no pace or HR bounds. The rationale is short and cites the symptoms, but it ignores the recent load (16 km on Nov 9 and 10 km on Nov 12) that also supports going easy."
+    "specificity": 4,
+    "rationale": 3,
+    "comment": "Replacing the 10 km tempo with a 40-min Zone 2 run fits the easy day type, low form, and high fatigue, and matches the expected shorter easy run. The change is justified by fatigue. Blocks, durations, and HR zones are concrete, but the steps give no numeric HR ceiling, while the rationale cites 164 bpm, which is not in the structured targets. The rationale also leans on vague 'mileage consistent' language rather than the recent load figures."
    }
   }
  ],
@@ -193,13 +269,13 @@
    "action": "replace",
    "sport": "Walk",
    "minutes": 30.0,
-   "text": "Warmup\n- Easy stroll to loosen up stiff muscles 5m Z1 HR\n\nMain Set\n- Gentle walking at an effortless conversa 20m Z1 HR\n\nCooldown\n- Wind down stroll and deep breathing 5m Z1 HR",
+   "text": "Main set\n- Easy conversational walk keep effort 30m Z1 HR",
    "grade": {
     "safety_fit": 5,
-    "plan_respect": 3,
+    "plan_respect": 2,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Correctly drops the 6x800 m intervals after 4 h sleep and 4 beers, and keeps everything in Z1 for 30 min, which fits the expected rest or <=40 min Z1-2 answer. It replaces the planned run with a walk without much justification for the sport change; a shorter easy run or a rest day would also have fit and kept more of the plan. Steps are concrete with HR zones and warmup/cooldown, though the Z1 HR target lacks numeric bounds. Rationale cites sleep, alcohol, and recover day, but does not mention hydration or the recent load trend in depth."
+    "comment": "Correctly drops the 6x800m intervals on a recover day after 4 h sleep and 4 beers, and the 30 min Z1 walk sits within the expected rest or easy range. Plan respect is weak because it replaces the planned session outright rather than offering a shorter easy run or a rest option, and the reason for replacing rather than cancelling is not explained. Specificity is good with zone and duration, though the walk has no warmup or cooldown and the text field is terse. Rationale cites the real evidence (sleep, alcohol, day type) concisely."
    }
   },
   {
@@ -209,13 +285,13 @@
    "action": "replace",
    "sport": "Run",
    "minutes": 45.0,
-   "text": "Warmup\n- Gentle jog conversational pace 10m Z1 HR\n- Mobility drills leg swings high knees bu 5m\n\nMain Set\n- Comfortable steady aerobic running in Zo 25m Z2 HR\n\nCooldown\n- Easy jog and walk down to finish 5m Z1 HR",
+   "text": "Warmup\n- Gentle jog to ease into the run 10m Z1 HR\n- Dynamic mobility drills leg swings and 5m\n\nMain set\n- Continuous easy running conversational 25m Z2 HR\n\nCooldown\n- Light jogging and easy walking 5m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Swapping the 6x800 m for an easy Z1-2 run fits the easy day type and 6 h sleep, as the expected answer calls for. Plan respect is slightly reduced because the replacement is a full swap rather than a lighter version of the session, though the reason is given. Specificity is good with warmup, steady block and cooldown, but the Z2 block gives no bpm range even though LTHR 185 is on file, and the text field has typos ('bu', 'Zo'). The rationale is short and cites day_type and sleep, but does not mention the recent 95-load run."
+    "comment": "Matches the expected easy Z1-2 run after 6 h of sleep, with a 10 min Z1 warmup, 25 min Z2 steady, and 5 min cooldown that sum to 45 min. The replacement of the 6x800 m is justified by the easy day and short sleep, though it does not say when the intervals should be rescheduled. The '164 bpm' ceiling is not derived from the LTHR of 185 shown in the profile, and the Z2 bound should be stated as a zone rather than an unexplained number."
    }
   },
   {
@@ -224,30 +300,30 @@
    "violations": [],
    "action": "keep",
    "sport": "Run",
-   "minutes": 70.8,
-   "text": "Warmup\n- Easy jog building up conversational pace 15m Z1 HR\n- Dynamic drills and x strides 5m Z4 Pace\n\n800m Intervals 6x\n- strong and controlled around target pace 800mtr Z4 Pace\n- Light recovery jog or walk 2m Z1 HR\n\nCooldown\n- Easy recovery jog to flush the legs 10m Z1 HR",
+   "minutes": 73.2,
+   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n- Dynamic drills and x strides 5m\n\nIntervals 6x\n- at Zone VO max 800mtr Z5 Pace\n- Jog or walk recovery 400mtr Z1 HR\n\nCooldown\n- Easy conversational jog to flush the 10m Z1 HR",
    "grade": {
-    "safety_fit": 5,
+    "safety_fit": 4,
     "plan_respect": 5,
     "specificity": 4,
-    "rationale": 4,
-    "comment": "Keeps the athlete's planned 6x800m on a normal day with no red flags, and the warmup and cooldown are sensible. Minor issues: the stride count is given as 4x in the cue but left blank in the text, and the rationale calls 4:00/km 'right around' the 4:07 threshold when it is slightly faster."
+    "rationale": 2,
+    "comment": "Keeps the athlete's planned 6x800m at 4:00/km, as expected, and the warmup, recovery, and cooldown are concrete. Safety is reasonable for a normal day, though the rationale wrongly says yesterday was a rest day when the logs show no activity on Nov 13 and a run on Nov 12. The text output also has a minor inconsistency: 'x strides' omits the count stated in the cue."
    }
   },
   {
    "first_ok": true,
    "final_ok": true,
    "violations": [],
-   "action": "modify",
+   "action": "replace",
    "sport": "Run",
    "minutes": 50.0,
-   "text": "Warmup\n- Easy jog building into zone 12m Z1 HR\n\nThreshold Repeats 4x\n- Threshold pace around stay controlled in 6m Z4 HR\n- Light jogging recovery 2m Z1 HR\n\nCooldown\n- Easy jog and walk down to rest 6m Z1 HR",
+   "text": "Warmup\n- Easy conversational jog 15m Z1 HR\n\nThreshold intervals 2x\n- Half marathon effort near threshold pace 8m Z4 HR\n- Jog easily to lower HR 3m Z1 HR\n\nCooldown\n- Easy jog and walk shakeout 13m Z1 HR",
    "grade": {
     "safety_fit": 4,
     "plan_respect": 3,
     "specificity": 3,
     "rationale": 4,
-    "comment": "Moderate threshold work is a reasonable answer given HRV, sleep, and fresh legs, and the 2-day gap from the 55-min run on Nov 12 is adequate. It replaces the planned easy run rather than adding to it, and the change is justified only by recovery markers. The step structure and HR zones are concrete, but the generated text line 'Threshold pace around stay controlled in 6m Z4 HR' is garbled. The rationale cites real evidence but is thin on why swapping rather than adding quality."
+    "comment": "Adding two 8-min threshold reps is reasonable given good HRV, 8 h sleep, and a 95-load run five days ago, and it matches the expected moderate-quality answer. Replacing the planned easy 40 min run is a bigger change than needed; a lighter tweak to the planned run would respect the plan more. Targets are given as HR zones with no bpm ranges, though the pace cue helps. The rationale cites the real evidence and is short."
    }
   },
   {
@@ -257,13 +333,13 @@
    "action": "replace",
    "sport": "Swim",
    "minutes": 40.0,
-   "text": "Warmup\n- Easy freestyle swim focus on smooth rota 10m Z1 Pace\n\nMain Set\n- Steady aerobic swim using pull buoy if n 25m Z1 Pace\n\nCooldown\n- Very easy backstroke or relaxed freestyl 5m Z1 Pace",
+   "text": "Warmup\n- Easy swim relaxed stroke focus on 10m Z1 Pace\n\nMain Set\n- Aerobic swim pull buoy preferred to 25m Z1 Pace\n\nCooldown\n- Very easy backstroke or freestyle 5m Z1 Pace",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 4,
-    "specificity": 4,
+    "specificity": 3,
     "rationale": 4,
-    "comment": "Correctly drops the tempo run given left knee pain on an easy day and swaps to a zone 1 swim that fully offloads the knee, matching the expected answer. Plan respect is slightly reduced because the planned run is replaced outright rather than kept or modified, though the reason is valid. Steps are concrete with warmup and cooldown, though no distance or stroke targets are given beyond cues. Rationale is short and cites the pain, easy day, and replacement, but does not mention the 3/10 pain trend or recent load."
+    "comment": "Correctly drops the tempo run for an easy non-impact swim given 3/10 left knee pain, matching the expected answer. Replacement is justified by the injury and easy day type. Specificity is weaker: the main set has no distance or explicit zone HR targets, the text has a typo (\"25m\" should read \"25 min\"), and the 10 min warmup and 5 min cooldown are fine but the 25 min main set lacks structure. Rationale cites the knee and day type clearly but does not mention the recent load or the upcoming April goal."
    }
   },
   {
@@ -278,8 +354,8 @@
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 3,
-    "rationale": 5,
-    "comment": "Full rest is the correct call with fever 38.1 C and flu, and the rationale cites the fever and red flag accurately. Plan respect is good since replacing the 18 km long run is justified by illness. Specificity is limited: a rest day has no blocks, but the proposal could have given return-to-training guidance such as waiting until fever-free 24 h and easing back with short easy runs."
+    "rationale": 4,
+    "comment": "Rest is clearly the safe call with fever 38.1 C, flu, and a red flag, and it correctly cancels the 18 km long run. Plan respect is slightly reduced because the planned workout is dropped outright rather than noting it can be rescheduled once symptom-free. Specificity is weak: no return-to-training guidance such as waiting for fever-free days or easing back in. Rationale cites the fever, red flag, and flu, which is adequate but could mention the recent load and recovery timeline."
    }
   },
   {
@@ -289,13 +365,13 @@
    "action": "add",
    "sport": "Swim",
    "minutes": 45.0,
-   "text": "Warmup\n- Easy swim mix of freestyle and backstrok 8m Z1 Pace\n- Drills catch up and fingertip drag with  7m Z1 Pace\n\nMain Set 5x\n- Moderate aerobic freestyle Zone 210s Z2 Pace\n- Easy sculling or gentle kick recovery 90s Z1 Pace\n\nCooldown\n- Easy backstroke and relaxed cooldown 5m Z1 Pace",
+   "text": "Warmup\n- Easy swim mix of freestyle and 8m Z1 Pace\n\nDrills & Technique\n- Drill catch up and fingertip drag drills 6m\n\nMain Set: Aerobic Intervals 5x\n- Steady freestyle with pull buoy at 4m Z2 Pace\n- Rest at pool wall shake arms 1m\n\nCooldown\n- Very easy choice stroke cool down 6m Z1 Pace",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
     "specificity": 3,
-    "rationale": 4,
-    "comment": "Safe, appropriate normal-day swim that fulfills the explicit request, with no planned workout to override and total time of 45 minutes that adds up. Specificity is weaker: steps give durations and Zone labels but no distances or swim-pace targets tied to the 2:00/100m threshold, and the stated 2:05-2:15/100m range isn't in the steps. The text also has typos (backstrok, Zone 210s). Rationale cites the request and day type, but 'recent load balanced' is only loosely supported by the 95-load run two days earlier."
+    "rationale": 3,
+    "comment": "Appropriate 45 min swim on a normal day after moderate recent load, and it fulfills the swim request. Structure and timing add up. Specificity is weakened by missing distances and by calling the main set threshold pace while labeling it Zone 2. The rationale says zone 2-3 and cites only three thin evidence items, so it is less precise than it should be."
    }
   },
   {
@@ -305,13 +381,13 @@
    "action": "add",
    "sport": "Run",
    "minutes": 30.0,
-   "text": "Warmup\n- Gentle jog gradually settling into an ea 5m Z1 HR\n\nSteady aerobic\n- Easy aerobic running conversational effo 20m Z1 HR\n\nCooldown\n- Very easy jog and walking cooldown 5m Z1 HR",
+   "text": "Warmup\n- Gentle jog to ease in 5m Z1 HR\n\nMain Set\n- Comfortable aerobic jog strictly 20m Z2 HR\n\nCooldown\n- Easy jog slowing to a walk 5m Z1 HR",
    "grade": {
     "safety_fit": 5,
-    "plan_respect": 5,
-    "specificity": 3,
-    "rationale": 3,
-    "comment": "Fits the easy day, the HRV dip and the 30-minute request, and nothing is planned today so adding is appropriate. Specificity is weakened by Z1 targets with no HR ceiling even though LTHR 185 is on file. The rationale says zone 1 to 2 while the blocks prescribe only zone 1, which is inconsistent."
+    "plan_respect": 4,
+    "specificity": 4,
+    "rationale": 4,
+    "comment": "Easy 30 min run matches the easy day, the 30-minute limit, and the HRV dip with Z2 cap. Warmup and cooldown are present and targets are concrete. Minor issues: the zone 2 cap is stated as under 164 bpm but no zone table is shown to verify it, and the rationale does not mention the recent 16 km run on Nov 9 or the 10 km run on Nov 12 as load context."
    }
   },
   {
@@ -321,13 +397,13 @@
    "action": "keep",
    "sport": "WeightTraining",
    "minutes": 45.0,
-   "text": "Warmup\n- Dynamic mobility hip openers world' grea 8m\n\nMain Strength Set\n- Goblet squat rest 7m\n- Romanian deadlift rest 7m\n- Dumbbell walking lunges leg rest 7m\n- Dumbbell overhead press & bent over row  6m\n- Plank and side planks each 5m\n\nCooldown\n- Static stretches hamstrings quads calves 5m",
+   "text": "Warmup\n- Dynamic mobility hip circles world' 7m\n\nMain Strength Set\n- Goblet squat rest 8m\n- Romanian deadlift rest 8m\n- Dumbbell bent over row each side rest 7m\n- Dumbbell overhead press rest 7m\n- Side plank and dead bug core circuit 5m\n\nCooldown\n- Hamstring and hip flexor static 3m",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Keeps the planned 45-min strength session on a normal day with no negative signals, matching the expected keep action. Steps are concrete with sets, reps, and rest, plus warmup and cooldown. Minor issues: no load guidance, the 'Dumbbell overhead press & bent-over row' block lists sets only for one combined exercise, and the rationale cites planned workout and clear markers but not the recent run load."
+    "comment": "Keeps the planned 45 min strength session with no negative signals, matching the normal day and the expected keep action. Steps have sets, reps and rest with warmup and cooldown. Minor gaps: the text output is slightly garbled (truncated cues), and the rationale cites the planned session and no negative signals but not the recent run load or tomorrow's long session timing in detail."
    }
   },
   {
@@ -337,13 +413,13 @@
    "action": "add",
    "sport": "Run",
    "minutes": 50.0,
-   "text": "Warmup\n- Easy jog building into zone 12m Z1 HR\n- Dynamic mobility and relaxed strides 4m\n\nThreshold Repeats 3x\n- Sustained threshold pace ~ zone 6m Z4 Pace\n- Jog recovery shake out legs 2m Z1 HR\n\nCooldown\n- Easy conversational jog to flush out leg 10m Z1 HR",
+   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n\nThreshold intervals 3x\n- Threshold pace target around HR zone – 8m Z4 Pace\n- Easy jog recovery 2m Z1 HR\n\nCooldown\n- Light jogging and walking cool down 5m Z1 HR",
    "grade": {
     "safety_fit": 4,
     "plan_respect": 4,
-    "specificity": 4,
-    "rationale": 4,
-    "comment": "Appropriate quality session for a push day three weeks before the half, with no red flags and a rest day before it. Warmup and cooldown are sensible and the total fits the 50 minutes. Main issue: the 4:15-4:20/km work target is slower than the athlete's 4:07 threshold pace and is labeled zone 4, so it's really half-marathon-effort tempo. Consider targeting near 4:07 or labeling it accurately. The rationale cites the day type and race but not the recent load (95 on Nov 9, 60 on Nov 12), and it could be shorter."
+    "specificity": 3,
+    "rationale": 3,
+    "comment": "Threshold run fits the half marathon goal and the expected quality session, and nothing is planned today, so adding it is reasonable. Three days after a 16 km run with a rest day in between makes 50 min at threshold acceptable. Specificity is weakened by the conflicting target: the work cue says HR zone 4 (175-185 bpm) while the target is set to Pace, the text line reads garbled ('HR zone - 8m Z4 Pace'), and the warmup has no upper zone bound. The rationale leans on 'push day', which is a weights label and does not match a run, and 'rest yesterday' is inferred since no activity is logged for 11-13."
    }
   },
   {
@@ -353,13 +429,13 @@
    "action": "add",
    "sport": "Walk",
    "minutes": 25.0,
-   "text": "Recovery Walk\n- Easy relaxed stroll to boost circulation 25m Z1 HR",
+   "text": "Main\n- Gentle relaxed stroll to shake out the 25m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
     "specificity": 3,
     "rationale": 4,
-    "comment": "Day is recover with 3.5 h sleep and exhaustion; a 25 min Zone 1 walk sits within the expected rest-or-<=40-min-easy answer and avoids running. Specificity is limited: no warmup/cooldown, and the HR zone 1 target lacks a stated bpm range even though lthr 185 is available. Rationale is clear and cites the sleep, exhaustion, and recover day, though it could note the recent 16 km run on Nov 9 as load context."
+    "comment": "Good fit: 25 min Z1 walk is within the recover-day 40 min cap and matches the 'rest or <=40 min Z1 walk/easy' expectation given 3.5 h sleep and exhaustion. Plan respect is fine since no planned workout was stated. Specificity is weaker: no warmup/cooldown, no HR ceiling number despite zone 1 target, and the text line has a garbled 'shake out the 25m Z1 HR'. Rationale cites sleep, exhaustion and the recover cap clearly and briefly."
    }
   },
   {
@@ -369,13 +445,13 @@
    "action": "replace",
    "sport": "Run",
    "minutes": 40.0,
-   "text": "Warmup\n- Gentle jog to ease in 5m Z1 HR\n\nMain set\n- Steady easy run conversational pace 30m Z1 HR\n\nCooldown\n- Slow jog and walk to wind down 5m Z1 HR",
+   "text": "Warmup\n- Gentle jog to ease in 5m Z1 HR\n\nMain Aerobic Set\n- Relaxed conversational pace in zone 30m Z2 HR\n\nCooldown\n- Easy jog and walk down 5m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Replacing hill repeats with an easy Z1-2 run fits the easy day and the wine intake, and the duration is within the easy-day limit. The swap is justified by the day type and the reason given. Steps are concrete with warmup and cooldown, though the main set uses only Z1 with no upper bound and the rationale cites the wine and rule but not the recent load context. Overall a sound, well-reasoned replacement."
+    "comment": "Matches the easy day and the 2 glasses of wine, and the Z1-2 run satisfies the expected answer. Replacing the hill repeats is justified by the day type. Warmup, Z2 steady block and cooldown are concrete with HR zones. The rationale is short but omits the recent load from the 11-09 16 km run, and the zone 2 bpm range is only in the rationale, not the steps."
    }
   },
   {
@@ -384,14 +460,14 @@
    "violations": [],
    "action": "keep",
    "sport": "Run",
-   "minutes": 105.0,
-   "text": "Warmup\n- Easy jog building into Zone conversation 15m Z1 HR\n\nSteady aerobic endurance\n- Hold steady Zone endurance pace relaxed  80m Z2 HR\n\nCooldown\n- Easy recovery jog and walk to wind down 10m Z1 HR",
+   "minutes": 110.0,
+   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n\nSteady aerobic endurance\n- Steady aerobic pace keep conversational 85m Z2 HR\n\nCooldown\n- Gentle jog and walking cool down 10m Z1 HR",
    "grade": {
-    "safety_fit": 5,
+    "safety_fit": 4,
     "plan_respect": 5,
     "specificity": 3,
-    "rationale": 4,
-    "comment": "Keeps the planned 20 km long run within the 2 h Saturday slot and the 180 min cap, with no reason to change it on a normal day. Blocks are structured with warmup and cooldown, but Zone 2 has no upper bound, the 105 min duration is not tied to the 20 km distance, and the text has a garbled cue ('Zone conversation'). The rationale is short but leans on 'healthy recovery status' when the only reason given is 'OK'."
+    "rationale": 3,
+    "comment": "Keeps the planned 20 km long run on Saturday within the 180 min cap and the normal day type, which is correct. Specificity is weakened by an upper HR of 162 bpm (about 88% of LTHR 185), which is above true zone 2, and by no distance or pace target for the 20 km. Rationale cites the plan and availability but ignores recent load (16 km on Nov 9)."
    }
   },
   {
@@ -401,13 +477,13 @@
    "action": "add",
    "sport": "Ride",
    "minutes": 45.0,
-   "text": "Warmup\n- Spin easy with light resistance graduall 10m Z1 HR\n\nMain Set\n- Smooth steady pedaling in Zone high cade 30m Z2 HR\n\nCooldown\n- Easy spin down in Zone shake out arms an 5m Z1 HR",
+   "text": "Warmup\n- Spin easy low resistance high cadence 10m Z1 HR\n\nMain Set\n- Smooth steady pedaling in zone 25m Z2 HR\n\nCooldown\n- Very light spinning to recover 10m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Easy 45-min Z1-2 ride fits the easy day, stressful-day reason, and the athlete's ride request, matching the expected output. Structure has a warmup, Z2 steady block, and cooldown with HR zones and cadence cue. Minor issues: the text field is garbled/truncated, and the rationale cites the request and day type but not the recent load (Run 16km 95 load on Nov 9, 10km on Nov 12), which would have supported keeping it easy. No planned workout was stated, so adding a ride is reasonable."
+    "comment": "Easy 45 min Z1-2 ride matches the easy, stressful day and the athlete's request, and the expectation of an easy Z1-2 ride is met. Plan respect is good since no planned workout was stated and the ride honors the request. Steps are concrete with warmup and cooldown, though the main set has no cadence or HR range beyond zone 2 and the start is null. Rationale cites the stressful and easy day flags and the ride request, but could mention recent load (Run 95 load on 11-09, Run 60 on 11-12) to justify keeping it low."
    }
   },
   {
@@ -416,30 +492,30 @@
    "violations": [],
    "action": "keep",
    "sport": "Ride",
-   "minutes": 72.0,
-   "text": "Warmup\n- Progressive spin build from Zone to Zone 15m Z1 HR\n\nMain Set 3x\n- Sweet spot effort controlled high Zone t 12m Z3 HR\n- Easy pedaling lower Zone to clear lactat 4m Z1 HR\n\nCooldown\n- Easy spinning cooldown 9m Z1 HR",
+   "minutes": 75.0,
+   "text": "Warmup\n- Gradual spin to elevate heart rate 15m Z1 HR\n\nSweet Spot Repeats 3x\n- Sustained sweet spot effort at high Zone 12m Z3 HR\n- Easy spinning recovery 4m Z1 HR\n\nCooldown\n- Light spin down 12m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 5,
     "specificity": 4,
-    "rationale": 4,
-    "comment": "Keeps the athlete's planned sweet spot ride on a normal day with no negative signals, matching the expected action. Steps are concrete with durations, HR zones, and warmup/cooldown. Minor issues: the text field has garbled cues ('Zone to Zone', 'Zone t', 'lactat'), zone targets lack upper bounds for work intervals, and the rationale cites only generic reasons rather than the recent load data."
+    "rationale": 3,
+    "comment": "Keeps the planned sweet spot ride as expected, with a normal day and no red flags, and the intervals fit the recent load. Warmup, repeats, and cooldown are concrete with HR zones. Minor issues: the rationale says 'rest day yesterday' though the log shows a run on 11-12 and a swim on 11-10 with no rest on 11-13 listed, and the sweet spot target is given as HR zone 3 rather than a power or RPE cue, with no reference to the athlete's bike settings."
    }
   },
   {
    "first_ok": true,
    "final_ok": true,
    "violations": [],
-   "action": "rest",
-   "sport": "Run",
-   "minutes": 0.0,
-   "text": "",
+   "action": "replace",
+   "sport": "Swim",
+   "minutes": 30.0,
+   "text": "Warmup\n- Easy freestyle swim very gentle kicking 6m Z1 Pace\n\nMain set\n- Pull buoy only arms only focus on 18m Z1 Pace\n\nCooldown\n- Very easy backstroke or freestyle 6m Z1 Pace",
    "grade": {
-    "safety_fit": 5,
-    "plan_respect": 2,
+    "safety_fit": 3,
+    "plan_respect": 3,
     "specificity": 3,
-    "rationale": 4,
-    "comment": "Rest with no running is the correct and safe call given a 6/10 calf strain that hurts walking, and it matches the expected answer. Plan respect is weak because the athlete's planned easy run was dropped without offering a non-weight-bearing alternative such as swimming or upper body work, and the reasoning does not mention checking whether the planned run could be swapped to an allowed activity. Specificity is limited since the rest proposal gives no guidance on icing, elevation, when to reassess, or return-to-run criteria. Rationale cites the real evidence (pain score, walking pain, recover day, injury) and is clear and short."
+    "rationale": 3,
+    "comment": "Replacing the run with a pull-buoy swim is a reasonable way to avoid calf loading, but the athlete has 6/10 pain while walking and the expected answer is rest with no running. The warmup and cooldown call for kicking, which contradicts the 'completely offload the lower leg' rationale. The zone 1 pace is given only as a loose range with no explicit target, and the rationale is short but does not clearly state a return-to-run criterion."
    }
   },
   {
@@ -449,13 +525,13 @@
    "action": "replace",
    "sport": "Run",
    "minutes": 35.0,
-   "text": "Warmup\n- Gentle jog ease into the run 5m Z1 HR\n\nMain set\n- Relaxed conversational pace keep HR in z 25m Z1 HR\n\nCooldown\n- Very easy jog followed by a short walk 5m Z1 HR",
+   "text": "Warmup\n- Gentle jog to ease in 5m Z1 HR\n\nMain set\n- Comfortable conversational zone pace 25m Z2 HR\n\nCooldown\n- Walk and easy jog cooldown 5m Z1 HR",
    "grade": {
-    "safety_fit": 4,
+    "safety_fit": 5,
     "plan_respect": 4,
-    "specificity": 3,
+    "specificity": 4,
     "rationale": 4,
-    "comment": "Swapping the planned 5x1 km intervals for an easy Z1-2 run fits a mild runny nose with no fever on an easy day, and the swap is explained. Specificity is weaker because the main set says zone 1-2 but only sets zone_low=1 with no upper zone, and the steps carry no pace or HR bounds. The rationale is short and cites the symptoms, but it ignores the recent load (16 km on Nov 9 and 10 km on Nov 12) that also supports going easy."
+    "comment": "Mild neck-up symptoms with no fever make an easy aerobic run reasonable, and the 35 min zone 2 session matches the easy day type and the expected shorter easy effort. Replacing the planned intervals is justified by the easy day label and symptoms, though the proposal could have explained more clearly why intervals were dropped rather than just swapped. Warmup, main set and cooldown are concrete with zone targets. The rationale's 150 bpm cap is not tied to the athlete's LTHR (185) or zone boundaries, so the specific number is unsupported by the cited evidence."
    }
   },
   {
@@ -465,13 +541,13 @@
    "action": "replace",
    "sport": "Swim",
    "minutes": 45.0,
-   "text": "Warmup\n- Easy choice of strokes relaxed breathing 7m Z1 Pace\n\nTechnique drills 4x\n- Catch up drill or fingertip drag focus o 75s\n- Rest at the wall 30s\n\nMain Aerobic Set 5x\n- Steady freestyle at Zone aerobic pace ~ 270s Z2 Pace\n- Short breath pause at the wall 30s\n\nCooldown\n- Easy backstroke or breaststroke to loose 6m Z1 Pace",
+   "text": "Warmup\n- Easy freestyle and choice strokes 10m Z1 Pace\n\nMain Set\n- Aerobic endurance intervals at steady 20m Z2 Pace\n- Easy kick or sculling recovery 5m Z1 Pace\n- moderate pace focusing on stroke rate 5m Z2 Pace\n\nCooldown\n- Gentle cooldown backstroke or easy 5m Z1 Pace",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 4,
     "rationale": 4,
-    "comment": "Fine day with no red flag, and a 45 min aerobic swim matches the planned easy 45 min run. The total of 45 min adds up correctly, and the Zone 2 pace of 2:15-2:25/100m is sensible against the 2:00 threshold. The swap follows the athlete's request. The rationale is short and cites the threshold pace, though it could note how the swim load compares to the run. The text field has formatting problems (truncated cues and times written as '270s'), and the pace targets are not tied to heart rate zones."
+    "comment": "Safe easy-to-moderate 45 min swim on a normal day with no red flags, and the 10+20+5+5+5 structure sums to 45 min. It honors the user's swap request. Specificity is slightly loose: the 4x200m set has no rest interval, the 4x50m block gets 5 min with no target, and the Z2 pace is tied to the 2:00 threshold without noting the trade-off against the half-marathon run goal."
    }
   },
   {
@@ -480,14 +556,14 @@
    "violations": [],
    "action": "add",
    "sport": "Run",
-   "minutes": 66.0,
-   "text": "Warmup\n- Easy jog building into zone 15m Z1 HR\n- Dynamic drills and strides 5m\n\nMain Set 5x\n- at threshold pace ~ Zone HR 1000mtr Z4 Pace\n- easy jog recovery 200mtr Z1-Z2 HR\n\nCooldown\n- Easy cooldown jog and walk 10m Z1-Z2 HR",
+   "minutes": 70.0,
+   "text": "Warmup\n- Easy jog building up 15m Z1 HR\n- Dynamic drills and strides 5m\n\n1000m Intervals 5x\n- at pace Zone 1000mtr Z5 Pace\n- walking and easy jog recovery 2m Z1 HR\n\nCooldown\n- Easy jog and walk shakeout 10m Z1 HR",
    "grade": {
     "safety_fit": 4,
-    "plan_respect": 5,
-    "specificity": 4,
-    "rationale": 4,
-    "comment": "Good fit: the athlete is fresh with high HRV, asked for a hard session, and has no stated plan, so a threshold track session with warmup and cooldown matches the expected answer. Specificity loses a point because the work step mixes a pace target with a Zone 4 HR cue and gives no hard pace floor. Safety is solid, but the proposal does not mention the 16 km run two days earlier. The rationale cites the real evidence but is thin on why this set serves the sub-1:45 goal and on the recent load."
+    "plan_respect": 4,
+    "specificity": 3,
+    "rationale": 3,
+    "comment": "Good fit for a fresh, high-HRV athlete who asked for a hard session, and it matches the expected interval format with warmup and cooldown. Specificity is weakened by a duration conflict (minutes 70 vs. a stated ~50 min), a garbled step cue ('at pace Zone 1000mtr Z5 Pace'), and a Zone 5 target with no HR ceiling. The rationale cites real evidence but misstates the duration."
    }
   },
   {
@@ -497,13 +573,13 @@
    "action": "replace",
    "sport": "Run",
    "minutes": 40.0,
-   "text": "Warmup\n- Gentle jog to ease in keep it very light 10m Z1 HR\n\nMain Set\n- Smooth aerobic pace strictly conversatio 25m Z2 HR\n\nCooldown\n- Gradually slow down to a brisk walk 5m Z1 HR",
+   "text": "Warmup\n- Gentle jog to ease into the run 5m Z1 HR\n\nSteady aerobic\n- Comfortable conversational pace in Zone 30m Z2 HR\n\nCooldown\n- Easy jog and walking cooldown 5m Z1 HR",
    "grade": {
     "safety_fit": 5,
     "plan_respect": 4,
     "specificity": 4,
-    "rationale": 4,
-    "comment": "Replacing a 10 km tempo with a 40 min Zone 2 run fits the easy day and high fatigue (Form -24) and matches the expected shorter easy run. Structure is clear with warmup and cooldown and HR zone targets. Plan respect is slightly reduced because the tempo was swapped outright rather than downgraded, but the reason is strong. Rationale cites form and day type but could mention the recent 16 km run load for context; the text is short and clear."
+    "rationale": 3,
+    "comment": "Replacing the 10 km tempo with a 40-min Zone 2 run fits the easy day type, low form, and high fatigue, and matches the expected shorter easy run. The change is justified by fatigue. Blocks, durations, and HR zones are concrete, but the steps give no numeric HR ceiling, while the rationale cites 164 bpm, which is not in the structured targets. The rationale also leans on vague 'mileage consistent' language rather than the recent load figures."
    }
   }
  ]

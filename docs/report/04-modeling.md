@@ -153,3 +153,26 @@ and its text is marked as data.
   the per-person `monthly_cap_usd`, else $20 for the invite list and admins, else $1 for
   newcomers. The app key comes from `users.key_pool` (`main` or an optional `family` key). A
   person's own key still wins.
+
+## B2 (2026-11-20): calendar and C13 Day windows (plan 11)
+
+| Component | Kind | Input | Output |
+|---|---|---|---|
+| `calendar.fetch` / `parse` / `sync` (`app/calendar.py`) | code | encrypted ICS link | busy blocks (UTC) for −1…+14 days in `calendar_blocks` |
+| **C13 Day windows** (`app/day_windows.py`) | code | the day's blocks, wake/bed time (default 07:00–22:30), sleep target (8 h) | busy and free windows (30-min buffers, 60 min before the first event), longest free window, latest bedtime, sleep possible before tomorrow's first event, warnings |
+| C6 planner + validator | LLM + code | as before + `day_windows` | a workout with `start: "HH:MM"`; the validator rejects a start that does not fit inside one free window and the existing 2-attempt loop re-plans |
+
+Decisions:
+
+- **Code for time, LLM for choice.** C13 does all time arithmetic. The LLM only picks a window
+  and the session. The validator is the hard guarantee: a proposal that overlaps busy time is
+  never shown.
+- **Library over a hand-written parser** for ICS: recurring events, overrides and DST are where
+  a hand parser goes silently wrong.
+- **Sync only in the tick** (`calendar_feeds.next_at`, 30 min, 2 h after an error), plus one
+  background sync right after the person presses Connect. Page renders never fetch.
+- **The coach** gets a short busy summary for today and tomorrow and the C13 warnings. Event
+  names appear only with the opt-in toggle. The evening nudge says "Early start tomorrow (07:00):
+  aim to be in bed by 22:30" when the calendar leaves less sleep than the target.
+- **Wake/bed/training time** come from B1's Settings fields (migration 008). Until B1 is merged,
+  `day_windows.prefs_times` reads them defensively and falls back to 07:00 / 22:30 / 07:00.

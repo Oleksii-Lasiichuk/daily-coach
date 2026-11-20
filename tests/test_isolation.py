@@ -73,3 +73,66 @@ def test_user_b_cannot_read_or_change_user_a(client, users):
     assert len(store.logs_between(a.id, date.today(), date.today())) == 1
     assert store.get_proposal(a.id, prop)["status"] == "proposed"
     assert store.get_proposal(b.id, prop) is None
+
+
+def test_calendar_routes_are_per_user(client, users):
+    """B2: user B's connect / titles / remove never touch user A's link or busy blocks."""
+    from datetime import UTC, datetime, timedelta
+
+    from app import calendar, demo
+    from app.db import connection
+    a, b = users(), users()
+    calendar.save_url(a.id, f"https://{demo.DEMO_CALENDAR_HOST}/google.ics")
+    now = datetime.now(UTC)
+    with connection() as c:
+        c.execute("insert into calendar_blocks (user_id, starts_at, ends_at, title) values "
+                  "(%s, %s, %s, 'SECRET-A meeting')", (a.id, now, now + timedelta(hours=1)))
+    calendar.set_titles(a.id, True)
+    login(client, b)
+    store.set_setup_step(b.id, 6)
+    for path in ["/", "/rail", "/settings", "/training", "/setup/calendar/sheet"]:
+        r = client.get(path)
+        assert r.status_code == 200 and "SECRET-A" not in r.text, path
+    assert client.post("/calendar/titles", data={"on": ""}).status_code == 200
+    assert client.delete("/calendar").status_code == 200
+    r = client.post("/calendar", data={"url": "http://not-https.test/x.ics"})
+    assert "SECRET-A" not in r.text and "a calendar" in r.text
+    assert store.get_secret(a.id, "ical") is not None
+    assert calendar.feed(a.id)["show_titles"] is True
+    assert [x["title"] for x in calendar.blocks_between(a.id, now - timedelta(days=1),
+                                                       now + timedelta(days=1))] == [
+        "SECRET-A meeting"]
+    assert store.get_secret(b.id, "ical") is None and calendar.feed(b.id) is None
+
+
+def test_calendar_connect_sync_titles_remove(client, users, caplog):
+    """B2 end to end on the synthetic calendar: titles only with the toggle; URL never logged."""
+    from app import calendar, demo
+    u = users()
+    login(client, u)
+    store.set_setup_step(u.id, 6)
+    url = f"https://{demo.DEMO_CALENDAR_HOST}/icloud.ics"
+    with caplog.at_level("DEBUG"):
+        r = client.post("/calendar", data={"url": url})
+        assert r.status_code == 200 and "Found" in r.text
+        calendar.sync(u.id)
+    assert url not in caplog.text
+    sec = store.get_secret(u.id, "ical")
+    assert sec["ciphertext"] != url and url not in str(sec)
+    f = calendar.feed(u.id)
+    assert f["event_count"] > 0 and f["last_error"] is None
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    rows = calendar.blocks_between(u.id, now - timedelta(days=2), now + timedelta(days=15))
+    assert rows and all(x["title"] is None for x in rows)  # titles off by default
+    client.post("/calendar/titles", data={"on": "1"})
+    calendar.sync(u.id)
+    rows = calendar.blocks_between(u.id, now - timedelta(days=2), now + timedelta(days=15))
+    assert any(x["title"] for x in rows)
+    client.post("/calendar/titles", data={"on": ""})
+    assert all(x["title"] is None for x in calendar.blocks_between(
+        u.id, now - timedelta(days=2), now + timedelta(days=15)))
+    assert "dayline" in client.get("/rail").text
+    client.delete("/calendar")
+    assert store.get_secret(u.id, "ical") is None and calendar.feed(u.id) is None
+    assert calendar.blocks_between(u.id, now - timedelta(days=2), now + timedelta(days=15)) == []

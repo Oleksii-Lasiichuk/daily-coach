@@ -463,3 +463,14 @@ p.push-off .link { font-size: 18px; line-height: 1; color: var(--muted); }
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .daynav-title { display: flex; align-items: baseline; justify-content: center; gap: 8px; flex-wrap: wrap; text-align: center; font-size: 16px; }
 .daynav .btn { width: 44px; height: 44px; }
+
+/* ---------- B2 calendar: setup tabs, "Your day" strip ---------- */
+.cal-tabs .ct { display: none; margin-top: 10px; }
+.cal-tabs:has(#ct-g:checked) .ct-g, .cal-tabs:has(#ct-i:checked) .ct-i,
+.cal-tabs:has(#ct-o:checked) .ct-o { display: block; }
+.dayline { position: relative; height: 14px; border-radius: 7px; background: var(--line); margin-top: 8px; overflow: hidden; }
+.dayline .busy { position: absolute; top: 0; bottom: 0; background: var(--muted); opacity: .55; }
+.dayline .sess { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; background: var(--accent); }
+.dayline-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.chip-warn { display: flex; gap: 6px; align-items: flex-start; color: var(--ink, inherit); background: var(--accent-soft); border-radius: 8px; padding: 6px 8px; }
+.chip-warn svg { width: 14px; height: 14px; flex: none; margin-top: 1px; }

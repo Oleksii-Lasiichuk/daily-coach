@@ -27,6 +27,7 @@ TRACKS = [("training", "watch", "Training from my watch",
            "Garmin and others, through intervals.icu"),
           ("weather", "cloud", "Weather for my city", "So runs fit the weather"),
           ("reminders", "bell", "Reminders", "Meals, sleep, medication")]
+TRACKS.append(("calendar", "calendar", "My calendar", "So training fits my day"))  # B2
 
 
 @router.get("/welcome", response_class=HTMLResponse)
@@ -86,6 +87,8 @@ def setup_cards(user: store.User, has_push: bool, profile: dict) -> list[str]:
         cards.append("city")
     if "reminders" in user.tracks and not has_push:
         cards.append("push")
+    if "calendar" in user.tracks and not store.get_secret(user.id, "ical"):
+        cards.append("calendar")  # B2
     if user.tracks and interview.missing_slots(profile, store.list_facts(user.id)):
         cards.append("questions")  # only for people who signed up through the new screen
     return cards

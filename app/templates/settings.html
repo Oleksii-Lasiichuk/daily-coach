@@ -36,6 +36,9 @@
       <div class="card" id="intervals"><h2>intervals.icu</h2>
         <p class="small muted" style="margin-bottom:10px">{{ _("Where your Garmin data comes from and where sessions go to reach your watch.") }}</p>
         {% include "partials/intervals.html" %}</div>
+      <div class="card" id="calendar-card"><h2>{{ _("Calendar") }}</h2>
+        <p class="small muted" style="margin-bottom:10px">{{ _("So training fits your day: the coach plans sessions in your free time and warns when a late evening and an early start leave too little sleep.") }} <a href="#" hx-get="/setup/calendar/sheet" hx-target="#sheet-body">{{ _("How to get the link") }}</a></p>
+        {% include "partials/calendar.html" %}</div>
     </div>
     <div class="stack">
       <div class="card" id="reminders"><h2>{{ _("Reminders") }}</h2>

@@ -1,0 +1,362 @@
+{
+ "component": "c13_calendar",
+ "metrics": {
+  "n": 15,
+  "errors": 0,
+  "overlaps_before_validator": 0,
+  "overlaps_after_validator": 0,
+  "valid_first_try": 1.0,
+  "fit_rate": 1.0,
+  "sleep_warning_recall": 1.0,
+  "sleep_warning_false_alarms": 0
+ },
+ "n_failures": 0,
+ "failures": [],
+ "all": [
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:05",
+   "minutes": 45.0,
+   "free": [
+    [
+     "07:00",
+     "08:00",
+     60
+    ],
+    [
+     "18:30",
+     "22:30",
+     240
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 45.0,
+   "free": [
+    [
+     "07:00",
+     "08:00",
+     60
+    ],
+    [
+     "18:00",
+     "19:00",
+     60
+    ],
+    [
+     "22:00",
+     "22:30",
+     30
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 50.0,
+   "free": [
+    [
+     "07:00",
+     "13:00",
+     360
+    ],
+    [
+     "15:30",
+     "19:30",
+     240
+    ]
+   ],
+   "warnings": [
+    "Only 0 h possible between the 00:00 event end and the 23:00 wake for the 00:00 start: aim to be in bed by 00:30"
+   ],
+   "sleep_warned": true,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "15:00",
+   "minutes": 50.0,
+   "free": [
+    [
+     "14:30",
+     "22:30",
+     480
+    ]
+   ],
+   "warnings": [
+    "Only 6.5 h possible between the usual 22:30 bedtime and the 05:00 wake for the 06:00 start: aim to be in bed by 21:00"
+   ],
+   "sleep_warned": true,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "19:00",
+   "minutes": 45.0,
+   "free": [
+    [
+     "07:00",
+     "07:30",
+     30
+    ],
+    [
+     "19:00",
+     "22:30",
+     210
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "rest",
+   "start": null,
+   "minutes": 0.0,
+   "free": [],
+   "warnings": [
+    "No free window of 30 min or more between wake and bedtime"
+   ],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 45.0,
+   "free": [
+    [
+     "07:00",
+     "09:00",
+     120
+    ],
+    [
+     "12:30",
+     "12:45",
+     15
+    ],
+    [
+     "19:00",
+     "21:30",
+     150
+    ]
+   ],
+   "warnings": [
+    "Only 6.5 h possible between the 23:00 event end and the 06:00 wake for the 07:00 start: aim to be in bed by 23:30"
+   ],
+   "sleep_warned": true,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 60.0,
+   "free": [
+    [
+     "07:00",
+     "12:00",
+     300
+    ],
+    [
+     "16:30",
+     "22:30",
+     360
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 45.0,
+   "free": [
+    [
+     "07:00",
+     "22:30",
+     930
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "rest",
+   "start": null,
+   "minutes": 0.0,
+   "free": [],
+   "warnings": [
+    "No free window of 30 min or more between wake and bedtime"
+   ],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 45.0,
+   "free": [
+    [
+     "07:00",
+     "08:30",
+     90
+    ],
+    [
+     "17:30",
+     "22:30",
+     300
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "19:30",
+   "minutes": 45.0,
+   "free": [
+    [
+     "19:30",
+     "22:30",
+     180
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "11:30",
+   "minutes": 50.0,
+   "free": [
+    [
+     "11:30",
+     "14:30",
+     180
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "07:00",
+   "minutes": 75.0,
+   "free": [
+    [
+     "07:00",
+     "19:00",
+     720
+    ]
+   ],
+   "warnings": [
+    "Only 0 h possible between the 00:00 event end and the 23:00 wake for the 00:00 start: aim to be in bed by 00:30"
+   ],
+   "sleep_warned": true,
+   "violations": []
+  },
+  {
+   "first_ok": true,
+   "final_ok": true,
+   "overlap_before": false,
+   "overlap_after": false,
+   "fit": true,
+   "action": "add",
+   "start": "18:30",
+   "minutes": 45.0,
+   "free": [
+    [
+     "18:30",
+     "22:30",
+     240
+    ]
+   ],
+   "warnings": [],
+   "sleep_warned": false,
+   "violations": []
+  }
+ ]
+}

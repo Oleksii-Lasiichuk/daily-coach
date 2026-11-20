@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 
 from pywebpush import WebPushException, webpush
 
-from app import health, history, i18n, intervals, llm, nutrition_stats, store
+from app import calendar, health, history, i18n, intervals, llm, nutrition_stats, store
 from app.config import get_settings
 from app.db import connection
 from app.pipeline import common
@@ -109,7 +109,7 @@ def _due(now_local: datetime, hhmm: str) -> bool:
 
 
 def tick() -> dict:
-    stats = {"nudges": 0, "reminders": 0, "insights": 0, "synced": 0, "weekly": 0}
+    stats = {"nudges": 0, "reminders": 0, "insights": 0, "synced": 0, "weekly": 0, "calendar": 0}
     with connection() as c:
         users = c.execute("select u.*, p.nudges, p.nudges_on from users u left join user_prefs p "
                           "on p.user_id = u.id where u.setup_step >= 6").fetchall()
@@ -117,6 +117,7 @@ def tick() -> dict:
         now = datetime.now(ZoneInfo(u["time_zone"]))
         uid = str(u["id"])
         stats["synced"] += health.maybe_sync(uid, now)  # fresh wellness, activities, plan
+        stats["calendar"] += calendar.maybe_sync(uid, now)  # B2 (every 30 min, own next_at)
         if u["nudges_on"] is not False:
             for key, hhmm in (u["nudges"] or {}).items():
                 if key in NUDGE_TEXT and _due(now, hhmm) and _mark(uid, f"nudge:{key}", now):
@@ -125,6 +126,8 @@ def tick() -> dict:
                         report = morning_report(uid, now)
                         if report:
                             title, body = "Morning report", report[:240]
+                    if key == "evening":
+                        body = sleep_warning(uid, now) or body  # B2
                     q, actions = QUESTIONS.get(key, (None, None))
                     stats["nudges"] += send(uid, title, body, q=q, actions=actions)
         with connection() as c:
@@ -232,3 +235,18 @@ def daily_insight(user_id: str, now: datetime) -> int:
     store.set_profile_field(user_id, "insight", {"date": now.date().isoformat(),
                                                  "text": r.text.strip()}, "ai", actor="ai")
     return 1
+
+
+def sleep_warning(user_id: str, now: datetime) -> str | None:
+    """B2: "Early start tomorrow (07:00): aim to be in bed by 22:30" when the calendar leaves
+    less sleep than the target (C13). None without a calendar or when there is enough time."""
+    from app import day_windows
+    w = day_windows.for_user(user_id, now.date(), now.tzinfo)
+    if not w or not w["sleep_warning_bed"]:
+        return None
+    lang = store.user_lang(user_id)
+    if w["first_event_tomorrow"]:
+        return i18n.t("Early start tomorrow ({t}): aim to be in bed by {b}.", lang).format(
+            t=w["first_event_tomorrow"], b=w["sleep_warning_bed"])
+    return i18n.t("Late evening today: aim to be in bed by {b}.", lang).format(
+        b=w["sleep_warning_bed"])

@@ -14,7 +14,7 @@
   {% if w.action == "rest" %}
     <p class="small muted">{{ _("Rest day. Nothing goes to the watch.") }}</p>
   {% else %}
-  <p class="small muted">{{ w.sport }} · {{ w.minutes | round | int }} {{ _("min") }}</p>
+  <p class="small muted">{{ w.sport }} · {{ w.minutes | round | int }} {{ _("min") }}{% if w.start %} · {{ _("at") }} {{ w.start }}{% endif %}</p>
   <div class="wk-bar" aria-hidden="true">{% for x in workout_profile(w) %}<i class="z{{ x.z }}" style="width:{{ x.pct }}%;height:{{ 20 + x.z * 16 }}%"></i>{% endfor %}</div>
   <ol class="wk-steps">
     {% for b in w.blocks %}

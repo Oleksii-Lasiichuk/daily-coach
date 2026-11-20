@@ -47,6 +47,18 @@
 {% endif %}
 
 {% for p in proposals %}{% include "partials/session_card.html" %}{% endfor %}
+{% if day_strip %}
+<div class="card day-strip">
+  <span class="label">{{ _("Your day") }}</span>
+  <div class="dayline" role="img" aria-label="{{ _('Your day') }}: {% for b in day_strip.busy %}{{ _('busy') }} {{ b.label }}{{ ', ' if not loop.last }}{% endfor %}{% if day_strip.session %}; {{ _('session') }} {{ day_strip.session.label }}{% endif %}">
+    {% for b in day_strip.busy %}<span class="busy" style="left:{{ b.left }}%;width:{{ b.width }}%" title="{{ _('busy') }} {{ b.label }}"></span>{% endfor %}
+    {% if day_strip.session %}<span class="sess" style="left:{{ day_strip.session.left }}%;width:{{ day_strip.session.width }}%" title="{{ _('session') }} {{ day_strip.session.label }}"></span>{% endif %}
+  </div>
+  <div class="dayline-axis"><span>06</span><span>12</span><span>18</span><span>23</span></div>
+  {% if day_strip.sleep %}<p class="chip-warn tiny" style="margin-top:6px">{{ icon("moon") }} {% if day_strip.sleep.first %}{{ _("Early start tomorrow ({t}): aim to be in bed by {b}.").format(t=day_strip.sleep.first, b=day_strip.sleep.bed) }}{% else %}{{ _("Late evening today: aim to be in bed by {b}.").format(b=day_strip.sleep.bed) }}{% endif %} {{ _("About {h} h of sleep possible.").format(h=day_strip.sleep.h) }}</p>{% endif %}
+  {% if day_strip.no_window %}<p class="chip-warn tiny" style="margin-top:6px">{{ icon("calendar") }} {{ _("No free window of 30 min or more between wake and bedtime") }}</p>{% endif %}
+</div>
+{% endif %}
 {% if not proposals %}
 <div class="card">
   <span class="label">{{ _("Session") }}</span>

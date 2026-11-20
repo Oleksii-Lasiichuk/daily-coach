@@ -4,8 +4,29 @@
     {
       "name": "coach",
       "runtimeExecutable": "uv",
-      "runtimeArgs": ["run", "uvicorn", "app.main:app", "--reload", "--port", "8000"],
+      "runtimeArgs": [
+        "run",
+        "uvicorn",
+        "app.main:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
       "port": 8000
+    },
+    {
+      "name": "coach-b2",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "APP_ORIGIN=http://localhost:8102",
+        "uv",
+        "run",
+        "uvicorn",
+        "app.main:app",
+        "--port",
+        "8102"
+      ],
+      "port": 8102
     }
   ]
 }

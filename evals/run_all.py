@@ -5,7 +5,7 @@ Usage: uv run python -m evals.run_all            (all)
 import importlib
 import sys
 
-ALL = ["c7", "c1", "c2", "c3", "c4", "c5", "c6", "c0", "c8", "c9"]
+ALL = ["c7", "c1", "c2", "c3", "c4", "c5", "c6", "c0", "c8", "c9", "c13"]
 HEADLINE = {
     "c7_safety": ["recall", "false_alarm_rate"],
     "c1_router": ["macro_f1", "exact_match", "no_write_on_questions"],
@@ -17,6 +17,7 @@ HEADLINE = {
     "c0_interview": ["slot_coverage", "slot_accuracy", "redundant_questions"],
     "c8_reply": ["correct", "grounded", "says_missing"],
     "c9_day_review": ["grounded", "notices_expected", "no_false_claim", "useful_mean_1_5"],
+    "c13_calendar": ["overlaps_after_validator", "fit_rate", "sleep_warning_recall"],
 }
 
 

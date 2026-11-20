@@ -34,6 +34,8 @@ class Workout(BaseModel):
     blocks: list[Block]
     rationale: str
     evidence: list[str]
+    start: str | None = Field(default=None, description="Local start time 'HH:MM' inside a free "
+                              "window from day_windows (required when day_windows is given).")
 
 
 def plan(inputs: dict, feedback: list[str] | None = None, user_id: str | None = None) -> Workout:
